@@ -1,0 +1,17 @@
+{
+    "name": "RotaryHeart.Runtime",
+    "rootNamespace": "",
+    "references": [
+        "GUID:4be5d33424c186147b9e0324e39ffcef",
+        "GUID:10ebc479cc081044d87faf0f7bd87988"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
