@@ -10,9 +10,9 @@ namespace NFramework
             get
             {
                 if (Screen.height > Screen.width) // Portrait
-                    return Screen.height / Screen.width >= 2f;
+                    return (float)Screen.height / Screen.width >= 2f;
                 else // Landscape
-                    return Screen.width / Screen.height >= 2f;
+                    return (float)Screen.width / Screen.height >= 2f;
             }
         }
 
@@ -21,9 +21,9 @@ namespace NFramework
             get
             {
                 if (Screen.height > Screen.width) // Portrait
-                    return Screen.height / Screen.width <= 1.775f;
+                    return (float)Screen.height / Screen.width <= 1.775f;
                 else // Landscape
-                    return Screen.width / Screen.height <= 1.775f;
+                    return (float)Screen.width / Screen.height <= 1.775f;
             }
         }
 
