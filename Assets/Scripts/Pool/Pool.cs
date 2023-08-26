@@ -13,6 +13,8 @@ namespace NFramework
         private Queue<PooledObject> _poolQueue = new Queue<PooledObject>();
         private List<PooledObject> _activeObjects = new List<PooledObject>();
 
+        public PooledObject ObjectToPool => _objectToPool;
+
         private void Awake()
         {
             if (_initializeAtAwake)
