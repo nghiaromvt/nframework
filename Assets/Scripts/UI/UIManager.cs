@@ -28,9 +28,10 @@ namespace NFramework
         private Dictionary<EUILayer, List<BaseUIView>> _openedView = new Dictionary<EUILayer, List<BaseUIView>>();
         private Dictionary<EUILayer, RectTransform> _layerRectTfDict = new Dictionary<EUILayer, RectTransform>();
         private float _nextCheckTime;
+        private List<object> _disableInteractRegisters = new List<object>();
 
         public Canvas RootCanvas { get; private set; }
-        public bool IsBlocking => !_canvasGroup.blocksRaycasts;
+        public bool CanInteract => !_canvasGroup.blocksRaycasts;
 
         protected override void Awake()
         {
@@ -55,7 +56,7 @@ namespace NFramework
 
         private void Update()
         {
-            if (!IsBlocking && Application.isFocused && Input.anyKeyDown && _nextCheckTime < Time.unscaledTime)
+            if (!CanInteract && Application.isFocused && Input.anyKeyDown && _nextCheckTime < Time.unscaledTime)
             {
                 _nextCheckTime = Time.unscaledTime + 0.15f;
                 var currentView = GetCurrentView();
@@ -68,38 +69,31 @@ namespace NFramework
         }
 
         #region Open
-        public void Open(string identifier, Action<BaseUIView> onOpened = null, bool useBlockUI = true)
+        public BaseUIView Open(string identifier, Action<BaseUIView> onOpened = null)
         {
-            Open<BaseUIView>(identifier, onOpened, useBlockUI);
+            return Open<BaseUIView>(identifier, onOpened);
         }
 
-        public T Open<T>(string identifier, Action<T> onOpened = null, bool useBlockUI = true) where T : BaseUIView
+        public T Open<T>(string identifier, Action<T> onOpened = null) where T : BaseUIView
         {
-            if (useBlockUI)
-                ToggleBlockUI(true);
-
             TryCacheView(identifier);
-
-            if (useBlockUI)
-                ToggleBlockUI(false);
-
             return OpenViewFromCached<T>(identifier, onOpened);
         }
 
-        public async Task<BaseUIView> OpenAsync(string identifier, Action<BaseUIView> onOpened = null, bool useBlockUI = true)
+        public async Task<BaseUIView> OpenAsync(string identifier, Action<BaseUIView> onOpened = null, bool controlInteract = true)
         {
-            return await OpenAsync<BaseUIView>(identifier, onOpened, useBlockUI);
+            return await OpenAsync<BaseUIView>(identifier, onOpened, controlInteract);
         }
 
-        public async Task<T> OpenAsync<T>(string identifier, Action<T> onOpened = null, bool useBlockUI = true) where T : BaseUIView
+        public async Task<T> OpenAsync<T>(string identifier, Action<T> onOpened = null, bool controlInteract = true) where T : BaseUIView
         {
-            if (useBlockUI)
-                ToggleBlockUI(true);
+            if (controlInteract)
+                DisableInteract(this);
 
             await TryCacheViewAsync(identifier);
 
-            if (useBlockUI)
-                ToggleBlockUI(false);
+            if (controlInteract)
+                EnableInteract(this);
 
             return OpenViewFromCached<T>(identifier, onOpened);
         }
@@ -407,7 +401,31 @@ namespace NFramework
                 return null;
         }
 
-        public void ToggleBlockUI(bool isOn) => _canvasGroup.blocksRaycasts = !isOn;
+        public void DisableInteract(object register = null)
+        {
+            if (register != null)
+                _disableInteractRegisters.Add(register);
+
+            _canvasGroup.blocksRaycasts = false;
+        }
+
+        public void EnableInteract(object register = null, bool force = false)
+        {
+            if (force)
+            {
+                _disableInteractRegisters.Clear();
+            }
+            else if (register != null)
+            {
+                if (_disableInteractRegisters.Contains(register))
+                    _disableInteractRegisters.Remove(register);
+                else
+                    Logger.LogError($"Cannot find register: {register}");
+            }
+
+            if (_disableInteractRegisters.Count == 0)
+                _canvasGroup.blocksRaycasts = true;
+        }
     }
 }
 
