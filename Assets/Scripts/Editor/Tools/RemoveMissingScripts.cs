@@ -3,9 +3,9 @@ using UnityEngine;
 
 namespace NFramework.Editors
 {
-    public static class RemoveMissingScriptsInPrefabAtPath
+    public static class RemoveMissingScripts
     {
-        [MenuItem("NFramework/Remove MissingComponents")]
+        [MenuItem("NFramework/Remove MissingComponents of all prefabs")]
         public static void RemoveMissingScripstsInPrefabsAtPath()
         {
             string PATH = "Asset";
@@ -23,7 +23,7 @@ namespace NFramework.Editors
 
                 if (delCount > 0)
                 {
-                    Debug.Log($"Removed({delCount}) on {path}", prefab);
+                    Logger.Log($"Removed({delCount}) on {path}", prefab);
                     PrefabUtility.SaveAsPrefabAssetAndConnect(instance, path, InteractionMode.AutomatedAction);
                 }
 
@@ -32,6 +32,18 @@ namespace NFramework.Editors
             }
             AssetDatabase.SaveAssets();
             EditorUtility.ClearProgressBar();
+        }
+
+        [MenuItem("NFramework/Remove MissingComponents of selected object")]
+        public static void RemoveMissingScripstsInPrefabsOfSelectedObject()
+        {
+            var curObject = Selection.activeGameObject;
+            if (curObject != null)
+            {
+                var delCount = 0;
+                RecursivelyModifyPrefabChilds(curObject, ref delCount);
+                Logger.Log($"Removed({delCount}) on object {curObject.name}", curObject);
+            }
         }
 
         private static void RecursivelyModifyPrefabChilds(GameObject obj, ref int delCount)
