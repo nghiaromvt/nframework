@@ -21,7 +21,7 @@ namespace NFramework
         {
             this.fieldToCheck = fieldToCheck;
             this.inverse = inverse;
-            compareValues = compareValues.Select(c => c.ToString().ToUpper()).ToArray();
+            this.compareValues = compareValues.Select(c => c.ToString().ToUpper()).ToArray();
         }
     }
 }
