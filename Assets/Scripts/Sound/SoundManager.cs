@@ -169,6 +169,18 @@ namespace NFramework
             }
         }
 
+        public void ClearStoppedSound()
+        {
+            if (!_musicAudioSource.isPlaying)
+                _musicAudioSource.clip = null;
+
+            foreach (var source in _sfxAudioSources)
+            {
+                if (!source.isPlaying)
+                    source.clip = null;
+            }
+        }
+
         public void PlayMusic(string identifier, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
                   bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {

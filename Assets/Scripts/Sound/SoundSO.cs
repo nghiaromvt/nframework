@@ -29,6 +29,19 @@ namespace NFramework
             return SoundManager.I.PlaySFX(this, loop, volumeScale, pitchScale,
                 ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
+
+        [ButtonMethod]
+        public void MatchWithClipName()
+        {
+#if UNITY_EDITOR
+            if (clip == null)
+                return;
+
+            identifier = clip.name;
+            var path = UnityEditor.AssetDatabase.GetAssetPath(this);
+            UnityEditor.AssetDatabase.RenameAsset(path, $"{identifier}");
+#endif
+        }
     }
 }
 
