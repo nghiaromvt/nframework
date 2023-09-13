@@ -82,13 +82,9 @@ namespace NFramework
             return startTime;
         }
 
-        public static DateTime GetCurrentTime() => DateTime.UtcNow;
+        public static DateTime GetCurrentTime(bool utc = false) => utc ? DateTime.UtcNow : DateTime.Now;
 
-        public static DateTime GetCurrentDate() => GetCurrentTime().Date;
-
-        public static double GetCurrentTimeMillisecond() => DateTime.UtcNow.Subtract(DateTime.MinValue).TotalMilliseconds;
-
-        public static double GetCurrentTimeSecond() => DateTime.UtcNow.Subtract(DateTime.MinValue).TotalSeconds;
+        public static TimeSpan GetCurrentTimeSpan(bool utc = false) => GetCurrentTime(utc).Subtract(DateTime.MinValue);
 
         public static DateTime FromEpochTime(long sec)
         {

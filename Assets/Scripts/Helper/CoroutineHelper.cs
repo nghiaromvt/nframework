@@ -12,7 +12,7 @@ namespace NFramework
             action?.Invoke();
         }
 
-        public static IEnumerator CRDelayActionRealtime(float delay, Action action)
+        public static IEnumerator CRDelayRealtimeAction(float delay, Action action)
         {
             yield return new WaitForSecondsRealtime(delay);
             action?.Invoke();
@@ -24,6 +24,12 @@ namespace NFramework
             {
                 yield return null;
             }
+            action?.Invoke();
+        }
+
+        public static IEnumerator CRDelayUntilAction(Func<bool> predicate, Action action)
+        {
+            yield return new WaitUntil(predicate);
             action?.Invoke();
         }
     }
