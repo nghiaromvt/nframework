@@ -4,8 +4,7 @@ using UnityEngine.UI;
 
 namespace NFramework
 {
-    [RequireComponent(typeof(Mask))]
-    public class CutOutMask : Image
+    public class CutOutMaskUI : Image
     {
         public override Material materialForRendering
         {
