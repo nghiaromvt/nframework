@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace NFramework
@@ -425,6 +426,18 @@ namespace NFramework
 
             if (_disableInteractRegisters.Count == 0)
                 _canvasGroup.blocksRaycasts = true;
+        }
+
+        public bool IsPointerOverUIObject()
+        {
+            if (EventSystem.current.IsPointerOverGameObject())
+                return true;
+
+            PointerEventData eventDataCurrentPosition = new PointerEventData(EventSystem.current);
+            eventDataCurrentPosition.position = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            List<RaycastResult> results = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventDataCurrentPosition, results);
+            return results.Count > 0;
         }
     }
 }
