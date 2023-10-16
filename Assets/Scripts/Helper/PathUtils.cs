@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -44,5 +45,23 @@ namespace NFramework
 
             return path;
         }
+
+#if UNITY_EDITOR
+        public static Dictionary<string, string> GetAssetsPathDictionary(string filter, string[] searchInFolder = null)
+        {
+            var guids = UnityEditor.AssetDatabase.FindAssets(filter, searchInFolder);
+            var pathDic = new Dictionary<string, string>();
+            foreach (var guid in guids)
+            {
+                var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                if (pathDic.ContainsKey(fileName))
+                    Logger.Log($"Already have key [{fileName}] => ignore");
+                else
+                    pathDic.Add(fileName, path);
+            }
+            return pathDic;
+        }
+#endif
     }
 }
