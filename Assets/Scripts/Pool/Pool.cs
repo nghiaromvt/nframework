@@ -5,6 +5,18 @@ namespace NFramework
 {
     public class Pool : MonoBehaviour
     {
+        public static Pool CreatePool(bool initializeAtAwake, bool autoExpandPool, int initPoolSize, PooledObject objectToPool)
+        {
+            var go = new GameObject($"Pool_{objectToPool.name}", typeof(Pool));
+            var pool = go.GetComponent<Pool>();
+            pool._initializeAtAwake = initializeAtAwake;
+            pool._autoExpandPool = autoExpandPool;
+            pool._initPoolSize = initPoolSize;
+            pool._initPoolSize = initPoolSize;
+            pool._objectToPool = objectToPool;
+            return pool;
+        }
+
         [SerializeField] private bool _initializeAtAwake = true;
         [SerializeField] private bool _autoExpandPool = true;
         [SerializeField] private int _initPoolSize = 5;
