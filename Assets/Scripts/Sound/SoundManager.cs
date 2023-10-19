@@ -185,6 +185,15 @@ namespace NFramework
             }
         }
 
+        public SoundSO GetSoundSO(string name)
+        {
+            if (_identifierSoundSODict.ContainsKey(name))
+                return _identifierSoundSODict[name];
+
+            Logger.LogError($"Cannot get SoundSO with name:{name}");
+            return null;
+        }
+
         public void PlayMusic(string identifier, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
                   bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
