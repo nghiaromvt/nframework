@@ -9,15 +9,19 @@ namespace NFramework
         {
             var go = new GameObject($"Pool_{objectToPool.name}", typeof(Pool));
             var pool = go.GetComponent<Pool>();
-            pool._initializeAtAwake = initializeAtAwake;
             pool._autoExpandPool = autoExpandPool;
             pool._initPoolSize = initPoolSize;
             pool._initPoolSize = initPoolSize;
             pool._objectToPool = objectToPool;
+            
+            pool._initializeAtAwake = initializeAtAwake;
+            if (initializeAtAwake)
+                pool.InitializePool();
+
             return pool;
         }
 
-        [SerializeField] private bool _initializeAtAwake = true;
+        [SerializeField] private bool _initializeAtAwake;
         [SerializeField] private bool _autoExpandPool = true;
         [SerializeField] private int _initPoolSize = 5;
         [SerializeField] private PooledObject _objectToPool;
@@ -35,6 +39,9 @@ namespace NFramework
 
         public void InitializePool()
         {
+            if (_objectToPool == null)
+                return;
+
             for (int i = 0; i < _initPoolSize; i++)
             {
                 var instance = Instantiate(_objectToPool, transform);

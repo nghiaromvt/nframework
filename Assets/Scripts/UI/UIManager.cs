@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+#if ADDRESSABLE
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace NFramework
 {
@@ -69,7 +72,64 @@ namespace NFramework
             }
         }
 
-        #region Open
+#if ADDRESSABLE
+        public async Task<BaseUIView> OpenAsync(string identifier, Action<BaseUIView> onOpened = null, bool controlInteract = true)
+        {
+            return await OpenAsync<BaseUIView>(identifier, onOpened, controlInteract);
+        }
+
+        public async Task<T> OpenAsync<T>(string identifier, Action<T> onOpened = null, bool controlInteract = true) where T : BaseUIView
+        {
+            if (controlInteract)
+                DisableInteract(this);
+
+            await TryCacheViewAsync(identifier);
+
+            if (controlInteract)
+                EnableInteract(this);
+
+            return OpenViewFromCached<T>(identifier, onOpened);
+        }
+
+        public async Task<bool> TryCacheViewAsync(string identifier, bool forceCacheMultiple = false)
+        {
+            var isNew = false;
+            if (!_cachedView.ContainsKey(identifier))
+            {
+                // New
+                _cachedView[identifier] = new Stack<BaseUIView>();
+                isNew = true;
+            }
+            else if (_cachedView[identifier].Count > 0 && !forceCacheMultiple)
+            {
+                // Cached and no force to cache more
+                return false;
+            }
+
+            var loadPath = Path.Combine(_uiRootPath, identifier);
+            var loadHandle = Addressables.LoadAssetAsync<GameObject>(loadPath);
+            while (!loadHandle.IsDone)
+            {
+                await Task.Yield();
+            }
+
+            if (loadHandle.Result == null)
+            {
+                Logger.LogError($"Cannot load UI [{identifier}] from Addressable", this);
+                return false;
+            }
+
+            var prefab = loadHandle.Result.GetComponent<BaseUIView>();
+            if (!isNew && prefab.IsUnique)
+                Logger.LogError($"UI [{identifier}] is Unique!", this);
+
+            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            cached.Identifier = identifier;
+            cached.gameObject.SetActive(false);
+            _cachedView[identifier].Push(cached);
+            return true;
+        }
+#else
         public BaseUIView Open(string identifier, Action<BaseUIView> onOpened = null)
         {
             return Open<BaseUIView>(identifier, onOpened);
@@ -99,53 +159,6 @@ namespace NFramework
             return OpenViewFromCached<T>(identifier, onOpened);
         }
 
-        private T OpenViewFromCached<T>(string identifier, Action<T> onOpened) where T : BaseUIView
-        {
-            if (_cachedView[identifier].Count == 0)
-            {
-                Logger.LogError($"Cannot push view [{identifier}] because no cached found", this);
-                return null;
-            }
-
-            var view = _cachedView[identifier].Pop() as T;
-            if (view.UILayer == EUILayer.Menu && IsPopupShown())
-                CloseAllInLayer(EUILayer.Popup);
-
-            view.gameObject.SetActive(true);
-            view.transform.SetAsLastSibling();
-            view.OnOpen();
-
-            _openedView[view.UILayer].Add(view);
-
-            onOpened?.Invoke(view);
-            OnOpenedView?.Invoke(view);
-            return view;
-        }
-
-        public void OpenSystemPopupInfo(string title, string message, string ok, Action callback)
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorUtility.DisplayDialog(title, message, ok);
-            callback?.Invoke();
-#else
-            pingak9.NativeDialog.OpenDialog(title, message, ok, callback);
-#endif
-        }
-
-        public void OpenSystemPopupConfirm(string title, string message, string yes, string no, Action<bool> callback)
-        {
-#if UNITY_EDITOR
-            if (UnityEditor.EditorUtility.DisplayDialog(title, message, yes, no))
-                callback?.Invoke(true);
-            else
-                callback?.Invoke(false);
-#else
-                pingak9.NativeDialog.OpenDialog(title, message, yes, no, () => { callback?.Invoke(true); }, () => { callback?.Invoke(false); });
-#endif
-        }
-        #endregion
-
-        #region Cache
         public bool TryCacheView(string identifier, bool forceCacheMultiple = false)
         {
             var isNew = false;
@@ -189,6 +202,7 @@ namespace NFramework
             }
 
             var loadPath = Path.Combine(_uiRootPath, identifier);
+
             var resourceRequest = Resources.LoadAsync<BaseUIView>(loadPath);
             while (!resourceRequest.isDone)
             {
@@ -211,9 +225,31 @@ namespace NFramework
             _cachedView[identifier].Push(cached);
             return true;
         }
-        #endregion
+#endif
 
-        #region Close
+        private T OpenViewFromCached<T>(string identifier, Action<T> onOpened) where T : BaseUIView
+        {
+            if (_cachedView[identifier].Count == 0)
+            {
+                Logger.LogError($"Cannot push view [{identifier}] because no cached found", this);
+                return null;
+            }
+
+            var view = _cachedView[identifier].Pop() as T;
+            if (view.UILayer == EUILayer.Menu && IsPopupShown())
+                CloseAllInLayer(EUILayer.Popup);
+
+            view.gameObject.SetActive(true);
+            view.transform.SetAsLastSibling();
+            view.OnOpen();
+
+            _openedView[view.UILayer].Add(view);
+
+            onOpened?.Invoke(view);
+            OnOpenedView?.Invoke(view);
+            return view;
+        }
+
         public void CloseCurrentInLayer(EUILayer layer, bool destroy = false)
         {
             var views = _openedView[layer];
@@ -326,7 +362,28 @@ namespace NFramework
                     Destroy(view);
             }
         }
-        #endregion
+
+        public void OpenSystemPopupInfo(string title, string message, string ok, Action callback)
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.DisplayDialog(title, message, ok);
+            callback?.Invoke();
+#else
+            pingak9.NativeDialog.OpenDialog(title, message, ok, callback);
+#endif
+        }
+
+        public void OpenSystemPopupConfirm(string title, string message, string yes, string no, Action<bool> callback)
+        {
+#if UNITY_EDITOR
+            if (UnityEditor.EditorUtility.DisplayDialog(title, message, yes, no))
+                callback?.Invoke(true);
+            else
+                callback?.Invoke(false);
+#else
+                pingak9.NativeDialog.OpenDialog(title, message, yes, no, () => { callback?.Invoke(true); }, () => { callback?.Invoke(false); });
+#endif
+        }
 
         public bool IsPopupShown() => _openedView[EUILayer.Popup].Count > 0;
 
@@ -441,4 +498,5 @@ namespace NFramework
         }
     }
 }
+
 

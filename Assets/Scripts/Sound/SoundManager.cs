@@ -4,6 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using System.Threading.Tasks;
+#if ADDRESSABLE
+using UnityEngine.AddressableAssets;
+#endif
 
 namespace NFramework
 {
@@ -137,6 +141,18 @@ namespace NFramework
             _audioMixer.SetFloat(SFX_VOLUME_KEY, Mathf.Log10(vol) * 20);
         }
 
+        public void ClearStoppedSound()
+        {
+            if (!_musicAudioSource.isPlaying)
+                _musicAudioSource.clip = null;
+
+            foreach (var source in _sfxAudioSources)
+            {
+                if (!source.isPlaying)
+                    source.clip = null;
+            }
+        }
+
         public void Cache(List<SoundSO> soundSOs)
         {
             foreach (var soundSO in soundSOs)
@@ -169,18 +185,6 @@ namespace NFramework
             }
         }
 
-        public void ClearStoppedSound()
-        {
-            if (!_musicAudioSource.isPlaying)
-                _musicAudioSource.clip = null;
-
-            foreach (var source in _sfxAudioSources)
-            {
-                if (!source.isPlaying)
-                    source.clip = null;
-            }
-        }
-
         public void PlayMusic(string identifier, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
                   bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
@@ -191,28 +195,17 @@ namespace NFramework
         }
 
         public void PlayMusic(SoundSO soundSO, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
+             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var volume = soundSO.volume * volumeScale;
+            var pitch = soundSO.pitch * pitchScale;
+            PlayMusic(soundSO.clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+
+        public void PlayMusic(AudioClip clip, bool loop = false, float volume = 1f, float pitch = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
-            _musicAudioSource.clip = soundSO.clip;
-            _musicAudioSource.loop = loop;
-            _musicAudioSource.pitch = soundSO.pitch * pitchScale;
-            _musicAudioSource.ignoreListenerPause = ignoreListnerPause;
-            _musicAudioSource.ignoreListenerVolume = ignoreLisnerVolume;
-
-            if (fadeTime <= 0f)
-            {
-                _musicAudioSource.volume = soundSO.volume * volumeScale;
-            }
-            else
-            {
-                _musicAudioSource.volume = 0f;
-                var targetVol = soundSO.volume * volumeScale;
-                DOVirtual.Float(0f, targetVol, fadeTime, value =>
-                {
-                    _musicAudioSource.volume = value;
-                }).SetEase(Ease.Linear);
-            }
-            _musicAudioSource.Play();
+            PlaySound(_musicAudioSource, clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 
         public void StopMusic(float fadeTime = 0f)
@@ -247,56 +240,22 @@ namespace NFramework
         public AudioSource PlaySFX(SoundSO soundSO, bool loop = false, float volumeScale = 1f, float pitchScale = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
-            if (TryGetAudioSource(out var audioSource))
-            {
-                audioSource.clip = soundSO.clip;
-                audioSource.loop = loop;
-                audioSource.pitch = soundSO.pitch * pitchScale;
-                audioSource.ignoreListenerPause = ignoreListnerPause;
-                audioSource.ignoreListenerVolume = ignoreLisnerVolume;
+            var volume = soundSO.volume * volumeScale;
+            var pitch = soundSO.pitch * pitchScale;
+            return PlaySFX(soundSO.clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
 
-                if (fadeTime <= 0f)
-                {
-                    audioSource.volume = soundSO.volume * volumeScale;
-                }
-                else
-                {
-                    audioSource.volume = 0f;
-                    var targetVol = soundSO.volume * volumeScale;
-                    DOVirtual.Float(0f, targetVol, fadeTime, value =>
-                    {
-                        audioSource.volume = value;
-                    }).SetEase(Ease.Linear);
-                }
-                audioSource.Play();
-            }
+        public AudioSource PlaySFX(AudioClip clip, bool loop = false, float volume = 1f, float pitch = 1f,
+            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            if (TryGetSFXAudioSource(out var audioSource))
+                PlaySound(audioSource, clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
             else
-            {
                 Logger.Log("Cannot get audioSource", this);
-            }
             return audioSource;
         }
 
-        public void PlaySFX(AudioClip clip, AudioMixerGroup output,
-            float volume = 1f, float pitch = 1f, bool ignoreListnerPause = false, bool ignoreLisnerVolume = false)
-        {
-            if (TryGetAudioSource(out var audioSource))
-            {
-                audioSource.clip = clip;
-                audioSource.outputAudioMixerGroup = output;
-                audioSource.volume = volume;
-                audioSource.pitch = pitch;
-                audioSource.ignoreListenerPause = ignoreListnerPause;
-                audioSource.ignoreListenerVolume = ignoreLisnerVolume;
-                audioSource.Play();
-            }
-            else
-            {
-                Logger.LogError("Cannot get audioSource", this);
-            }
-        }
-
-        private bool TryGetAudioSource(out AudioSource targetSource)
+        private bool TryGetSFXAudioSource(out AudioSource targetSource)
         {
             targetSource = null;
             foreach (var source in _sfxAudioSources)
@@ -309,6 +268,101 @@ namespace NFramework
             }
             return targetSource != null;
         }
+
+        private void PlaySound(AudioSource audioSource, AudioClip clip, bool loop, float volume, float pitch,
+            bool ignoreListnerPause, bool ignoreLisnerVolume, float fadeTime)
+        {
+            audioSource.clip = clip;
+            audioSource.loop = loop;
+            audioSource.pitch = pitch;
+            audioSource.ignoreListenerPause = ignoreListnerPause;
+            audioSource.ignoreListenerVolume = ignoreLisnerVolume;
+
+            if (fadeTime <= 0f)
+            {
+                audioSource.volume = volume;
+            }
+            else
+            {
+                audioSource.volume = 0f;
+                var targetVol = volume;
+                DOVirtual.Float(0f, targetVol, fadeTime, value =>
+                {
+                    audioSource.volume = value;
+                }).SetEase(Ease.Linear);
+            }
+            audioSource.Play();
+        }
+
+#if ADDRESSABLE
+        public async Task PlayMusicAddressableSO(string path, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
+            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var loadHandle = Addressables.LoadAssetAsync<SoundSO>(path);
+            while (!loadHandle.IsDone)
+            {
+                await Task.Yield();
+            }
+
+            var soundSO = loadHandle.Result;
+            if (soundSO == null)
+                Logger.LogError($"Cannot load SoundSO [{path}] from Addressable", this);
+            else
+                PlayMusic(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+
+        public async Task PlayMusicAddressable(string path, bool loop = true, float volume = 1f, float pitch = 1f,
+           bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var loadHandle = Addressables.LoadAssetAsync<AudioClip>(path);
+            while (!loadHandle.IsDone)
+            {
+                await Task.Yield();
+            }
+
+            var audioClip = loadHandle.Result;
+            if (audioClip == null)
+                Logger.LogError($"Cannot load AudioClip [{path}] from Addressable", this);
+            else
+                PlayMusic(audioClip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+
+        public async Task<AudioSource> PlaySFXAddressableSO(string path, bool loop = false, float volumeScale = 1f, float pitchScale = 1f,
+            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var loadHandle = Addressables.LoadAssetAsync<SoundSO>(path);
+            while (!loadHandle.IsDone)
+            {
+                await Task.Yield();
+            }
+
+            var soundSO = loadHandle.Result;
+            if (soundSO == null)
+            {
+                Logger.LogError($"Cannot load SoundSO [{path}] from Addressable", this);
+                return null;
+            }
+            return PlaySFX(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+
+        public async Task<AudioSource> PlaySFXAddressable(string path, bool loop = false, float volume = 1f, float pitch = 1f,
+           bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var loadHandle = Addressables.LoadAssetAsync<AudioClip>(path);
+            while (!loadHandle.IsDone)
+            {
+                await Task.Yield();
+            }
+
+            var audioClip = loadHandle.Result;
+            if (audioClip == null)
+            {
+                Logger.LogError($"Cannot load AudioClip [{path}] from Addressable", this);
+                return null;
+            }
+            return PlaySFX(audioClip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+#endif
 
         #region ISaveable
         [System.Serializable]
