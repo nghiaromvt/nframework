@@ -50,7 +50,11 @@ namespace NFramework
             {
                 var objResult = new Dictionary<string, string>();
                 for (int j = 0; j < properties.Length; j++)
-                    objResult.Add(properties[j], tsv[i][j]);
+                {
+                    var cellText = tsv[i][j];
+                    if (!string.IsNullOrEmpty(cellText))
+                        objResult.Add(properties[j], tsv[i][j]);
+                }
 
                 listObjResult.Add(objResult);
             }

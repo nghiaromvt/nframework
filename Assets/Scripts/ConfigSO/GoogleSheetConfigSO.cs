@@ -13,13 +13,13 @@ namespace NFramework
 
 #if UNITY_EDITOR
         [ButtonMethod(ButtonMethodAttribute.EDrawOrder.BeforeInspector)]
-        public virtual void Sync()
+        public void Sync() =>
+            GoogleSheetHelper.GetConfig<T>(_sheetId, _gridId, OnSynced, _tsvCachePath, _jsonCachePath);
+
+        protected virtual void OnSynced(List<T> googleSheetData)
         {
-            GoogleSheetHelper.GetConfig<T>(_sheetId, _gridId, datas =>
-            {
-                _datas = datas;
-                UnityEditor.EditorUtility.SetDirty(this);
-            }, _tsvCachePath, _jsonCachePath);
+            _datas = googleSheetData;
+            UnityEditor.EditorUtility.SetDirty(this);
         }
 #endif
     }
