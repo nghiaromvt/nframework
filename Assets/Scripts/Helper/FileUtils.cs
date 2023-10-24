@@ -62,5 +62,21 @@ namespace NFramework
 
             return totalSize;
         }
+
+#if UNITY_EDITOR
+        public static T LoadFirstAssetWithName<T>(string assetName, string overrideFilter = null) where T : UnityEngine.Object
+        {
+            if (string.IsNullOrEmpty(assetName))
+                return null;
+
+            var filter = overrideFilter != null ? overrideFilter : $"t:{typeof(T).Name}";
+            var pathDic = PathUtils.GetAssetsPathDictionary(filter);
+            if (pathDic.ContainsKey(assetName))
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(pathDic[assetName]);
+
+            Logger.LogError($"Cannot find asset with name: {assetName}");
+            return null;
+        }
+#endif
     }
 }

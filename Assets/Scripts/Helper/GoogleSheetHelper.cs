@@ -12,14 +12,9 @@ namespace NFramework
         {
             GetSheetTSVText(sheetId, gridId, tsvText =>
             {
-                if (!string.IsNullOrEmpty(tsvCachePath))
-                    File.WriteAllText(tsvCachePath, tsvText);
-
+                TryWriteTextToFile(tsvCachePath, tsvText);
                 var json = ConvertTSVTextToJsonListObject(tsvText);
-
-                if (!string.IsNullOrEmpty(jsonCachePath))
-                    File.WriteAllText(tsvCachePath, json);
-
+                TryWriteTextToFile(jsonCachePath, json);
                 callback?.Invoke(JsonConvert.DeserializeObject<List<T>>(json));
             });
         }
@@ -33,11 +28,10 @@ namespace NFramework
         private static void LoadTextFromWeb(string url, Action<string> callBack)
         {
             WWW request = new WWW(url);
-
             while (!request.isDone)
+            {
                 request.MoveNext();
-
-            Logger.Log(request.text);
+            }
             callBack?.Invoke(request.text);
         }
 
@@ -62,6 +56,23 @@ namespace NFramework
             }
 
             return JsonConvert.SerializeObject(listObjResult);
+        }
+
+        private static void TryWriteTextToFile(string path, string text)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                Logger.Log(text);
+                return;
+            }
+
+            if (!File.Exists(path))
+            {
+                var fs = new FileStream(path, FileMode.Create);
+                fs.Dispose();
+            }
+
+            File.WriteAllText(path, text);
         }
     }
 }
