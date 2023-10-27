@@ -13,6 +13,10 @@ namespace NFramework
 
 #if UNITY_EDITOR
         [ButtonMethod(ButtonMethodAttribute.EDrawOrder.BeforeInspector)]
+        public void OpenSheet() => 
+            Application.OpenURL($"https://docs.google.com/spreadsheets/d/{_sheetId}/edit#gid={_gridId}");
+
+        [ButtonMethod(ButtonMethodAttribute.EDrawOrder.BeforeInspector)]
         public void Sync() =>
             GoogleSheetHelper.GetConfig<T>(_sheetId, _gridId, OnSynced, _tsvCachePath, _jsonCachePath);
 
