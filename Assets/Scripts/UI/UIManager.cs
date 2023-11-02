@@ -73,17 +73,17 @@ namespace NFramework
         }
 
 #if ADDRESSABLE
-        public async Task<BaseUIView> OpenAsync(string identifier, Action<BaseUIView> onOpened = null, bool controlInteract = true)
+        public async Task<BaseUIView> OpenAddressable(string identifier, Action<BaseUIView> onOpened = null, bool controlInteract = true)
         {
-            return await OpenAsync<BaseUIView>(identifier, onOpened, controlInteract);
+            return await OpenAddressable<BaseUIView>(identifier, onOpened, controlInteract);
         }
 
-        public async Task<T> OpenAsync<T>(string identifier, Action<T> onOpened = null, bool controlInteract = true) where T : BaseUIView
+        public async Task<T> OpenAddressable<T>(string identifier, Action<T> onOpened = null, bool controlInteract = true) where T : BaseUIView
         {
             if (controlInteract)
                 DisableInteract(this);
 
-            await TryCacheViewAsync(identifier);
+            await TryCacheViewAddressable(identifier);
 
             if (controlInteract)
                 EnableInteract(this);
@@ -91,7 +91,7 @@ namespace NFramework
             return OpenViewFromCached<T>(identifier, onOpened);
         }
 
-        public async Task<bool> TryCacheViewAsync(string identifier, bool forceCacheMultiple = false)
+        public async Task<bool> TryCacheViewAddressable(string identifier, bool forceCacheMultiple = false)
         {
             var isNew = false;
             if (!_cachedView.ContainsKey(identifier))
@@ -129,7 +129,8 @@ namespace NFramework
             _cachedView[identifier].Push(cached);
             return true;
         }
-#else
+#endif
+
         public BaseUIView Open(string identifier, Action<BaseUIView> onOpened = null)
         {
             return Open<BaseUIView>(identifier, onOpened);
@@ -225,7 +226,6 @@ namespace NFramework
             _cachedView[identifier].Push(cached);
             return true;
         }
-#endif
 
         private T OpenViewFromCached<T>(string identifier, Action<T> onOpened) where T : BaseUIView
         {

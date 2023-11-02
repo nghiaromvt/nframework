@@ -303,6 +303,36 @@ namespace NFramework
             audioSource.Play();
         }
 
+        #region Resource
+        public void PlayMusicResourceSO(string soundSOPath, bool loop = false, float volumeScale = 1f, float pitchScale = 1f,
+            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var soundSO = Resources.Load<SoundSO>(soundSOPath);
+            PlayMusic(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+
+        public void PlayMusicResource(string audioClipPath, bool loop = false, float volume = 1f, float pitch = 1f,
+            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var audioClip = Resources.Load<AudioClip>(audioClipPath);
+            PlayMusic(audioClip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+
+        public AudioSource PlaySFXResourceSO(string soundSOPath, bool loop = false, float volumeScale = 1f, float pitchScale = 1f,
+            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var soundSO = Resources.Load<SoundSO>(soundSOPath);
+            return PlaySFX(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+
+        public AudioSource PlaySFXResource(string audioClipPath, bool loop = false, float volume = 1f, float pitch = 1f,
+            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
+        {
+            var audioClip = Resources.Load<AudioClip>(audioClipPath);
+            return PlaySFX(audioClip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+        }
+        #endregion
+
 #if ADDRESSABLE
         public async Task PlayMusicAddressableSO(string path, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
