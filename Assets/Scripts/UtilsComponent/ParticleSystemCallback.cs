@@ -11,13 +11,26 @@ namespace NFramework
         public UnityEvent EventOnParticleTrigger;
         public UnityEvent EventOnParticleUpdateJobScheduled;
 
+        [SerializeField] private bool _constrainOnStoppedTriggerOneTime = true;
+
         public ParticleSystem ParticleSystem { get; private set; }
+
+        private bool _triggered;
 
         private void Awake() => ParticleSystem = GetComponent<ParticleSystem>();
 
+        private void OnEnable() => _triggered = false;
+
         private void OnParticleCollision(GameObject other) => EventOnParticleCollision?.Invoke(other);
 
-        private void OnParticleSystemStopped() => EventOnParticleSystemStopped?.Invoke();
+        private void OnParticleSystemStopped()
+        {
+            if (_constrainOnStoppedTriggerOneTime && _triggered)
+                return;
+
+            _triggered = true;
+            EventOnParticleSystemStopped?.Invoke();
+        }
 
         private void OnParticleTrigger() => EventOnParticleTrigger?.Invoke();
 
