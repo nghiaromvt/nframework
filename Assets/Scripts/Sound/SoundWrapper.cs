@@ -15,10 +15,6 @@ namespace NFramework
 
         public SoundSO SoundSO => _soundSO;
 
-        public void Cache() => _soundSO.Cache();
-
-        public void ClearCache() => _soundSO.ClearCache();
-
         public void PlayMusic()
         {
             _soundSO.PlayMusic(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);

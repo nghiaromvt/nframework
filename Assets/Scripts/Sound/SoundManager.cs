@@ -4,8 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
-using System.Threading.Tasks;
 #if ADDRESSABLE
+using System.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 #endif
 
@@ -26,11 +26,9 @@ namespace NFramework
         [SerializeField] private AudioMixerGroup _musicMixerGroup;
         [SerializeField] private AudioMixerGroup _sfxMixerGroup;
         [SerializeField] private int _sfxAudioSourceCount = 10;
-        [SerializeField] private List<SoundSO> _cachedSoundSOs = new List<SoundSO>();
 
         private AudioSource _musicAudioSource;
         private List<AudioSource> _sfxAudioSources = new List<AudioSource>();
-        private Dictionary<string, SoundSO> _identifierSoundSODict = new Dictionary<string, SoundSO>();
 
         #region Properties
         public bool MusicStatus
@@ -98,11 +96,6 @@ namespace NFramework
         {
             base.Awake();
             InitAudioSources();
-
-            foreach (var soundSO in _cachedSoundSOs)
-            {
-                _identifierSoundSODict.Add(soundSO.identifier, soundSO);
-            }
         }
 
         private IEnumerator Start()
@@ -153,56 +146,6 @@ namespace NFramework
             }
         }
 
-        public void Cache(List<SoundSO> soundSOs)
-        {
-            foreach (var soundSO in soundSOs)
-            {
-                if (_identifierSoundSODict.ContainsKey(soundSO.identifier))
-                {
-                    Logger.LogError($"Already cached identifier [{soundSO.identifier}]", this);
-                }
-                else
-                {
-                    _identifierSoundSODict.Add(soundSO.identifier, soundSO);
-                    _cachedSoundSOs.Add(soundSO);
-                }
-            }
-        }
-
-        public void ClearCache(List<SoundSO> soundSOs)
-        {
-            foreach (var soundSO in soundSOs)
-            {
-                if (_identifierSoundSODict.ContainsKey(soundSO.identifier))
-                {
-                    _identifierSoundSODict.Remove(soundSO.identifier);
-                    _cachedSoundSOs.Remove(soundSO);
-                }
-                else
-                {
-                    Logger.LogError($"Cannot find identifier [{soundSO.identifier}]", this);
-                }
-            }
-        }
-
-        public SoundSO GetSoundSO(string name)
-        {
-            if (_identifierSoundSODict.ContainsKey(name))
-                return _identifierSoundSODict[name];
-
-            Logger.LogError($"Cannot get SoundSO with name:{name}");
-            return null;
-        }
-
-        public void PlayMusic(string identifier, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
-                  bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
-        {
-            if (_identifierSoundSODict.TryGetValue(identifier, out var soundSO))
-                PlayMusic(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
-            else
-                Logger.LogError($"Cannot find soundSO with identifier [{identifier}]", this);
-        }
-
         public void PlayMusic(SoundSO soundSO, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
              bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
@@ -229,20 +172,6 @@ namespace NFramework
                 {
                     _musicAudioSource.volume = value;
                 }).SetEase(Ease.Linear).OnComplete(() => _musicAudioSource.Stop());
-            }
-        }
-
-        public AudioSource PlaySFX(string identifier, bool loop = false, float volumeScale = 1f, float pitchScale = 1f,
-            bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
-        {
-            if (_identifierSoundSODict.TryGetValue(identifier, out var soundSO))
-            {
-                return PlaySFX(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
-            }
-            else
-            {
-                Logger.LogError($"Cannot find soundSO with identifier [{identifier}]", this);
-                return null;
             }
         }
 
