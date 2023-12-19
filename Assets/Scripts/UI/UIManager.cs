@@ -236,9 +236,6 @@ namespace NFramework
             }
 
             var view = _cachedView[identifier].Pop() as T;
-            if (view.UILayer == EUILayer.Menu && IsPopupShown())
-                CloseAllInLayer(EUILayer.Popup);
-
             view.gameObject.SetActive(true);
             view.transform.SetAsLastSibling();
             view.OnOpen();

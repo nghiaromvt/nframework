@@ -74,6 +74,17 @@ namespace NFramework
             }
         }
 
+        public static bool IsNoAds
+        {
+            get
+            {
+#if NO_ADS
+                return true;
+#endif
+                return false;
+            }
+        }
+
         public static bool HasInternet() => Application.internetReachability != NetworkReachability.NotReachable;
 
         public static List<string> GetLocalIPAddress()

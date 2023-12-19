@@ -154,7 +154,7 @@ namespace NFramework
             PlayMusic(soundSO.clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 
-        public void PlayMusic(AudioClip clip, bool loop = false, float volume = 1f, float pitch = 1f,
+        public void PlayMusic(AudioClip clip, bool loop = true, float volume = 1f, float pitch = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
             PlaySound(_musicAudioSource, clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
@@ -233,14 +233,14 @@ namespace NFramework
         }
 
         #region Resource
-        public void PlayMusicResourceSO(string soundSOPath, bool loop = false, float volumeScale = 1f, float pitchScale = 1f,
+        public void PlayMusicResourceSO(string soundSOPath, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
             var soundSO = Resources.Load<SoundSO>(soundSOPath);
             PlayMusic(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 
-        public void PlayMusicResource(string audioClipPath, bool loop = false, float volume = 1f, float pitch = 1f,
+        public void PlayMusicResource(string audioClipPath, bool loop = true, float volume = 1f, float pitch = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
             var audioClip = Resources.Load<AudioClip>(audioClipPath);
