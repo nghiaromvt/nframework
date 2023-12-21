@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
-#if MOREMOUNTAINS_NICEVIBRATIONS
-using MoreMountains.NiceVibrations;
+#if MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
+using Lofelt.NiceVibrations;
 #endif
 
 namespace NFramework
@@ -28,23 +28,13 @@ namespace NFramework
             }
         }
 
-        public void Haptic(EHapticType type, bool defaultToRegularVibrate = false, bool alsoRumble = false, MonoBehaviour coroutineSupport = null, int controllerID = -1)
+        public void Haptic(EHapticType type)
         {
             if (!Status)
                 return;
 
-#if MOREMOUNTAINS_NICEVIBRATIONS
-            MMVibrationManager.Haptic((HapticTypes)type, defaultToRegularVibrate, alsoRumble, coroutineSupport, controllerID);
-#endif
-        }
-
-        public void TransientHaptic(float intensity, float sharpness, bool alsoRumble = false, MonoBehaviour coroutineSupport = null, int controllerID = -1)
-        {
-            if (!Status)
-                return;
-
-#if MOREMOUNTAINS_NICEVIBRATIONS
-            MMVibrationManager.TransientHaptic(intensity, sharpness, alsoRumble, coroutineSupport, controllerID);
+#if MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
+            HapticPatterns.PlayPreset((HapticPatterns.PresetType)type);
 #endif
         }
 
