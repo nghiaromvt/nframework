@@ -85,6 +85,17 @@ namespace NFramework
             }
         }
 
+        public static bool IsTestIAP
+        {
+            get
+            {
+#if TEST_IAP
+                return true;
+#endif
+                return false;
+            }
+        }
+
         public static bool HasInternet() => Application.internetReachability != NetworkReachability.NotReachable;
 
         public static List<string> GetLocalIPAddress()
