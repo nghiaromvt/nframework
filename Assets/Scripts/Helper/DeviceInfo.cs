@@ -109,6 +109,21 @@ namespace NFramework
             }
             return localIPs;
         }
+
+        private static string _deviceUDID = "";
+        public static string GetUDID()
+        {
+            if (_deviceUDID.Length <= 0)
+            {
+                _deviceUDID = PlayerPrefs.GetString("didu", string.Empty);
+                if (string.IsNullOrEmpty(_deviceUDID))
+                {
+                    _deviceUDID = SystemInfo.deviceUniqueIdentifier;
+                    PlayerPrefs.SetString("didu", _deviceUDID);
+                }
+            }
+            return _deviceUDID;
+        }
     }
 }
 
