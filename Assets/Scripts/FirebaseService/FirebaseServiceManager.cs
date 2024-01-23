@@ -3,7 +3,7 @@ using Firebase.Extensions;
 using System;
 using UnityEngine;
 
-namespace NFramework.Firebase
+namespace NFramework.FirebaseService
 {
     public static class FirebaseServiceManager
     {

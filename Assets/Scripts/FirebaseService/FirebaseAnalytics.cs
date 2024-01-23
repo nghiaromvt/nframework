@@ -1,12 +1,11 @@
-#if USE_FIREBASE && USE_FIREBASE_ANALYTIC
+#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
 using Firebase.Analytics;
-using NFramework.Firebase;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace NFramework.Tracking
+namespace NFramework.FirebaseService
 {
-    public class FirebaseAnalyticsAdapter
+    public class FirebaseAnalytics
     {
         public static bool IsInitialized { get; private set; }
 
@@ -17,9 +16,9 @@ namespace NFramework.Tracking
                 IsInitialized = true;
 
                 if (!string.IsNullOrEmpty(userId))
-                    FirebaseAnalytics.SetUserId(userId);
+                    Firebase.Analytics.FirebaseAnalytics.SetUserId(userId);
 
-                FirebaseAnalytics.LogEvent(FirebaseAnalytics.EventLogin);
+                Firebase.Analytics.FirebaseAnalytics.LogEvent(Firebase.Analytics.FirebaseAnalytics.EventLogin);
             });
         }
 
@@ -29,7 +28,7 @@ namespace NFramework.Tracking
                 return;
 
             var fireBaseParameters = GetFirebaseParameters(parameters);
-            FirebaseAnalytics.LogEvent(eventName, fireBaseParameters);
+            Firebase.Analytics.FirebaseAnalytics.LogEvent(eventName, fireBaseParameters);
 
             var message = $"[FirebaseAnalytics] TrackEvent: {eventName}. Params:\n";
             foreach (var pair in parameters)
@@ -44,7 +43,7 @@ namespace NFramework.Tracking
             if (!FirebaseServiceManager.IsInitialized)
                 return;
 
-            FirebaseAnalytics.LogEvent(eventName);
+            Firebase.Analytics.FirebaseAnalytics.LogEvent(eventName);
             Logger.Log($"[FirebaseAnalytics] TrackEvent: {eventName}");
         }
 

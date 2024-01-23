@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace NFramework.Firebase
+namespace NFramework.FirebaseService
 {
     public static class FirebaseRemoteConfigService
     {
