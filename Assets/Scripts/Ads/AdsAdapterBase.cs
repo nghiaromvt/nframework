@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace NFramework.Ads
 {
     public class AdsAdapterBase : MonoBehaviour
     {
+        public event Action<AdsRevenueData> OnAdsRevenuePaid;
+
         [SerializeField] protected EAdsType _adsTypeUse;
 
         protected Dictionary<EAdsType, AdsShowData> _cachedAdsShowDataDic = new Dictionary<EAdsType, AdsShowData>();
@@ -224,10 +227,7 @@ namespace NFramework.Ads
         public virtual void DestroyBanner() { }
         #endregion
 
-        protected void HandleRevenuePaid(AdsRevenueData data)
-        {
-
-        }
+        protected void InvokeOnAdsRevenuePaidEvent(AdsRevenueData data) => OnAdsRevenuePaid?.Invoke(data);
     }
 }
 

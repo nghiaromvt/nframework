@@ -49,12 +49,22 @@ namespace NFramework.Ads
 
             if (AdsTypeUse.HasFlag(EAdsType.Inter))
                 InitializeReward();
+
+            IronSourceEvents.onImpressionDataReadyEvent += ImpressionDataReadyEvent;
+        }
+
+        private void ImpressionDataReadyEvent(IronSourceImpressionData data)
+        {
+            if (data != null)
+            {
+                InvokeOnAdsRevenuePaidEvent(new AdsRevenueData(AdapterType, "ironSource", data.adNetwork,
+                  data.instanceName, data.adUnit, data.revenue.GetValueOrDefault(), "USD", data.placement));
+            }
         }
 
         #region Inter
         private void InitializeInter()
         {
-            Debug.Log("InitializeInter");
             IronSourceInterstitialEvents.onAdReadyEvent += OnInterLoaded;
             IronSourceInterstitialEvents.onAdLoadFailedEvent += OnInterLoadFailed;
             IronSourceInterstitialEvents.onAdOpenedEvent += OnInterDisplayed;

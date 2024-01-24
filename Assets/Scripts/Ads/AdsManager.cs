@@ -8,6 +8,7 @@ namespace NFramework.Ads
     public class AdsManager : SingletonMono<AdsManager>, ISaveable
     {
         public static event Action<bool> OnIsRemoveAdsChanged;
+        public static event Action<AdsRevenueData> OnAdsRevenuePaid;
         //public static event Action<EAdsAdapterType, RequestShowAdsData> OnInterDisplayed;
         //public static event Action<EAdsAdapterType, RequestShowAdsData> OnInterAttemptShow;
         //public static event Action<EAdsAdapterType, RequestShowAdsData> OnRewarDisplayed;
@@ -52,6 +53,7 @@ namespace NFramework.Ads
             foreach (var adapter in GetComponentsInChildren<AdsAdapterBase>())
             {
                 adapter.Init(config);
+                adapter.OnAdsRevenuePaid += data => OnAdsRevenuePaid?.Invoke(data);
                 AdapterDic.Add(adapter.AdapterType, adapter);
             }
         }
@@ -320,13 +322,27 @@ namespace NFramework.Ads
 
     public class AdsRevenueData
     {
+        public EAdsAdapterType adapterType;
         public string adPlatform;
         public string adSource;
         public string adUnitName;
         public string adFormat;
-        public string value;
+        public double value;
         public string currency;
         public string placement;
+
+        public AdsRevenueData(EAdsAdapterType adapterType, string adPlatform, string adSource, string adUnitName, 
+            string adFormat, double value, string currency, string placement)
+        {
+            this.adPlatform = adPlatform;
+            this.adSource = adSource;
+            this.adUnitName = adUnitName;
+            this.adFormat = adFormat;
+            this.value = value;
+            this.currency = currency;
+            this.placement = placement;
+            this.adapterType = adapterType;
+        }
     }
 }
 

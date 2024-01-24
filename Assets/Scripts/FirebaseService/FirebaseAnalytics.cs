@@ -1,5 +1,7 @@
 #if USE_FIREBASE && USE_FIREBASE_ANALYTICS
 using Firebase.Analytics;
+using NFramework.Ads;
+
 #endif
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,8 +23,22 @@ namespace NFramework.FirebaseService
                     Firebase.Analytics.FirebaseAnalytics.SetUserId(userId);
 
                 Firebase.Analytics.FirebaseAnalytics.LogEvent(Firebase.Analytics.FirebaseAnalytics.EventLogin);
+                AdsManager.OnAdsRevenuePaid += TrackAdImpression;
             });
 #endif
+        }
+
+        private static void TrackAdImpression(AdsRevenueData data)
+        {
+            TrackEvent("ad_impression", new Dictionary<string, object>
+            {
+                { "ad_platform", data.adPlatform },
+                { "ad_source", data.adSource },
+                { "ad_unit_name", data.adUnitName },
+                { "ad_format", data.adFormat },
+                { "currency", data.currency },
+                { "value", data.value }
+            });
         }
 
         public static void TrackEvent(string eventName, Dictionary<string, object> parameters)
