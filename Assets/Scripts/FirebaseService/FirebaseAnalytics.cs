@@ -1,5 +1,6 @@
 #if USE_FIREBASE && USE_FIREBASE_ANALYTICS
 using Firebase.Analytics;
+#endif
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ namespace NFramework.FirebaseService
 
         public static void Init(string userId = null)
         {
+#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
             FirebaseServiceManager.CheckAndTryInit(() =>
             {
                 IsInitialized = true;
@@ -20,6 +22,7 @@ namespace NFramework.FirebaseService
 
                 Firebase.Analytics.FirebaseAnalytics.LogEvent(Firebase.Analytics.FirebaseAnalytics.EventLogin);
             });
+#endif
         }
 
         public static void TrackEvent(string eventName, Dictionary<string, object> parameters)
@@ -27,6 +30,7 @@ namespace NFramework.FirebaseService
             if (!FirebaseServiceManager.IsInitialized)
                 return;
 
+#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
             var fireBaseParameters = GetFirebaseParameters(parameters);
             Firebase.Analytics.FirebaseAnalytics.LogEvent(eventName, fireBaseParameters);
 
@@ -36,6 +40,7 @@ namespace NFramework.FirebaseService
                 message += $"-{pair.Key}: {pair.Value}\n";
             }
             Logger.Log(message);
+#endif
         }
 
         public static void TrackEvent(string eventName)
@@ -43,10 +48,13 @@ namespace NFramework.FirebaseService
             if (!FirebaseServiceManager.IsInitialized)
                 return;
 
+#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
             Firebase.Analytics.FirebaseAnalytics.LogEvent(eventName);
             Logger.Log($"[FirebaseAnalytics] TrackEvent: {eventName}");
+#endif
         }
 
+#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
         private static Parameter[] GetFirebaseParameters(Dictionary<string, object> parameters)
         {
             var firebaseParameters = new List<Parameter>();
@@ -79,6 +87,6 @@ namespace NFramework.FirebaseService
             }
             return firebaseParameters.ToArray();
         }
+#endif
     }
 }
-#endif

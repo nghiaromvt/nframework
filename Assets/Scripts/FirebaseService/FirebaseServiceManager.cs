@@ -1,5 +1,6 @@
 #if USE_FIREBASE
 using Firebase.Extensions;
+#endif
 using System;
 using UnityEngine;
 
@@ -10,7 +11,9 @@ namespace NFramework.FirebaseService
         private static bool _isInitializing;
         private static Action _onInitSuccessCallback;
 
+#if USE_FIREBASE
         public static Firebase.FirebaseApp App { get; private set; }
+#endif
         public static bool IsInitialized { get; private set; }
 
         public static void CheckAndTryInit(Action callback)
@@ -36,6 +39,7 @@ namespace NFramework.FirebaseService
                 }
                 else
                 {
+#if USE_FIREBASE
                     Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
                     {
                         var dependencyStatus = task.Result;
@@ -53,10 +57,10 @@ namespace NFramework.FirebaseService
                         }
                         _isInitializing = false;
                     });
+#endif
                 }
             }
         }
     }
 }
-#endif
 
