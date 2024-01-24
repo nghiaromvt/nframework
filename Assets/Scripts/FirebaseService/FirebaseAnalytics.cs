@@ -23,12 +23,11 @@ namespace NFramework.FirebaseService
                     Firebase.Analytics.FirebaseAnalytics.SetUserId(userId);
 
                 Firebase.Analytics.FirebaseAnalytics.LogEvent(Firebase.Analytics.FirebaseAnalytics.EventLogin);
-                AdsManager.OnAdsRevenuePaid += TrackAdImpression;
             });
 #endif
         }
 
-        private static void TrackAdImpression(AdsRevenueData data)
+        public static void TrackAdImpression(AdsRevenueData data)
         {
             TrackEvent("ad_impression", new Dictionary<string, object>
             {

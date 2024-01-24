@@ -6,13 +6,12 @@ namespace NFramework.Ads
 {
     public class AdsAdapterBase : MonoBehaviour
     {
-        public event Action<AdsRevenueData> OnAdsRevenuePaid;
-
         [SerializeField] protected EAdsType _adsTypeUse;
 
         protected Dictionary<EAdsType, AdsShowData> _cachedAdsShowDataDic = new Dictionary<EAdsType, AdsShowData>();
         protected int _interLoadRetryAttempt;
         protected int _rewardLoadRetryAttempt;
+        protected IAdsCallbackListener _adsCallbackListener;
 
         public virtual EAdsAdapterType AdapterType => EAdsAdapterType.None;
         public bool IsInitialized { get; protected set; }
@@ -23,7 +22,11 @@ namespace NFramework.Ads
         protected virtual void OnApplicationPause(bool isPaused) { }
 
         #region Init
-        public virtual void Init(AdsInitConfig config) => BannerPosition = config.bannerPosition;
+        public virtual void Init(AdsInitConfig config, IAdsCallbackListener adsCallbackListener)
+        {
+            BannerPosition = config.bannerPosition;
+            _adsCallbackListener = adsCallbackListener;
+        }
         #endregion
 
         #region Inter
@@ -226,8 +229,6 @@ namespace NFramework.Ads
 
         public virtual void DestroyBanner() { }
         #endregion
-
-        protected void InvokeOnAdsRevenuePaidEvent(AdsRevenueData data) => OnAdsRevenuePaid?.Invoke(data);
     }
 }
 

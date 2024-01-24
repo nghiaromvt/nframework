@@ -8,12 +8,6 @@ namespace NFramework.Ads
     public class AdsManager : SingletonMono<AdsManager>, ISaveable
     {
         public static event Action<bool> OnIsRemoveAdsChanged;
-        public static event Action<AdsRevenueData> OnAdsRevenuePaid;
-        //public static event Action<EAdsAdapterType, RequestShowAdsData> OnInterDisplayed;
-        //public static event Action<EAdsAdapterType, RequestShowAdsData> OnInterAttemptShow;
-        //public static event Action<EAdsAdapterType, RequestShowAdsData> OnRewarDisplayed;
-        //public static event Action OnRewardAdAttemptShow;
-        //public static event Action<string, string, string, string, double, string, string> OnAdRevenuePaidEvent;
 
         [SerializeField] private SaveData _saveData;
         [SerializeField] private EAdsBannerPosition _defaultBannerPosition = EAdsBannerPosition.BottomCenter;
@@ -43,7 +37,7 @@ namespace NFramework.Ads
             }
         }
 
-        public void Init()
+        public void Init(IAdsCallbackListener adsCallbackListener = null)
         {
             if (DeviceInfo.IsNoAds || _isInitialized)
                 return;
@@ -52,8 +46,7 @@ namespace NFramework.Ads
             var config = new AdsInitConfig { bannerPosition = _defaultBannerPosition };
             foreach (var adapter in GetComponentsInChildren<AdsAdapterBase>())
             {
-                adapter.Init(config);
-                adapter.OnAdsRevenuePaid += data => OnAdsRevenuePaid?.Invoke(data);
+                adapter.Init(config, adsCallbackListener);
                 AdapterDic.Add(adapter.AdapterType, adapter);
             }
         }
@@ -322,7 +315,6 @@ namespace NFramework.Ads
 
     public class AdsRevenueData
     {
-        public EAdsAdapterType adapterType;
         public string adPlatform;
         public string adSource;
         public string adUnitName;
@@ -331,7 +323,7 @@ namespace NFramework.Ads
         public string currency;
         public string placement;
 
-        public AdsRevenueData(EAdsAdapterType adapterType, string adPlatform, string adSource, string adUnitName, 
+        public AdsRevenueData(string adPlatform, string adSource, string adUnitName, 
             string adFormat, double value, string currency, string placement)
         {
             this.adPlatform = adPlatform;
@@ -341,8 +333,21 @@ namespace NFramework.Ads
             this.value = value;
             this.currency = currency;
             this.placement = placement;
-            this.adapterType = adapterType;
         }
+    }
+
+    public interface IAdsCallbackListener
+    {
+        void OnAdsRevenuePaid(AdsRevenueData data);
+        void OnRewardLoaded();
+        void OnRewardClicked();
+        void OnRewardDisplayed();
+        void OnRewardDisplayFailed();
+        void OnRewardRecieved();
+        void OnInterLoadFailed();
+        void OnInterLoaded();
+        void OnInterDisplayed();
+        void OnInterClicked();
     }
 }
 

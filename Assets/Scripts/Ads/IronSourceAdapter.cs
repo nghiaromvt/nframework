@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace NFramework.Ads
@@ -6,6 +7,8 @@ namespace NFramework.Ads
     {
         [SerializeField] private string _appKeyAndroid;
         [SerializeField] private string _appKeyIOS;
+        [Header("Debug")]
+        [SerializeField] private bool _isEnableTestSuite;
 
         public override EAdsAdapterType AdapterType => EAdsAdapterType.IronSource;
         public string AppKey => DeviceInfo.IsAndroid ? _appKeyAndroid : _appKeyIOS;
@@ -17,9 +20,9 @@ namespace NFramework.Ads
             IronSource.Agent.onApplicationPause(isPaused);
         }
 
-        public override void Init(AdsInitConfig config)
+        public override void Init(AdsInitConfig config, IAdsCallbackListener adsCallbackListener)
         {
-            base.Init(config);
+            base.Init(config, adsCallbackListener);
 
             //IronSource.Agent.setMetaData("is_child_directed", "false");
             //IronSource.Agent.setConsent(consentValue);
@@ -28,8 +31,8 @@ namespace NFramework.Ads
             IronSourceEvents.onSdkInitializationCompletedEvent += OnSDKInitialized;
             IronSource.Agent.init(AppKey);
 
-            if (DeviceInfo.IsDevelopment)
-                IronSource.Agent.validateIntegration();
+            if (DeviceInfo.IsDevelopment && _isEnableTestSuite)
+                IronSource.Agent.setMetaData("is_test_suite", "enable");
 
 #if USE_IRONSOURCE_AD_QUALITY
             IronSourceAdQuality.Initialize(AppKey);
@@ -40,6 +43,9 @@ namespace NFramework.Ads
         {
             Logger.Log($"OnSdkInitialized appKey:{AppKey}", this);
             IsInitialized = true;
+
+            if (DeviceInfo.IsDevelopment && _isEnableTestSuite)
+                IronSource.Agent.launchTestSuite();
 
             if (AdsTypeUse.HasFlag(EAdsType.Banner))
                 InitializeBanner();
@@ -57,7 +63,7 @@ namespace NFramework.Ads
         {
             if (data != null)
             {
-                InvokeOnAdsRevenuePaidEvent(new AdsRevenueData(AdapterType, "ironSource", data.adNetwork,
+                _adsCallbackListener?.OnAdsRevenuePaid(new AdsRevenueData("ironSource", data.adNetwork,
                   data.instanceName, data.adUnit, data.revenue.GetValueOrDefault(), "USD", data.placement));
             }
         }
@@ -70,10 +76,17 @@ namespace NFramework.Ads
             IronSourceInterstitialEvents.onAdOpenedEvent += OnInterDisplayed;
             IronSourceInterstitialEvents.onAdShowFailedEvent += OnInterDisplayFailed;
             IronSourceInterstitialEvents.onAdClosedEvent += OnInterHidden;
+            IronSourceInterstitialEvents.onAdClickedEvent += OnInterClicked;
             LoadInter();
         }
 
-        private void OnInterLoaded(IronSourceAdInfo info) => _interLoadRetryAttempt = 0;
+        private void OnInterClicked(IronSourceAdInfo info) => _adsCallbackListener?.OnInterClicked();
+
+        private void OnInterLoaded(IronSourceAdInfo info)
+        {
+            _interLoadRetryAttempt = 0;
+            _adsCallbackListener?.OnInterLoaded();
+        }
 
         private void OnInterLoadFailed(IronSourceError error)
         {
@@ -81,9 +94,14 @@ namespace NFramework.Ads
             _interLoadRetryAttempt++;
             var retryDelay = Mathf.Pow(2, Mathf.Min(6, _interLoadRetryAttempt));
             this.InvokeDelayRealtime(retryDelay, LoadInter);
+            _adsCallbackListener?.OnInterLoadFailed();
         }
 
-        private void OnInterDisplayed(IronSourceAdInfo info) => IsFullscreenAdShowing = true;
+        private void OnInterDisplayed(IronSourceAdInfo info)
+        {
+            IsFullscreenAdShowing = true;
+            _adsCallbackListener?.OnInterDisplayed();
+        }
 
         private void OnInterDisplayFailed(IronSourceError error, IronSourceAdInfo info)
         {
@@ -127,13 +145,23 @@ namespace NFramework.Ads
         {
             IronSourceRewardedVideoEvents.onAdOpenedEvent += OnRewardDisplayed;
             IronSourceRewardedVideoEvents.onAdShowFailedEvent += OnRewardDisplayFailed;
-            IronSourceRewardedVideoEvents.onAdRewardedEvent += OnRecievedReward;
+            IronSourceRewardedVideoEvents.onAdRewardedEvent += OnRewardRecieved;
             IronSourceRewardedVideoEvents.onAdClosedEvent += OnRewardHidden;
             IronSourceRewardedVideoEvents.onAdAvailableEvent += OnRewardAvailable;
             IronSourceRewardedVideoEvents.onAdUnavailableEvent += OnRewardUnavailable;
+            IronSourceRewardedVideoEvents.onAdLoadFailedEvent += OnRewardLoadFailed;
+            IronSourceRewardedVideoEvents.onAdClickedEvent += OnRewardClicked;
         }
 
-        private void OnRewardDisplayed(IronSourceAdInfo info) => IsFullscreenAdShowing = true;
+        private void OnRewardClicked(IronSourcePlacement placement, IronSourceAdInfo info) => _adsCallbackListener?.OnRewardClicked();
+
+        private void OnRewardLoadFailed(IronSourceError error) => Debug.LogError($"OnRewardLoadFailed error:{error}", this);
+
+        private void OnRewardDisplayed(IronSourceAdInfo info)
+        {
+            IsFullscreenAdShowing = true;
+            _adsCallbackListener?.OnRewardDisplayed();
+        }
 
         private void OnRewardDisplayFailed(IronSourceError error, IronSourceAdInfo info)
         {
@@ -144,12 +172,15 @@ namespace NFramework.Ads
                 data.callback?.Invoke(false);
                 _cachedAdsShowDataDic.Remove(EAdsType.Reward);
             }
+            _adsCallbackListener?.OnRewardDisplayFailed();
         }
 
-        private void OnRecievedReward(IronSourcePlacement placement, IronSourceAdInfo info)
+        private void OnRewardRecieved(IronSourcePlacement placement, IronSourceAdInfo info)
         {
             if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Reward, out var data) && data != null)
                 data.haveReward = true;
+
+            _adsCallbackListener.OnRewardRecieved();
         }
 
         private void OnRewardHidden(IronSourceAdInfo info)
@@ -162,7 +193,11 @@ namespace NFramework.Ads
             }
         }
 
-        private void OnRewardAvailable(IronSourceAdInfo info) => Logger.Log($"IsRewardReady:{IsRewardReady()}", this);
+        private void OnRewardAvailable(IronSourceAdInfo info)
+        {
+            Logger.Log($"IsRewardReady:{IsRewardReady()}", this);
+            _adsCallbackListener?.OnRewardLoaded();
+        }
 
         private void OnRewardUnavailable() => Logger.Log($"IsRewardReady:{IsRewardReady()}", this);
 
