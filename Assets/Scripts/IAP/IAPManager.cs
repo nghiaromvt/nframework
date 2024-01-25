@@ -13,7 +13,7 @@ public class IAPManager : SingletonMono<IAPManager>
 #endif
 {
 #if USE_UNITY_PURCHASING
-    public static event Action<Product> OnPurchased;
+    public static event Action<Product, string> OnPurchased;
 #endif
 
     [SerializeField] protected List<IAPProductSO> _iapProductSOs = new List<IAPProductSO>();
@@ -24,6 +24,7 @@ public class IAPManager : SingletonMono<IAPManager>
     private IExtensionProvider _extensions;
     private bool _isPurchaseInProgress;
     private Action<bool> _purchaseCallback;
+    private string _purchaseLocation;
 
     #region Init
     public void Init()
@@ -84,9 +85,10 @@ public class IAPManager : SingletonMono<IAPManager>
     #endregion
 
     #region Purchase
-    public void Purchase(IAPProductSO iapProductSO, Action<bool> callback) => Purchase(iapProductSO.id, callback);
+    public void Purchase(IAPProductSO iapProductSO, Action<bool> callback, string location = "") 
+        => Purchase(iapProductSO.id, callback, location);
 
-    public void Purchase(string iapProductSO, Action<bool> callback)
+    public void Purchase(string iapProductSO, Action<bool> callback, string location = "")
     {
         if (Application.isEditor || DeviceInfo.IsTestIAP)
         {
@@ -108,6 +110,7 @@ public class IAPManager : SingletonMono<IAPManager>
             {
                 _isPurchaseInProgress = true;
                 _purchaseCallback = callback;
+                _purchaseLocation = location;
                 ShowLoadingPayment();
                 NFramework.Logger.Log($"Purchasing product asynchronously: '{product.definition.storeSpecificId}'", this);
                 _controller.InitiatePurchase(product);
@@ -139,7 +142,7 @@ public class IAPManager : SingletonMono<IAPManager>
                 HideLoadingPayment();
                 _purchaseCallback?.Invoke(true);
                 _purchaseCallback = null;
-                OnPurchased?.Invoke(product);
+                OnPurchased?.Invoke(product, _purchaseLocation);
             }
             else
             {
