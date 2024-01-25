@@ -43,24 +43,47 @@ namespace NFramework.Ads
                 return;
 
             _isInitialized = true;
-            var config = new AdsInitConfig { bannerPosition = _defaultBannerPosition };
+            var config = new AdsAdapterConfig { defaultBannerPosition = _defaultBannerPosition, adsCallbackListener = adsCallbackListener };
             foreach (var adapter in GetComponentsInChildren<AdsAdapterBase>())
             {
-                adapter.Init(config, adsCallbackListener);
+                adapter.Init(config);
                 AdapterDic.Add(adapter.AdapterType, adapter);
             }
         }
 
-        public void LoadInter(bool forceAll = true, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        #region Inter
+        public bool IsInterReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        {
+            if (IsRemoveAds || DeviceInfo.IsNoAds)
+                return false;
+
+            if (specificAdapterType == EAdsAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.Inter))
+                        return adapter.IsInterReady();
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    return adapter.IsInterReady();
+            }
+
+            return false;
+        }
+
+        public void LoadInter(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
             if (IsRemoveAds || DeviceInfo.IsNoAds)
                 return;
 
-            if (forceAll)
+            if (specificAdapterType == EAdsAdapterType.None)
             {
                 foreach (var adapter in AdapterDic.Values)
                 {
-                    if (adapter.AdsTypeUse.HasFlag(EAdsType.Banner))
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.Inter))
                         adapter.LoadInter();
                 }
             }
@@ -84,17 +107,41 @@ namespace NFramework.Ads
             else
                 data?.callback?.Invoke(false);
         }
+        #endregion
 
-        public void LoadReward(bool forceAll = true, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        #region Reward
+        public bool IsRewardReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        {
+            if (IsRemoveAds || DeviceInfo.IsNoAds)
+                return false;
+
+            if (specificAdapterType == EAdsAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.Reward))
+                        return adapter.IsRewardReady();
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    return adapter.IsRewardReady();
+            }
+
+            return false;
+        }
+
+        public void LoadReward(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
             if (IsRemoveAds || DeviceInfo.IsNoAds)
                 return;
 
-            if (forceAll)
+            if (specificAdapterType == EAdsAdapterType.None)
             {
                 foreach (var adapter in AdapterDic.Values)
                 {
-                    if (adapter.AdsTypeUse.HasFlag(EAdsType.Banner))
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.Reward))
                         adapter.LoadReward();
                 }
             }
@@ -118,13 +165,15 @@ namespace NFramework.Ads
             else
                 data?.callback?.Invoke(false);
         }
+        #endregion
 
-        public void LoadBanner(bool forceAll = true, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        #region
+        public void LoadBanner(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
             if (IsRemoveAds || DeviceInfo.IsNoAds)
                 return;
 
-            if (forceAll)
+            if (specificAdapterType == EAdsAdapterType.None)
             {
                 foreach (var adapter in AdapterDic.Values)
                 {
@@ -139,12 +188,12 @@ namespace NFramework.Ads
             }
         }
 
-        public void ShowBanner(bool forceAll = true, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        public void ShowBanner(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
             if (IsRemoveAds || DeviceInfo.IsNoAds)
                 return;
 
-            if (forceAll)
+            if (specificAdapterType == EAdsAdapterType.None)
             {
                 foreach (var adapter in AdapterDic.Values)
                 {
@@ -159,9 +208,9 @@ namespace NFramework.Ads
             }
         }
 
-        public void HideBanner(bool forceAll = true, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        public void HideBanner(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (forceAll)
+            if (specificAdapterType == EAdsAdapterType.None)
             {
                 foreach (var adapter in AdapterDic.Values)
                 {
@@ -192,6 +241,71 @@ namespace NFramework.Ads
                     adapter.HideBanner();
             }
         }
+        #endregion
+
+        #region AOA
+        public bool IsAOAReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        {
+            if (IsRemoveAds || DeviceInfo.IsNoAds)
+                return false;
+
+            if (specificAdapterType == EAdsAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.AOA))
+                        return adapter.IsAOAReady();
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    return adapter.IsAOAReady();
+            }
+
+            return false;
+        }
+
+        public void LoadAOA(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        {
+            if (IsRemoveAds || DeviceInfo.IsNoAds)
+                return;
+
+            if (specificAdapterType == EAdsAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.AOA))
+                        adapter.LoadAOA();
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    adapter.LoadAOA();
+            }
+        }
+
+        public void ShowAOA(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        {
+            if (IsRemoveAds || DeviceInfo.IsNoAds || IsFullscreenAdShowing)
+                return;
+
+            if (specificAdapterType == EAdsAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.AOA))
+                        adapter.ShowAOA();
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    adapter.ShowAOA();
+            }
+        }
+        #endregion
 
         private bool TryGetAdapter(EAdsAdapterType specificAdapterType, out AdsAdapterBase adapter)
         {
@@ -256,6 +370,7 @@ namespace NFramework.Ads
         None,
         AppLovin,
         IronSource,
+        AdMob,
     }
 
     [Flags]
@@ -265,7 +380,8 @@ namespace NFramework.Ads
         Banner = 1 << 1,
         Reward = 1 << 2,
         Inter_Reward = 1 << 3,
-        MRec = 1 << 4
+        MRec = 1 << 4,
+        AOA = 1 << 5,
     }
 
     public enum EAdsBannerPosition
@@ -281,16 +397,16 @@ namespace NFramework.Ads
         BottomRight
     }
 
-    public class AdsInitConfig
+    public class AdsAdapterConfig
     {
-        public EAdsBannerPosition bannerPosition;
-        public string userId;
+        public EAdsBannerPosition defaultBannerPosition;
+        public IAdsCallbackListener adsCallbackListener;
 
-        public AdsInitConfig(EAdsBannerPosition bannerPosition = EAdsBannerPosition.BottomCenter,
-            string userId = null)
+        public AdsAdapterConfig(EAdsBannerPosition defaultBannerPosition = EAdsBannerPosition.BottomCenter,
+            IAdsCallbackListener adsCallbackListener = null)
         {
-            this.bannerPosition = bannerPosition;
-            this.userId = userId;
+            this.defaultBannerPosition = defaultBannerPosition;
+            this.adsCallbackListener = adsCallbackListener;
         }
     }
 
@@ -323,7 +439,7 @@ namespace NFramework.Ads
         public string currency;
         public string placement;
 
-        public AdsRevenueData(string adPlatform, string adSource, string adUnitName, 
+        public AdsRevenueData(string adPlatform, string adSource, string adUnitName,
             string adFormat, double value, string currency, string placement)
         {
             this.adPlatform = adPlatform;

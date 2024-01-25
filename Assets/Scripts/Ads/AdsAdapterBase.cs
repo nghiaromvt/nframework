@@ -11,7 +11,8 @@ namespace NFramework.Ads
         protected Dictionary<EAdsType, AdsShowData> _cachedAdsShowDataDic = new Dictionary<EAdsType, AdsShowData>();
         protected int _interLoadRetryAttempt;
         protected int _rewardLoadRetryAttempt;
-        protected IAdsCallbackListener _adsCallbackListener;
+        protected int _aoaLoadRetryAttempt;
+        protected AdsAdapterConfig _config;
 
         public virtual EAdsAdapterType AdapterType => EAdsAdapterType.None;
         public bool IsInitialized { get; protected set; }
@@ -22,10 +23,10 @@ namespace NFramework.Ads
         protected virtual void OnApplicationPause(bool isPaused) { }
 
         #region Init
-        public virtual void Init(AdsInitConfig config, IAdsCallbackListener adsCallbackListener)
+        public virtual void Init(AdsAdapterConfig config)
         {
-            BannerPosition = config.bannerPosition;
-            _adsCallbackListener = adsCallbackListener;
+            BannerPosition = config.defaultBannerPosition;
+            _config = config;
         }
         #endregion
 
@@ -228,6 +229,66 @@ namespace NFramework.Ads
         public virtual void HideBanner() { }
 
         public virtual void DestroyBanner() { }
+        #endregion
+
+        #region AOA
+        public bool IsAOAReady()
+        {
+            if (!IsInitialized)
+            {
+                Logger.LogError($"Adapter didn't initialize", this);
+                return false;
+            }
+
+            if (_adsTypeUse.HasFlag(EAdsType.AOA))
+            {
+                return IsAOAReadySDK();
+            }
+            else
+            {
+                Logger.LogError($"Adapter doesn't handle AOA", this);
+                return false;
+            }
+        }
+
+        protected virtual bool IsAOAReadySDK() => false;
+
+        public void LoadAOA()
+        {
+            if (!IsInitialized)
+            {
+                Logger.LogError($"Adapter didn't initialize", this);
+                return;
+            }
+
+            if (_adsTypeUse.HasFlag(EAdsType.AOA))
+                LoadAOASDK();
+            else
+                Logger.LogError($"Adapter doesn't handle AOA", this);
+        }
+
+        protected virtual void LoadAOASDK() { }
+
+        public void ShowAOA() 
+        {
+            if (!IsInitialized)
+            {
+                Logger.LogError($"Adapter didn't initialize", this);
+                return;
+            }
+
+            if (_adsTypeUse.HasFlag(EAdsType.AOA))
+            {
+                if (IsAOAReady())
+                    ShowAOASDK();
+            }
+            else
+            {
+                Logger.LogError($"Adapter doesn't handle AOA", this);
+            }
+        }
+
+        protected virtual void ShowAOASDK() { }
         #endregion
     }
 }
