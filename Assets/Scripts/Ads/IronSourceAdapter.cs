@@ -8,9 +8,20 @@ namespace NFramework.Ads
         [SerializeField] private string _appKeyIOS;
         [Header("Debug")]
         [SerializeField] private bool _isEnableTestSuite;
+        [SerializeField] private bool _useTestAds;
 
         public override EAdsAdapterType AdapterType => EAdsAdapterType.IronSource;
-        public string AppKey => DeviceInfo.IsAndroid ? _appKeyAndroid : _appKeyIOS;
+
+        public string AppKey 
+        {
+            get 
+            {
+                if (_useTestAds)
+                    return DeviceInfo.IsAndroid ? "85460dcd" : "8545d445";
+                else
+                    return DeviceInfo.IsAndroid ? _appKeyAndroid : _appKeyIOS; 
+            }
+        }
 
 #if USE_IRONSOURCE_ADS
         protected override void OnApplicationPause(bool isPaused)
