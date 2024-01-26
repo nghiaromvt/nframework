@@ -55,16 +55,24 @@ namespace NFramework.Ads
                 AdapterDic.Add(adapter.AdapterType, adapter);
         }
 
-        public void Init(IAdsCallbackListener adsCallbackListener = null)
+        public void Init(EAdsAdapterType specificAdapterType = EAdsAdapterType.None, IAdsCallbackListener adsCallbackListener = null)
         {
             if (DeviceInfo.IsNoAds)
                 return;
 
             var config = new AdsAdapterConfig { defaultBannerPosition = _defaultBannerPosition, adsCallbackListener = adsCallbackListener };
-            foreach (var adapter in AdapterDic.Values)
+            if (specificAdapterType == EAdsAdapterType.None)
             {
-                adapter.Init(config);
-                //AdapterDic.Add(adapter.AdapterType, adapter);
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (!adapter.IsInitialized)
+                        adapter.Init(config);
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter) && !adapter.IsInitialized)
+                    adapter.Init(config);
             }
         }
 
