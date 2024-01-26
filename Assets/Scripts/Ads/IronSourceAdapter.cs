@@ -142,7 +142,7 @@ namespace NFramework.Ads
             LoadInter();
         }
 
-        protected override bool IsInterReadySDK() => IronSource.Agent.isInterstitialReady();
+        protected override bool IsInterReadySDK() => Application.isEditor ? true : IronSource.Agent.isInterstitialReady();
 
         protected override void LoadInterSDK()
         {
@@ -153,7 +153,15 @@ namespace NFramework.Ads
         protected override void ShowInterSDK()
         {
             base.ShowInterSDK();
-            IronSource.Agent.showInterstitial();
+            if (Application.isEditor)
+            {
+                OnInterDisplayed(null);
+                OnInterHidden(null);
+            }
+            else
+            {
+                IronSource.Agent.showInterstitial();
+            }
         }
         #endregion
 
@@ -219,7 +227,7 @@ namespace NFramework.Ads
 
         private void OnRewardUnavailable() => Logger.Log($"IsRewardReady:{IsRewardReady()}", this);
 
-        protected override bool IsRewardReadySDK() => IronSource.Agent.isRewardedVideoAvailable();
+        protected override bool IsRewardReadySDK() => Application.isEditor ? true : IronSource.Agent.isRewardedVideoAvailable();
 
         protected override void LoadRewardSDK()
         {
@@ -230,7 +238,16 @@ namespace NFramework.Ads
         protected override void ShowRewardSDK()
         {
             base.ShowRewardSDK();
-            IronSource.Agent.showRewardedVideo();
+            if (Application.isEditor)
+            {
+                OnRewardDisplayed(null);
+                OnRewardRecieved(null, null);
+                OnRewardHidden(null);
+            }
+            else
+            {
+                IronSource.Agent.showRewardedVideo();
+            }
         }
         #endregion
 
