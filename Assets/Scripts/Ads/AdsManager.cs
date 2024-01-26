@@ -12,10 +12,8 @@ namespace NFramework.Ads
         [SerializeField] private SaveData _saveData;
         [SerializeField] private EAdsBannerPosition _defaultBannerPosition = EAdsBannerPosition.BottomCenter;
 
-        private bool _isInitialized;
-
         public Dictionary<EAdsAdapterType, AdsAdapterBase> AdapterDic { get; private set; } = new Dictionary<EAdsAdapterType, AdsAdapterBase>();
-        public bool IsInitialized => _isInitialized && !AdapterDic.Values.Any(x => !x.IsInitialized);
+        public bool IsAllAdapterInitialized => !AdapterDic.Values.Any(x => !x.IsInitialized);
         public bool IsFullscreenAdShowing => AdapterDic.Values.Any(x => x.IsFullscreenAdShowing);
 
         public bool IsRemoveAds
@@ -37,17 +35,36 @@ namespace NFramework.Ads
             }
         }
 
+        public EConsentStatus ConsentStatus
+        {
+            get => _saveData.consentStatus;
+            set
+            {
+                if (_saveData.consentStatus != value)
+                {
+                    _saveData.consentStatus = value;
+                    DataChanged = true;
+                }
+            }
+        }
+
+        protected override void Awake()
+        {
+            base.Awake();
+            foreach (var adapter in GetComponentsInChildren<AdsAdapterBase>())
+                AdapterDic.Add(adapter.AdapterType, adapter);
+        }
+
         public void Init(IAdsCallbackListener adsCallbackListener = null)
         {
-            if (DeviceInfo.IsNoAds || _isInitialized)
+            if (DeviceInfo.IsNoAds)
                 return;
 
-            _isInitialized = true;
             var config = new AdsAdapterConfig { defaultBannerPosition = _defaultBannerPosition, adsCallbackListener = adsCallbackListener };
-            foreach (var adapter in GetComponentsInChildren<AdsAdapterBase>())
+            foreach (var adapter in AdapterDic.Values)
             {
                 adapter.Init(config);
-                AdapterDic.Add(adapter.AdapterType, adapter);
+                //AdapterDic.Add(adapter.AdapterType, adapter);
             }
         }
 
@@ -307,7 +324,7 @@ namespace NFramework.Ads
         }
         #endregion
 
-        private bool TryGetAdapter(EAdsAdapterType specificAdapterType, out AdsAdapterBase adapter)
+        public bool TryGetAdapter(EAdsAdapterType specificAdapterType, out AdsAdapterBase adapter)
         {
             adapter = null;
             if (AdapterDic.Count == 0)
@@ -340,6 +357,7 @@ namespace NFramework.Ads
         public class SaveData
         {
             public bool isRemoveAds;
+            public EConsentStatus consentStatus;
         }
 
         public string SaveKey => "AdsManager";
@@ -395,6 +413,13 @@ namespace NFramework.Ads
         BottomLeft,
         BottomCenter,
         BottomRight
+    }
+
+    public enum EConsentStatus
+    {
+        Unknown,
+        Yes,
+        No
     }
 
     public class AdsAdapterConfig

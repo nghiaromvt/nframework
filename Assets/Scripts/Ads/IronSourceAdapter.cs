@@ -40,9 +40,19 @@ namespace NFramework.Ads
             }
             else
             {
-                //IronSource.Agent.setMetaData("is_child_directed", "false");
-                //IronSource.Agent.setConsent(consentValue);
+                IronSource.Agent.setMetaData("is_child_directed", "false");
                 IronSource.Agent.shouldTrackNetworkState(true);
+
+
+                if (AdsManager.I.ConsentStatus == EConsentStatus.Unknown)
+                {
+                    Debug.LogError($"IronSource cannot init due to ConsentStatus = Unknown", this);
+                    return;
+                }
+                else
+                {
+                    IronSource.Agent.setConsent(AdsManager.I.ConsentStatus == EConsentStatus.Yes);
+                }
 
                 IronSourceEvents.onSdkInitializationCompletedEvent += OnSDKInitialized;
                 IronSource.Agent.init(AppKey);
