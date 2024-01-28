@@ -95,11 +95,13 @@ namespace NFramework.Ads
             };
             ad.OnAdFullScreenContentClosed += () =>
             {
+                DelayResetIsFullscreenAdShowing();
                 LoadAOA();
             };
             ad.OnAdFullScreenContentFailed += (AdError error) =>
             {
                 Debug.LogError("App open ad failed to open full screen content with error : " + error);
+                DelayResetIsFullscreenAdShowing();
                 LoadAOA();
             };
         }

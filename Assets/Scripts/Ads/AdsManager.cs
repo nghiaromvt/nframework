@@ -8,6 +8,7 @@ namespace NFramework.Ads
     public class AdsManager : SingletonMono<AdsManager>, ISaveable
     {
         public static event Action<bool> OnIsRemoveAdsChanged;
+        public static event Action<EConsentStatus> OnConsentStatusChanged;
 
         [SerializeField] private SaveData _saveData;
         [SerializeField] private EAdsBannerPosition _defaultBannerPosition = EAdsBannerPosition.BottomCenter;
@@ -30,6 +31,7 @@ namespace NFramework.Ads
                     if (value)
                         DestroyBanner(true);
 
+                    Logger.Log($"IsRemoveAds:{IsRemoveAds}");
                     OnIsRemoveAdsChanged?.Invoke(value);
                 }
             }
@@ -42,8 +44,10 @@ namespace NFramework.Ads
             {
                 if (_saveData.consentStatus != value)
                 {
+                    Logger.Log($"ConsentStatus:{value}");
                     _saveData.consentStatus = value;
                     DataChanged = true;
+                    OnConsentStatusChanged?.Invoke(value);
                 }
             }
         }
@@ -127,6 +131,12 @@ namespace NFramework.Ads
                 return;
             }
 
+            if (IsFullscreenAdShowing)
+            {
+                data?.callback?.Invoke(false);
+                return;
+            }    
+
             if (TryGetAdapter(specificAdapterType, out var adapter))
                 adapter.ShowInter(data);
             else
@@ -182,6 +192,12 @@ namespace NFramework.Ads
             if (IsRemoveAds || DeviceInfo.IsNoAds)
             {
                 data?.callback?.Invoke(true);
+                return;
+            }
+
+            if (IsFullscreenAdShowing)
+            {
+                data?.callback?.Invoke(false);
                 return;
             }
 

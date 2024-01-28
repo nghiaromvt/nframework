@@ -13,6 +13,7 @@ namespace NFramework.Ads
         protected int _rewardLoadRetryAttempt;
         protected int _aoaLoadRetryAttempt;
         protected AdsAdapterConfig _config;
+        private Coroutine _crDelayResetIsFullscreenAdShowing;
 
         public virtual EAdsAdapterType AdapterType => EAdsAdapterType.None;
         public bool IsInitialized { get; protected set; }
@@ -82,6 +83,7 @@ namespace NFramework.Ads
                 if (IsInterReady())
                 {
                     _cachedAdsShowDataDic[EAdsType.Inter] = data;
+                    IsFullscreenAdShowing = true;
                     ShowInterSDK();
                 }
                 else
@@ -151,6 +153,7 @@ namespace NFramework.Ads
                 if (IsRewardReady())
                 {
                     _cachedAdsShowDataDic[EAdsType.Reward] = data;
+                    IsFullscreenAdShowing = true;
                     ShowRewardSDK();
                 }
                 else
@@ -166,31 +169,6 @@ namespace NFramework.Ads
         }
 
         protected virtual void ShowRewardSDK() { }
-
-        protected void HandleRewardLoaded(string errorMessage = null) =>
-            Logger.Log($"HandleRewardLoaded: {errorMessage}", this);
-
-        protected void HandleRewardFailedToLoad() { }
-
-        protected void HandleRewardDisplayed() => IsFullscreenAdShowing = true;
-
-        protected void HandleRewardFailedToDisplay(string errorMessage = null)
-        {
-            Logger.Log($"HandleRewardFailedToDisplay: {errorMessage}", this);
-            IsFullscreenAdShowing = false;
-            _cachedAdsShowDataDic[EAdsType.Reward].callback?.Invoke(false);
-        }
-
-        protected void HandleReceivedReward() => _cachedAdsShowDataDic[EAdsType.Reward].haveReward = true;
-
-        protected void HandleRewardHidden()
-        {
-            IsFullscreenAdShowing = false;
-            var adsShowData = _cachedAdsShowDataDic[EAdsType.Reward];
-            adsShowData.callback?.Invoke(adsShowData.haveReward);
-        }
-
-        protected void HandleRewardClicked() { }
         #endregion
 
         #region Banner
@@ -280,7 +258,10 @@ namespace NFramework.Ads
             if (_adsTypeUse.HasFlag(EAdsType.AOA))
             {
                 if (IsAOAReady())
+                {
+                    IsFullscreenAdShowing = true;
                     ShowAOASDK();
+                }
             }
             else
             {
@@ -290,6 +271,18 @@ namespace NFramework.Ads
 
         protected virtual void ShowAOASDK() { }
         #endregion
+
+        protected void DelayResetIsFullscreenAdShowing()
+        {
+            if (_crDelayResetIsFullscreenAdShowing != null)
+                StopCoroutine(_crDelayResetIsFullscreenAdShowing);
+
+            _crDelayResetIsFullscreenAdShowing = this.InvokeDelayRealtime(1f, () =>
+            {
+                IsFullscreenAdShowing = false;
+                _crDelayResetIsFullscreenAdShowing = null;
+            });
+        }
     }
 }
 

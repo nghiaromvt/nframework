@@ -51,9 +51,10 @@ namespace NFramework.Ads
                 }
                 else
                 {
-                    IronSource.Agent.setConsent(AdsManager.I.ConsentStatus == EConsentStatus.Yes);
+                    SetConsent(AdsManager.I.ConsentStatus);
                 }
 
+                AdsManager.OnConsentStatusChanged += SetConsent;
                 IronSourceEvents.onSdkInitializationCompletedEvent += OnSDKInitialized;
                 IronSource.Agent.init(AppKey);
 
@@ -85,6 +86,8 @@ namespace NFramework.Ads
 
             IronSourceEvents.onImpressionDataReadyEvent += ImpressionDataReadyEvent;
         }
+
+        private void SetConsent(EConsentStatus status) => IronSource.Agent.setConsent(AdsManager.I.ConsentStatus == EConsentStatus.Yes);
 
         private void ImpressionDataReadyEvent(IronSourceImpressionData data)
         {
@@ -126,13 +129,13 @@ namespace NFramework.Ads
 
         private void OnInterDisplayed(IronSourceAdInfo info)
         {
-            IsFullscreenAdShowing = true;
+            Debug.Log($"OnInterDisplayed IsFullscreenAdShowing:{IsFullscreenAdShowing}");
             _config.adsCallbackListener?.OnInterDisplayed();
         }
 
         private void OnInterDisplayFailed(IronSourceError error, IronSourceAdInfo info)
         {
-            IsFullscreenAdShowing = false;
+            DelayResetIsFullscreenAdShowing();
             if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Inter, out var data) && data != null)
             {
                 data.callback?.Invoke(false);
@@ -143,7 +146,7 @@ namespace NFramework.Ads
 
         private void OnInterHidden(IronSourceAdInfo info)
         {
-            IsFullscreenAdShowing = false;
+            DelayResetIsFullscreenAdShowing();
             if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Inter, out var data) && data != null)
             {
                 data.callback?.Invoke(true);
@@ -195,14 +198,14 @@ namespace NFramework.Ads
 
         private void OnRewardDisplayed(IronSourceAdInfo info)
         {
-            IsFullscreenAdShowing = true;
+            Debug.Log($"OnRewardDisplayed IsFullscreenAdShowing:{IsFullscreenAdShowing}");
             _config.adsCallbackListener?.OnRewardDisplayed();
         }
 
         private void OnRewardDisplayFailed(IronSourceError error, IronSourceAdInfo info)
         {
             Debug.LogError($"OnRewardDisplayFailed error:{error} info:{info}", this);
-            IsFullscreenAdShowing = false;
+            DelayResetIsFullscreenAdShowing();
             if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Reward, out var data) && data != null)
             {
                 data.callback?.Invoke(false);
@@ -216,12 +219,12 @@ namespace NFramework.Ads
             if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Reward, out var data) && data != null)
                 data.haveReward = true;
 
-            _config.adsCallbackListener.OnRewardRecieved();
+            _config.adsCallbackListener?.OnRewardRecieved();
         }
 
         private void OnRewardHidden(IronSourceAdInfo info)
         {
-            IsFullscreenAdShowing = false;
+            DelayResetIsFullscreenAdShowing();
             if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Reward, out var data) && data != null)
             {
                 data.callback?.Invoke(data.haveReward);
