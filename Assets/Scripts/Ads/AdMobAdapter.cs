@@ -71,14 +71,11 @@ namespace NFramework.Ads
             {
                 if (error != null || ad == null)
                 {
-                    Debug.LogError("app open ad failed to load an ad with error : " + error);
-                    _aoaLoadRetryAttempt++;
-                    var retryDelay = Mathf.Pow(2, Mathf.Min(6, _aoaLoadRetryAttempt));
-                    this.InvokeDelayRealtime(retryDelay, LoadAOA);
+                    HandleAOALoadFailed(error.ToString());   
                 }
                 else
                 {
-                    _aoaLoadRetryAttempt = 0;
+                    HandleAOALoaded();
                     _aoaExpireTime = DateTime.Now + TimeSpan.FromHours(4);
                     _appOpenAd = ad;
                     RegisterAOAEventHandlers(ad);
@@ -88,22 +85,12 @@ namespace NFramework.Ads
 
         private void RegisterAOAEventHandlers(AppOpenAd ad)
         {
-            ad.OnAdPaid += (AdValue adValue) =>
-            {
-                _config.adsCallbackListener?.OnAdsRevenuePaid(new AdsRevenueData("adMob", "",
+            ad.OnAdPaid += (AdValue adValue) => HandleAdsRevenuePaid(new AdsRevenueData("adMob", "",
                     "", "", adValue.Value, adValue.CurrencyCode, ""));
-            };
-            ad.OnAdFullScreenContentClosed += () =>
-            {
-                DelayResetIsFullscreenAdShowing();
-                LoadAOA();
-            };
-            ad.OnAdFullScreenContentFailed += (AdError error) =>
-            {
-                Debug.LogError("App open ad failed to open full screen content with error : " + error);
-                DelayResetIsFullscreenAdShowing();
-                LoadAOA();
-            };
+
+
+            ad.OnAdFullScreenContentClosed += HandleAOAHidden;
+            ad.OnAdFullScreenContentFailed += error => HandleAOADisplayFailed(error.ToString());
         }
 
         protected override void ShowAOASDK()

@@ -84,6 +84,7 @@ namespace NFramework.Ads
                 {
                     _cachedAdsShowDataDic[EAdsType.Inter] = data;
                     IsFullscreenAdShowing = true;
+                    _config.adsCallbackListener?.OnRequestShowInter();
                     ShowInterSDK();
                 }
                 else
@@ -99,6 +100,48 @@ namespace NFramework.Ads
         }
 
         protected virtual void ShowInterSDK() { }
+
+        protected void HandleInterClicked() => _config.adsCallbackListener?.OnInterClicked();
+
+        protected void HandleInterLoaded()
+        {
+            _interLoadRetryAttempt = 0;
+            _config.adsCallbackListener?.OnInterLoaded();
+        }
+
+        protected void HandleInterLoadFailed(string error = "")
+        {
+            Debug.LogError($"HandleInterLoadFailed error:{error}", this);
+            _interLoadRetryAttempt++;
+            var retryDelay = Mathf.Pow(2, Mathf.Min(6, _interLoadRetryAttempt));
+            this.InvokeDelayRealtime(retryDelay, LoadInter);
+            _config.adsCallbackListener?.OnInterLoadFailed();
+        }
+
+        protected void HandleInterDisplayed() => _config.adsCallbackListener?.OnInterDisplayed();
+
+        protected void HandleInterDisplayFailed(string error = "")
+        {
+            Debug.LogError($"HandleInterDisplayFailed error:{error}", this);
+            DelayResetIsFullscreenAdShowing();
+            if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Inter, out var data) && data != null)
+            {
+                data.callback?.Invoke(false);
+                _cachedAdsShowDataDic.Remove(EAdsType.Inter);
+            }
+            LoadInter();
+        }
+
+        protected void HandleInterHidden()
+        {
+            DelayResetIsFullscreenAdShowing();
+            if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Inter, out var data) && data != null)
+            {
+                data.callback?.Invoke(true);
+                _cachedAdsShowDataDic.Remove(EAdsType.Inter);
+            }
+            LoadInter();
+        }
         #endregion
 
         #region Reward
@@ -154,6 +197,7 @@ namespace NFramework.Ads
                 {
                     _cachedAdsShowDataDic[EAdsType.Reward] = data;
                     IsFullscreenAdShowing = true;
+                    _config.adsCallbackListener?.OnRequestShowReward();
                     ShowRewardSDK();
                 }
                 else
@@ -169,6 +213,51 @@ namespace NFramework.Ads
         }
 
         protected virtual void ShowRewardSDK() { }
+
+        protected void HandleRewardClicked() => _config.adsCallbackListener?.OnRewardClicked();
+
+        protected void HandleRewardLoadFailed(string error = "")
+        {
+            Debug.LogError($"HandleRewardLoadFailed error:{error}", this);
+            _rewardLoadRetryAttempt++;
+            var retryDelay = Mathf.Pow(2, Mathf.Min(6, _rewardLoadRetryAttempt));
+            this.InvokeDelayRealtime(retryDelay, LoadReward);
+            _config.adsCallbackListener?.OnRewardLoadFailed();
+        }
+
+        protected void HandleRewardDisplayed() => _config.adsCallbackListener?.OnRewardDisplayed();
+
+        protected void HandleRewardDisplayFailed(string error = "")
+        {
+            Debug.LogError($"HandleRewardDisplayFailed error:{error}", this);
+            DelayResetIsFullscreenAdShowing();
+            if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Reward, out var data) && data != null)
+            {
+                data.callback?.Invoke(false);
+                _cachedAdsShowDataDic.Remove(EAdsType.Reward);
+            }
+            _config.adsCallbackListener?.OnRewardDisplayFailed();
+        }
+
+        protected void HandleRewardRecieved()
+        {
+            if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Reward, out var data) && data != null)
+                data.haveReward = true;
+
+            _config.adsCallbackListener?.OnRewardRecieved();
+        }
+
+        protected void HandleRewardHidden()
+        {
+            DelayResetIsFullscreenAdShowing();
+            if (_cachedAdsShowDataDic.TryGetValue(EAdsType.Reward, out var data) && data != null)
+            {
+                data.callback?.Invoke(data.haveReward);
+                _cachedAdsShowDataDic.Remove(EAdsType.Reward);
+            }
+        }
+
+        protected void HandleRewardAvailable() => _config.adsCallbackListener?.OnRewardLoaded();
         #endregion
 
         #region Banner
@@ -207,6 +296,8 @@ namespace NFramework.Ads
         public virtual void HideBanner() { }
 
         public virtual void DestroyBanner() { }
+
+        protected void HandleBannerLoadFailed(string error = "") => Debug.LogError($"HandleBannerLoadFailed error:{error}", this);
         #endregion
 
         #region AOA
@@ -270,7 +361,34 @@ namespace NFramework.Ads
         }
 
         protected virtual void ShowAOASDK() { }
+
+        protected void HandleAOALoadFailed(string error = "")
+        {
+            Debug.LogError($"HandleAOALoadFailed error:{error}", this);
+            _aoaLoadRetryAttempt++;
+            var retryDelay = Mathf.Pow(2, Mathf.Min(6, _aoaLoadRetryAttempt));
+            this.InvokeDelayRealtime(retryDelay, LoadAOA);
+        }
+
+        protected void HandleAOALoaded() => _aoaLoadRetryAttempt = 0;
+
+        protected void HandleAOADisplayFailed(string error = "")
+        {
+            Debug.LogError($"HandleAOADisplayFailed error:{error}");
+            DelayResetIsFullscreenAdShowing();
+            LoadAOA();
+        }
+
+        protected void HandleAOAHidden()
+        {
+            DelayResetIsFullscreenAdShowing();
+            LoadAOA();
+        }
+
+        protected void HandleAOADisplayed() => _config.adsCallbackListener?.OnAOADisplayed();
         #endregion
+
+        protected void HandleAdsRevenuePaid(AdsRevenueData data) => _config.adsCallbackListener?.OnAdsRevenuePaid(data);
 
         protected void DelayResetIsFullscreenAdShowing()
         {

@@ -504,15 +504,19 @@ namespace NFramework.Ads
     public interface IAdsCallbackListener
     {
         void OnAdsRevenuePaid(AdsRevenueData data);
+        void OnRequestShowReward();
         void OnRewardLoaded();
+        void OnRewardLoadFailed();
         void OnRewardClicked();
         void OnRewardDisplayed();
         void OnRewardDisplayFailed();
         void OnRewardRecieved();
+        void OnRequestShowInter();
         void OnInterLoadFailed();
         void OnInterLoaded();
         void OnInterDisplayed();
         void OnInterClicked();
+        void OnAOADisplayed();
     }
 }
 
