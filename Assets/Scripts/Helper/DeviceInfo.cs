@@ -96,6 +96,17 @@ namespace NFramework
             }
         }
 
+        public static bool IsNoTracking
+        {
+            get
+            {
+#if NO_TRACKING
+                return true;
+#endif
+                return false;
+            }
+        }
+
         public static bool HasInternet() => Application.internetReachability != NetworkReachability.NotReachable;
 
         public static List<string> GetLocalIPAddress()

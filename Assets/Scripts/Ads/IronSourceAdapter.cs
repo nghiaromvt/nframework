@@ -89,6 +89,7 @@ namespace NFramework.Ads
         }
 
         private void SetConsent(EConsentStatus status) => IronSource.Agent.setConsent(AdsManager.I.ConsentStatus == EConsentStatus.Yes);
+
         #region Inter
         private void InitializeInter()
         {

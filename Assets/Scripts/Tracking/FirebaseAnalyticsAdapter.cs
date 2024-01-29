@@ -1,75 +1,40 @@
 #if USE_FIREBASE && USE_FIREBASE_ANALYTICS
 using Firebase.Analytics;
-using NFramework.Ads;
-
 #endif
+using NFramework.FirebaseService;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace NFramework.FirebaseService
+namespace NFramework.Tracking
 {
-    public class FirebaseAnalytics
+    public class FirebaseAnalyticsAdapter : TrackingAdapterBase
     {
-        public static bool IsInitialized { get; private set; }
+        public override ETrackingAdapterType AdapterType => ETrackingAdapterType.FirebaseAnalytics;
 
-        public static void Init(string userId = null)
-        {
 #if USE_FIREBASE && USE_FIREBASE_ANALYTICS
+        public override void Init(TrackingAdapterConfig config)
+        {
+            base.Init(config);
             FirebaseServiceManager.CheckAndTryInit(() =>
             {
                 IsInitialized = true;
-
-                if (!string.IsNullOrEmpty(userId))
-                    Firebase.Analytics.FirebaseAnalytics.SetUserId(userId);
-
-                Firebase.Analytics.FirebaseAnalytics.LogEvent(Firebase.Analytics.FirebaseAnalytics.EventLogin);
-            });
-#endif
-        }
-
-        public static void TrackAdImpression(AdsRevenueData data)
-        {
-            TrackEvent("ad_impression", new Dictionary<string, object>
-            {
-                { "ad_platform", data.adPlatform },
-                { "ad_source", data.adSource },
-                { "ad_unit_name", data.adUnitName },
-                { "ad_format", data.adFormat },
-                { "currency", data.currency },
-                { "value", data.value }
+                FirebaseAnalytics.LogEvent(FirebaseAnalytics.EventLogin);
             });
         }
 
-        public static void TrackEvent(string eventName, Dictionary<string, object> parameters)
+        protected override void TrackEventSDK(string eventName)
         {
-            if (!FirebaseServiceManager.IsInitialized)
-                return;
+            base.TrackEventSDK(eventName);
+            FirebaseAnalytics.LogEvent(eventName);
+        }
 
-#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
+        protected override void TrackEventSDK(string eventName, Dictionary<string, object> parameters)
+        {
+            base.TrackEventSDK(eventName, parameters);
             var fireBaseParameters = GetFirebaseParameters(parameters);
-            Firebase.Analytics.FirebaseAnalytics.LogEvent(eventName, fireBaseParameters);
-
-            var message = $"[FirebaseAnalytics] TrackEvent: {eventName}. Params:\n";
-            foreach (var pair in parameters)
-            {
-                message += $"-{pair.Key}: {pair.Value}\n";
-            }
-            Logger.Log(message);
-#endif
+            FirebaseAnalytics.LogEvent(eventName, fireBaseParameters);
         }
 
-        public static void TrackEvent(string eventName)
-        {
-            if (!FirebaseServiceManager.IsInitialized)
-                return;
-
-#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
-            Firebase.Analytics.FirebaseAnalytics.LogEvent(eventName);
-            Logger.Log($"[FirebaseAnalytics] TrackEvent: {eventName}");
-#endif
-        }
-
-#if USE_FIREBASE && USE_FIREBASE_ANALYTICS
         private static Parameter[] GetFirebaseParameters(Dictionary<string, object> parameters)
         {
             var firebaseParameters = new List<Parameter>();
