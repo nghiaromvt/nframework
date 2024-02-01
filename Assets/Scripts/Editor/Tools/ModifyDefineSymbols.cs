@@ -18,6 +18,7 @@ namespace NFramework.Editors
         public const string NO_TRACKING_SYMBOL = "NO_TRACKING";
         public const string FIREBASE_ANALYTICS_SYMBOL = "USE_FIREBASE_ANALYTICS";
         public const string APPSFLYER_SYMBOL = "USE_APPSFLYER";
+        public const string FIREBASE_CRASHLYTICS_SYMBOL = "USE_FIREBASE_CRASHLYTICS";
 
         [Separator("Development")]
         [SerializeField] private bool _isDevelopment;
@@ -35,6 +36,7 @@ namespace NFramework.Editors
         [SerializeField] private bool _isNoTracking;
         [SerializeField] private bool _useFirebaseAnalytics;
         [SerializeField] private bool _useAppsFlyer;
+        [SerializeField] private bool _useFirebaseCrashlytics;
 
 
         [MenuItem("NFramework/Modify Define Symbols", priority = 100)]
@@ -57,7 +59,8 @@ namespace NFramework.Editors
             wizard._useAdMobAds = scriptingDefinesStringList.Contains(ADMOB_ADS_SYMBOL);
             wizard._isNoTracking = scriptingDefinesStringList.Contains(NO_TRACKING_SYMBOL);
             wizard._useFirebaseAnalytics = scriptingDefinesStringList.Contains(FIREBASE_ANALYTICS_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
-            wizard._useAppsFlyer = scriptingDefinesStringList.Contains(APPSFLYER_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
+            wizard._useAppsFlyer = scriptingDefinesStringList.Contains(APPSFLYER_SYMBOL);
+            wizard._useFirebaseCrashlytics = scriptingDefinesStringList.Contains(FIREBASE_CRASHLYTICS_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
         }
 
         private void OnWizardCreate()
@@ -70,7 +73,7 @@ namespace NFramework.Editors
             else
                 scriptingDefinesStringHashSet.Remove(DEVELOPMENT_SYMBOL);
 
-            if (_useFirebaseRemoteConfig || _useFirebaseAnalytics)
+            if (_useFirebaseRemoteConfig || _useFirebaseAnalytics || _useFirebaseCrashlytics)
                 scriptingDefinesStringHashSet.Add(FIREBASE_SYMBOL);
             else
                 scriptingDefinesStringHashSet.Remove(FIREBASE_SYMBOL);
@@ -128,6 +131,11 @@ namespace NFramework.Editors
                 scriptingDefinesStringHashSet.Add(APPSFLYER_SYMBOL);
             else
                 scriptingDefinesStringHashSet.Remove(APPSFLYER_SYMBOL);
+
+            if (_useFirebaseCrashlytics)
+                scriptingDefinesStringHashSet.Add(FIREBASE_CRASHLYTICS_SYMBOL);
+            else
+                scriptingDefinesStringHashSet.Remove(FIREBASE_CRASHLYTICS_SYMBOL);
 
             PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, string.Join(";", scriptingDefinesStringHashSet.ToArray()));
         }

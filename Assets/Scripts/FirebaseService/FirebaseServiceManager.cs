@@ -1,5 +1,8 @@
 #if USE_FIREBASE
 using Firebase.Extensions;
+#if USE_FIREBASE_CRASHLYTICS
+using Firebase.Crashlytics;
+#endif
 #endif
 using System;
 using UnityEngine;
@@ -47,6 +50,9 @@ namespace NFramework.FirebaseService
                         {
                             IsInitialized = true;
                             App = Firebase.FirebaseApp.DefaultInstance;
+#if USE_FIREBASE_CRASHLYTICS
+                            Crashlytics.ReportUncaughtExceptionsAsFatal = true;
+#endif
                             _onInitSuccessCallback?.Invoke();
                         }
                         else
@@ -58,8 +64,8 @@ namespace NFramework.FirebaseService
                         _isInitializing = false;
                     });
 #endif
-                }
-            }
+                        }
+                    }
         }
     }
 }
