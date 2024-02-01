@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace NFramework.Tracking
 {
-    public partial class TrackingManager : SingletonMono<TrackingManager>
+    public class TrackingManager : SingletonMono<TrackingManager>
     {
         public Dictionary<ETrackingAdapterType, TrackingAdapterBase> AdapterDic { get; private set; } = new Dictionary<ETrackingAdapterType, TrackingAdapterBase>();
 
