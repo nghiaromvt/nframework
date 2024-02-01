@@ -43,7 +43,6 @@ namespace NFramework.Ads
                 IronSource.Agent.setMetaData("is_child_directed", "false");
                 IronSource.Agent.shouldTrackNetworkState(true);
 
-
                 if (AdsManager.I.ConsentStatus == EConsentStatus.Unknown)
                 {
                     Debug.LogError($"IronSource cannot init due to ConsentStatus = Unknown", this);
