@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace NFramework
+namespace NFramework.IAP
 {
     [CreateAssetMenu(menuName = "ScriptableObject/IAPProductSO")]
     public class IAPProductSO : ScriptableObject
