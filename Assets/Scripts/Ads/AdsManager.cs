@@ -48,6 +48,7 @@ namespace NFramework.Ads
                     _saveData.consentStatus = value;
                     DataChanged = true;
                     OnConsentStatusChanged?.Invoke(value);
+                    SaveManager.I.Save();
                 }
             }
         }
