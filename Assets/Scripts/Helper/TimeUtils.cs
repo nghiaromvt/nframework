@@ -7,7 +7,9 @@ namespace NFramework
         public static string SecondsToTimeString(double seconds)
         {
             var timeSpan = TimeSpan.FromSeconds(seconds);
-            return timeSpan.ToString("hh':'mm':'ss");
+            var totalHours = timeSpan.TotalHours;
+            var remainingHours = (int)totalHours % 24;
+            return string.Format("{0:00}:{1:00}:{2:00}", remainingHours, timeSpan.Minutes, timeSpan.Seconds);
         }
 
         public static DateTime GetCurrentTime(bool utc = false) => utc ? DateTime.UtcNow : DateTime.Now;
