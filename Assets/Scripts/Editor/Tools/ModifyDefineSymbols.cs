@@ -19,6 +19,8 @@ namespace NFramework.Editors
         public const string FIREBASE_ANALYTICS_SYMBOL = "USE_FIREBASE_ANALYTICS";
         public const string APPSFLYER_SYMBOL = "USE_APPSFLYER";
         public const string FIREBASE_CRASHLYTICS_SYMBOL = "USE_FIREBASE_CRASHLYTICS";
+        public const string ADJUST_SYMBOL = "USE_ADJUST";
+        public const string ADJUST_ANALYTICS_SYMBOL = "USE_ADJUST_ANALYTICS";
 
         [Separator("Development")]
         [SerializeField] private bool _isDevelopment;
@@ -37,6 +39,7 @@ namespace NFramework.Editors
         [SerializeField] private bool _useFirebaseAnalytics;
         [SerializeField] private bool _useAppsFlyer;
         [SerializeField] private bool _useFirebaseCrashlytics;
+        [SerializeField] private bool _useAdjustAnalytics;
 
 
         [MenuItem("NFramework/Modify Define Symbols", priority = 100)]
@@ -61,6 +64,8 @@ namespace NFramework.Editors
             wizard._useFirebaseAnalytics = scriptingDefinesStringList.Contains(FIREBASE_ANALYTICS_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
             wizard._useAppsFlyer = scriptingDefinesStringList.Contains(APPSFLYER_SYMBOL);
             wizard._useFirebaseCrashlytics = scriptingDefinesStringList.Contains(FIREBASE_CRASHLYTICS_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
+            wizard._useAdjustAnalytics = scriptingDefinesStringList.Contains(ADJUST_SYMBOL) && scriptingDefinesStringList.Contains(ADJUST_ANALYTICS_SYMBOL);
+
         }
 
         private void OnWizardCreate()
@@ -137,6 +142,16 @@ namespace NFramework.Editors
             else
                 scriptingDefinesStringHashSet.Remove(FIREBASE_CRASHLYTICS_SYMBOL);
 
+            if (_useAdjustAnalytics)
+            {
+                scriptingDefinesStringHashSet.Add(ADJUST_SYMBOL);
+                scriptingDefinesStringHashSet.Add(ADJUST_ANALYTICS_SYMBOL);
+            }
+            else
+            {
+                scriptingDefinesStringHashSet.Remove(ADJUST_SYMBOL);
+                scriptingDefinesStringHashSet.Remove(ADJUST_ANALYTICS_SYMBOL);
+            }
             PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, string.Join(";", scriptingDefinesStringHashSet.ToArray()));
         }
     }

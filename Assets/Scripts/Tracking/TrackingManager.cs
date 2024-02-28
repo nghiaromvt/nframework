@@ -123,6 +123,7 @@ namespace NFramework.Tracking
         None,
         FirebaseAnalytics,
         AppsFlyer,
+        Adjust,
     }
 
     [System.Serializable]
