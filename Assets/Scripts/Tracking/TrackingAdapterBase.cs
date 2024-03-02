@@ -1,4 +1,5 @@
 ﻿using NFramework.Ads;
+using NFramework.IAP;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,7 +23,7 @@ namespace NFramework.Tracking
             }
         }
 
-        protected virtual void TrackEventSDK(string eventName) { }
+        protected virtual void TrackEventSDK(string eventName) => Logger.LogError("Need override", this);
 
         public void TrackEvent(string eventName, Dictionary<string, object> parameters)
         {
@@ -33,20 +34,23 @@ namespace NFramework.Tracking
             }
         }
 
-        protected virtual void TrackEventSDK(string eventName, Dictionary<string, object> parameters) { }
+        protected virtual void TrackEventSDK(string eventName, Dictionary<string, object> parameters) => Logger.LogError("Need override", this);
 
-        public void TrackAdImpression(AdsRevenueData data)
+        public void TrackAdImpression(string eventName, AdsRevenueData data)
         {
-            TrackEvent("ad_impression", new Dictionary<string, object>
-            {
-                { "ad_platform", data.adPlatform },
-                { "ad_source", data.adSource },
-                { "ad_unit_name", data.adUnitName },
-                { "ad_format", data.adFormat },
-                { "currency", data.currency },
-                { "value", data.value }
-            });
+            if (IsInitialized)
+                TrackAdImpressionSDK(eventName, data);
         }
+
+        protected virtual void TrackAdImpressionSDK(string eventName, AdsRevenueData data) => Logger.LogError("Need override", this);
+
+        public void TrackIAP(string eventName, IAPRevenueData data) 
+        {
+            if (IsInitialized)
+                TrackIAPSDK(eventName, data);
+        }
+
+        protected virtual void TrackIAPSDK(string eventName, IAPRevenueData data) => Logger.LogError("Need override", this);
 
         protected void Log(string eventName, Dictionary<string, object> parameters = null)
         {

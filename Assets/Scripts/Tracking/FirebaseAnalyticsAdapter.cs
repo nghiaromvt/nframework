@@ -1,5 +1,6 @@
 #if USE_FIREBASE && USE_FIREBASE_ANALYTICS
 using Firebase.Analytics;
+using NFramework.Ads;
 #endif
 using NFramework.FirebaseService;
 using System.Collections.Generic;
@@ -22,17 +23,25 @@ namespace NFramework.Tracking
             });
         }
 
-        protected override void TrackEventSDK(string eventName)
-        {
-            base.TrackEventSDK(eventName);
-            FirebaseAnalytics.LogEvent(eventName);
-        }
+        protected override void TrackEventSDK(string eventName) => FirebaseAnalytics.LogEvent(eventName);
 
         protected override void TrackEventSDK(string eventName, Dictionary<string, object> parameters)
         {
-            base.TrackEventSDK(eventName, parameters);
             var fireBaseParameters = GetFirebaseParameters(parameters);
             FirebaseAnalytics.LogEvent(eventName, fireBaseParameters);
+        }
+
+        protected override void TrackAdImpressionSDK(string eventName, AdsRevenueData data)
+        {
+            TrackEvent("ad_impression", new Dictionary<string, object>
+            {
+                { "ad_platform", data.adPlatform },
+                { "ad_source", data.adSource },
+                { "ad_unit_name", data.adUnitName },
+                { "ad_format", data.adFormat },
+                { "currency", data.currency },
+                { "value", data.value }
+            });
         }
 
         private static Parameter[] GetFirebaseParameters(Dictionary<string, object> parameters)

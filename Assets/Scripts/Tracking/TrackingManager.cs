@@ -1,4 +1,5 @@
 using NFramework.Ads;
+using NFramework.IAP;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -72,7 +73,7 @@ namespace NFramework.Tracking
             }
         }
 
-        public void TrackAdImpression(AdsRevenueData data, ETrackingAdapterType specificAdapterType = ETrackingAdapterType.None)
+        public void TrackAdImpression(string eventName, AdsRevenueData data, ETrackingAdapterType specificAdapterType = ETrackingAdapterType.None)
         {
             if (DeviceInfo.IsNoTracking)
                 return;
@@ -80,12 +81,29 @@ namespace NFramework.Tracking
             if (specificAdapterType == ETrackingAdapterType.None)
             {
                 foreach (var adapter in AdapterDic.Values)
-                    adapter.TrackAdImpression(data);
+                    adapter.TrackAdImpression(eventName, data);
             }
             else
             {
                 if (TryGetAdapter(specificAdapterType, out var adapter))
-                    adapter.TrackAdImpression(data);
+                    adapter.TrackAdImpression(eventName, data);
+            }
+        }
+
+        public void TrackIAP(string eventName, IAPRevenueData data, ETrackingAdapterType specificAdapterType = ETrackingAdapterType.None)
+        {
+            if (DeviceInfo.IsNoTracking)
+                return;
+
+            if (specificAdapterType == ETrackingAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                    adapter.TrackIAP(eventName, data);
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    adapter.TrackIAP(eventName, data);
             }
         }
 

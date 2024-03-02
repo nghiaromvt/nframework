@@ -1,5 +1,8 @@
 #if USE_ADJUST && USE_ADJUST_ANALYTICS
 using com.adjust.sdk;
+using NFramework.Ads;
+using NFramework.IAP;
+using System.Collections.Generic;
 #endif
 using UnityEngine;
 
@@ -16,23 +19,49 @@ namespace NFramework.Tracking
         public override void Init(TrackingAdapterConfig config)
         {
             base.Init(config);
-            Adjust.start(new AdjustConfig(_appToken, _environment));
+
+            var adjustConfig = new AdjustConfig(_appToken, _environment);
+            if (DeviceInfo.IsDevelopment)
+                adjustConfig.setLogLevel(AdjustLogLevel.Verbose);
+
+            Adjust.start(adjustConfig);
             IsInitialized = true;
         }
 
-        protected override void TrackEventSDK(string eventToken)
+        protected override void TrackEventSDK(string eventName)
         {
-            base.TrackEventSDK(eventToken);
-            var adjustEvent = new AdjustEvent(eventToken);
+            var adjustEvent = new AdjustEvent(eventName);
             Adjust.trackEvent(adjustEvent);
         }
 
-        public void TrackRevenue(string eventToken, double amount, string currency, string transactionId)
+        protected override void TrackAdImpressionSDK(string eventName, AdsRevenueData data)
         {
-            var adjustEvent = new AdjustEvent(eventToken);
-            adjustEvent.setRevenue(amount, currency);
-            adjustEvent.setTransactionId(transactionId);
+            AdjustAdRevenue adjustAdRevenue = new AdjustAdRevenue(AdjustConfig.AdjustAdRevenueSourceIronSource);
+            adjustAdRevenue.setRevenue(data.value, data.currency);
+            Adjust.trackAdRevenue(adjustAdRevenue);
+            Log(AdjustConfig.AdjustAdRevenueSourceIronSource, new Dictionary<string, object>
+            {
+                { "currency", data.currency },
+                { "value", data.value }
+            });
+        }
+
+        protected override void TrackIAPSDK(string eventName, IAPRevenueData data)
+        {
+            AdjustEvent adjustEvent = new AdjustEvent(eventName);
+            adjustEvent.setRevenue((double)data.price, data.currency);
+            adjustEvent.setTransactionId(data.transactionID);
             Adjust.trackEvent(adjustEvent);
+        }
+
+        public void TrackRevenue(string eventName, double value, string currency)
+        {
+            if (IsInitialized)
+            {
+                AdjustEvent adjustEvent = new AdjustEvent(eventName);
+                adjustEvent.setRevenue((double)value, currency);
+                Adjust.trackEvent(adjustEvent);
+            }
         }
 #endif
     }

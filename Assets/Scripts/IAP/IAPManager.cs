@@ -197,5 +197,25 @@ namespace NFramework.IAP
         protected virtual void HideLoadingPayment() => NFramework.Logger.Log("HideLoadingPayment");
 #endif
     }
+
+    public class IAPRevenueData
+    {
+        public string productID;
+        public string currency;
+        public decimal price;
+        public string transactionID;
+        public string purchaseToken;
+        public string location;
+
+        public IAPRevenueData(string productID, string currency, decimal price, string transactionID, string purchaseToken, string location)
+        {
+            this.productID = productID;
+            this.currency = currency;
+            this.price = price;
+            this.transactionID = transactionID;
+            this.purchaseToken = purchaseToken;
+            this.location = location;
+        }
+    }
 }
 
