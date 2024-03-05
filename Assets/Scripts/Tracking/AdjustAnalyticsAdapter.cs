@@ -1,4 +1,4 @@
-#if USE_ADJUST && USE_ADJUST_ANALYTICS
+#if USE_ADJUST_ANALYTICS
 using com.adjust.sdk;
 using NFramework.Ads;
 using NFramework.IAP;
@@ -11,11 +11,13 @@ namespace NFramework.Tracking
     public class AdjustAnalyticsAdapter : TrackingAdapterBase
     {
         [SerializeField] private string _appToken;
+#if USE_ADJUST_ANALYTICS
         [SerializeField] private AdjustEnvironment _environment;
+#endif
 
         public override ETrackingAdapterType AdapterType => ETrackingAdapterType.Adjust;
 
-#if USE_ADJUST && USE_ADJUST_ANALYTICS
+#if USE_ADJUST_ANALYTICS
         public override void Init(TrackingAdapterConfig config)
         {
             base.Init(config);
