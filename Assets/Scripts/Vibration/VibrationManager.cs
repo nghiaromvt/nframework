@@ -10,7 +10,7 @@ namespace NFramework
     {
         public enum EHapticType { Selection, Success, Warning, Failure, LightImpact, MediumImpact, HeavyImpact, RigidImpact, SoftImpact, None }
 
-        public static Action<bool> OnStatusChanged;
+        public static event Action<bool> OnStatusChanged;
 
         [SerializeField] private SaveData _saveData;
 

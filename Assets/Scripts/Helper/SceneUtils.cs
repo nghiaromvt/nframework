@@ -40,5 +40,29 @@ namespace NFramework
 
             onLoadSceneCompleted?.Invoke();
         }
+
+        public static IEnumerator CRUnloadSceneAsync(int sceneBuildIndex, Action onUnloadSceneCompleted = null)
+        {
+            var scene = SceneManager.GetSceneByBuildIndex(sceneBuildIndex);
+            if (scene.IsValid())
+                yield return SceneManager.UnloadSceneAsync(sceneBuildIndex);
+
+            onUnloadSceneCompleted?.Invoke();
+        }
+
+        public static IEnumerator CRUnloadSceneAsync(string sceneName, Action onUnloadSceneCompleted = null)
+        {
+            if (string.IsNullOrEmpty(sceneName))
+            {
+                Debug.LogError($"Invalid sceneName: {sceneName}");
+                yield break;
+            }
+
+            var scene = SceneManager.GetSceneByName(sceneName);
+            if (scene.IsValid()) 
+                yield return SceneManager.UnloadSceneAsync(sceneName);
+
+            onUnloadSceneCompleted?.Invoke();
+        }
     }
 }
