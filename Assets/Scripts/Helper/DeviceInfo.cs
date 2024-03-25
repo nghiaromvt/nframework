@@ -135,6 +135,27 @@ namespace NFramework
             }
             return _deviceUDID;
         }
+
+        public static void OpenDeviceWifiSetting()
+        {
+            try
+            {
+#if UNITY_ANDROID
+                    using (var unityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                    using (AndroidJavaObject currentActivityObject = unityClass.GetStatic<AndroidJavaObject>("currentActivity"))
+                    {
+                        using (var intentObject = new AndroidJavaObject("android.content.Intent", "android.settings.WIFI_SETTINGS"))
+                        {
+                            currentActivityObject.Call("startActivity", intentObject);
+                        }
+                    }
+#endif
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
     }
 }
 
