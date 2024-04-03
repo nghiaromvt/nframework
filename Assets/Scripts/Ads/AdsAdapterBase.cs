@@ -84,7 +84,7 @@ namespace NFramework.Ads
                 {
                     _cachedAdsShowDataDic[EAdsType.Inter] = data;
                     IsFullscreenAdShowing = true;
-                    _config.adsCallbackListener?.OnRequestShowInter();
+                    _config.adsCallbackListener?.OnRequestShowInter(data);
                     ShowInterSDK();
                 }
                 else
@@ -197,7 +197,7 @@ namespace NFramework.Ads
                 {
                     _cachedAdsShowDataDic[EAdsType.Reward] = data;
                     IsFullscreenAdShowing = true;
-                    _config.adsCallbackListener?.OnRequestShowReward();
+                    _config.adsCallbackListener?.OnRequestShowReward(data);
                     ShowRewardSDK();
                 }
                 else

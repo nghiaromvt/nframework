@@ -119,7 +119,7 @@ namespace NFramework.Ads
             }
             else
             {
-                IronSource.Agent.showInterstitial();
+                IronSource.Agent.showInterstitial(_cachedAdsShowDataDic[EAdsType.Inter].placement);
             }
         }
         #endregion
@@ -155,7 +155,7 @@ namespace NFramework.Ads
             }
             else
             {
-                IronSource.Agent.showRewardedVideo();
+                IronSource.Agent.showRewardedVideo(_cachedAdsShowDataDic[EAdsType.Reward].placement);
             }
         }
         #endregion
