@@ -39,10 +39,10 @@ namespace NFramework.IAP
                 var id = iapProductSO.id;
                 _idToIAPProductSODic.Add(id, iapProductSO);
                 builder.AddProduct(id, iapProductSO.productType, new IDs()
-            {
-                {iapProductSO.androidProductId, GooglePlay.Name},
-                {iapProductSO.iosProductId, AppleAppStore.Name }
-            });
+                {
+                    {iapProductSO.androidProductId, GooglePlay.Name},
+                    {iapProductSO.iosProductId, AppleAppStore.Name }
+                });
             }
             UnityPurchasing.Initialize(this, builder);
         }
