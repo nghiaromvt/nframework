@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 #if USE_UNITY_PURCHASING
 using UnityEngine.Purchasing;
@@ -20,12 +21,12 @@ namespace NFramework.IAP
         [SerializeField] protected List<IAPProductSO> _iapProductSOs = new List<IAPProductSO>();
 
 #if USE_UNITY_PURCHASING
-        private Dictionary<string, IAPProductSO> _idToIAPProductSODic = new Dictionary<string, IAPProductSO>();
         private IStoreController _controller;
         private IExtensionProvider _extensions;
         private bool _isPurchaseInProgress;
         private Action<bool> _purchaseCallback;
         private string _purchaseLocation;
+        private string _curPurchaseProductId;
 
         #region Init
         public void Init()
@@ -37,7 +38,6 @@ namespace NFramework.IAP
             foreach (var iapProductSO in _iapProductSOs)
             {
                 var id = iapProductSO.id;
-                _idToIAPProductSODic.Add(id, iapProductSO);
                 builder.AddProduct(id, iapProductSO.productType, new IDs()
                 {
                     {iapProductSO.androidProductId, GooglePlay.Name},
@@ -51,45 +51,31 @@ namespace NFramework.IAP
 
         public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
         {
-            NFramework.Logger.Log("IAP Initialized", this);
+            Logger.Log("IAP Initialized", this);
             _controller = controller;
             _extensions = extensions;
 
             foreach (var iapProductSO in _iapProductSOs)
             {
                 var product = _controller.products.WithID(iapProductSO.id);
-                if (product != null)
+                if (product == null)
+                    Logger.LogError($"Add product fail! id:{iapProductSO.id}");
+                else
                     iapProductSO.PriceString = product.metadata.localizedPriceString;
             }
         }
 
-        public void OnInitializeFailed(InitializationFailureReason error)
-        {
-            NFramework.Logger.Log("IAP init failed");
-            switch (error)
-            {
-                case InitializationFailureReason.AppNotKnown:
-                    NFramework.Logger.LogError("Is your App correctly uploaded on the relevant publisher console?", this);
-                    break;
-                case InitializationFailureReason.PurchasingUnavailable:
-                    // Ask the user if billing is disabled in device settings.
-                    NFramework.Logger.Log("Billing disabled!", this);
-                    break;
-                case InitializationFailureReason.NoProductsAvailable:
-                    // Developer configuration error; check product metadata.
-                    NFramework.Logger.Log("No products available for purchase!", this);
-                    break;
-            }
-        }
+        // Obsolete
+        public void OnInitializeFailed(InitializationFailureReason error) { }
 
-        public void OnInitializeFailed(InitializationFailureReason error, string message) => NFramework.Logger.Log("IAP init failed: " + message, this);
+        public void OnInitializeFailed(InitializationFailureReason error, string message) => Logger.LogError("IAP init failed: " + message, this);
         #endregion
 
         #region Purchase
         public void Purchase(IAPProductSO iapProductSO, Action<bool> callback, string location = "")
             => Purchase(iapProductSO.id, callback, location);
 
-        public void Purchase(string iapProductSO, Action<bool> callback, string location = "")
+        public void Purchase(string productId, Action<bool> callback, string location = "")
         {
             if (Application.isEditor || DeviceInfo.IsTestIAP)
             {
@@ -100,101 +86,108 @@ namespace NFramework.IAP
             if (_isPurchaseInProgress)
             {
                 callback?.Invoke(false);
-                NFramework.Logger.Log("Another Purchase in progress", this);
+                Logger.LogError("Another Purchase in progress", this);
                 return;
             }
 
             if (IsInitialized())
             {
-                var product = _controller.products.WithID(iapProductSO);
+                var product = _controller.products.WithID(productId);
                 if (product != null && product.availableToPurchase)
                 {
                     _isPurchaseInProgress = true;
                     _purchaseCallback = callback;
                     _purchaseLocation = location;
+                    _curPurchaseProductId = productId;
                     ShowLoadingPayment();
-                    NFramework.Logger.Log($"Purchasing product asynchronously: '{product.definition.storeSpecificId}'", this);
+                    Logger.Log($"Purchasing product asynchronously: id:{product.definition.id}", this);
                     _controller.InitiatePurchase(product);
                 }
                 else
                 {
                     callback?.Invoke(false);
-                    NFramework.Logger.Log("BuyProductID: FAIL. Not purchasing product, either is not found or is not available for purchase", this);
+                    Logger.Log($"BuyProductID: FAIL. Not purchasing product, product not found:{product == null}", this);
                     _isPurchaseInProgress = false;
                 }
             }
             else
             {
                 callback?.Invoke(false);
-                NFramework.Logger.LogError($"Not IsInitialized", this);
+                Logger.LogError($"Not IsInitialized", this);
                 return;
             }
         }
 
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs purchaseEvent)
         {
-            var product = purchaseEvent.purchasedProduct;
-            if (_idToIAPProductSODic.TryGetValue(product.definition.id, out var iapProductSO))
+            var purchasedProduct = purchaseEvent.purchasedProduct;
+            Logger.Log($"Start ProcessPurchase purchasedProductId:{purchasedProduct.definition.id}");
+
+            var product = _controller.products.WithID(purchasedProduct.definition.id);
+            if (product == null)
             {
-                if (_isPurchaseInProgress)
+                Logger.LogError($"ProcessPurchase failed! id:{purchasedProduct.definition.id} - reason:ERROR_UNKNOWN_PRODUCT");
+                FinishPurchaseFail();
+                return PurchaseProcessingResult.Pending;
+            }
+
+            if (_isPurchaseInProgress)
+            {
+                // Test
+                Logger.Log($"Test purchasedProduct == myProduct:{purchasedProduct == product}");
+
+                if (_curPurchaseProductId != product.definition.id)
                 {
-                    NFramework.Logger.Log($"Purchase OK: {product.hasReceipt} {product.transactionID} {product.definition.id}", this);
-                    _isPurchaseInProgress = false;
-                    HideLoadingPayment();
-                    _purchaseCallback?.Invoke(true);
-                    _purchaseCallback = null;
-                    OnPurchased?.Invoke(product, _purchaseLocation);
+                    Logger.LogError($"ProcessPurchase failed! id:{purchaseEvent.purchasedProduct.definition.id} - reason:ERROR_WRONG_PRODUCT_ID");
+                    FinishPurchaseFail();
+                    return PurchaseProcessingResult.Pending;
                 }
-                else
-                {
-                    // We suppose its a restore if the method is called while _isPurchaseInProgress == false
-                    NFramework.Logger.Log($"Restoring: {product.hasReceipt} {product.transactionID} {product.definition.id}", this);
-                    ProcessRestore(iapProductSO);
-                }
+
+                Logger.Log($"Purchase OK: {purchasedProduct.hasReceipt} {purchasedProduct.transactionID} {purchasedProduct.definition.id}", this);
+                FinishPurchaseSuccess();
+                OnPurchased?.Invoke(purchasedProduct, _purchaseLocation);
+                return PurchaseProcessingResult.Complete;
             }
             else
             {
-                NFramework.Logger.LogError($"Cannot find iapProductSO id:{product.definition.id}", this);
-                HideLoadingPayment();
-                _purchaseCallback?.Invoke(true);
-                _purchaseCallback = null;
-            }
-            return PurchaseProcessingResult.Complete;
+                // We suppose its a restore if the method is called while _isPurchaseInProgress == false
+                Logger.Log($"Restoring: {purchasedProduct.hasReceipt} {purchasedProduct.transactionID} {purchasedProduct.definition.id}", this);
+                ProcessRestore(product.definition.id);
+                return PurchaseProcessingResult.Complete;
+            }  
         }
 
-        public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
-        {
-            NFramework.Logger.LogError("IAP Purchase Failed: " + failureReason, this);
-            _isPurchaseInProgress = false;
-            HideLoadingPayment();
-            _purchaseCallback?.Invoke(false);
-            _purchaseCallback = null;
-        }
+        // Obsolete
+        public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason) { }
 
         public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
         {
-            NFramework.Logger.LogError("IAP Purchase Failed: " + failureDescription.message, this);
-            _isPurchaseInProgress = false;
-            HideLoadingPayment();
-            _purchaseCallback?.Invoke(false);
-            _purchaseCallback = null;
+            Logger.LogError("IAP Purchase Failed: " + failureDescription.message, this);
+            FinishPurchaseFail();
         }
 
-        protected virtual void ProcessRestore(IAPProductSO iapProductSO) { }
+        protected virtual void ProcessRestore(string productId) { }
+
+        private void FinishPurchaseSuccess()
+        {
+            HideLoadingPayment();
+            _isPurchaseInProgress = false;
+            _purchaseCallback?.Invoke(true);
+        }
+
+        private void FinishPurchaseFail()
+        {
+            HideLoadingPayment();
+            _isPurchaseInProgress = false;
+            _purchaseCallback?.Invoke(false);
+        }
         #endregion
 
-        public IAPProductSO GetProductSO(string iapId)
-        {
-            if (_idToIAPProductSODic.TryGetValue(iapId, out var product))
-                return product;
+        public IAPProductSO GetProductSO(string productId) => _iapProductSOs.FirstOrDefault(x => x.id == productId);
 
-            NFramework.Logger.LogError($"iapId:{iapId} not found", this);
-            return null;
-        }
+        protected virtual void ShowLoadingPayment() => UIManager.I.DisableInteract();
 
-        protected virtual void ShowLoadingPayment() => NFramework.Logger.Log("ShowLoadingPayment");
-
-        protected virtual void HideLoadingPayment() => NFramework.Logger.Log("HideLoadingPayment");
+        protected virtual void HideLoadingPayment() => UIManager.I.EnableInteract();
 #endif
     }
 
