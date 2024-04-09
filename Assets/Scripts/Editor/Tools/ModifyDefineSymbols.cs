@@ -20,9 +20,11 @@ namespace NFramework.Editors
         public const string APPSFLYER_SYMBOL = "USE_APPSFLYER";
         public const string FIREBASE_CRASHLYTICS_SYMBOL = "USE_FIREBASE_CRASHLYTICS";
         public const string ADJUST_ANALYTICS_SYMBOL = "USE_ADJUST_ANALYTICS";
+        public const string ENABLE_LOG_SYMBOL = "ENABLE_LOG";
 
         [Separator("Development")]
         [SerializeField] private bool _isDevelopment;
+        [SerializeField] private bool _enableLog;
         [Separator("Remote Config")]
         [SerializeField] private bool _useFirebaseRemoteConfig;
         [Separator("IAP")]
@@ -52,6 +54,7 @@ namespace NFramework.Editors
             var scriptingDefinesStringList = scriptingDefinesString.Split(';').ToList();
 
             wizard._isDevelopment = scriptingDefinesStringList.Contains(DEVELOPMENT_SYMBOL);
+            wizard._enableLog = scriptingDefinesStringList.Contains(ENABLE_LOG_SYMBOL);
             wizard._useFirebaseRemoteConfig = scriptingDefinesStringList.Contains(FIREBASE_REMOTECONFIG_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
             wizard._useUnityPurchasing = scriptingDefinesStringList.Contains(UNITY_PURCHASING_SYMBOL);
             wizard._isNoAds = scriptingDefinesStringList.Contains(NO_ADS_SYMBOL);
@@ -64,7 +67,6 @@ namespace NFramework.Editors
             wizard._useAppsFlyer = scriptingDefinesStringList.Contains(APPSFLYER_SYMBOL);
             wizard._useFirebaseCrashlytics = scriptingDefinesStringList.Contains(FIREBASE_CRASHLYTICS_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
             wizard._useAdjustAnalytics = scriptingDefinesStringList.Contains(ADJUST_ANALYTICS_SYMBOL);
-
         }
 
         private void OnWizardCreate()
@@ -76,6 +78,11 @@ namespace NFramework.Editors
                 scriptingDefinesStringHashSet.Add(DEVELOPMENT_SYMBOL);
             else
                 scriptingDefinesStringHashSet.Remove(DEVELOPMENT_SYMBOL);
+
+            if (_enableLog)
+                scriptingDefinesStringHashSet.Add(ENABLE_LOG_SYMBOL);
+            else
+                scriptingDefinesStringHashSet.Remove(ENABLE_LOG_SYMBOL);
 
             if (_useFirebaseRemoteConfig || _useFirebaseAnalytics || _useFirebaseCrashlytics)
                 scriptingDefinesStringHashSet.Add(FIREBASE_SYMBOL);

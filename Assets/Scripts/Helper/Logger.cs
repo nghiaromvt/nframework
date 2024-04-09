@@ -7,25 +7,25 @@ namespace NFramework
 {
     public static class Logger
     {
-        [Conditional("DEVELOPMENT")]
+        [Conditional("ENABLE_LOG")]
         public static void Log(object message, Object context = null, Color? color = null)
         {
             Debug.Log(FormatMessage(message, context, color), context);
         }
 
-        [Conditional("DEVELOPMENT")]
+        [Conditional("ENABLE_LOG")]
         public static void LogWarning(object message, Object context = null, Color? color = null)
         {
             Debug.LogWarning(FormatMessage(message, context, color), context);
         }
 
-        [Conditional("DEVELOPMENT")]
+        [Conditional("ENABLE_LOG")]
         public static void LogError(object message, Object context = null, Color? color = null)
         {
             Debug.LogError(FormatMessage(message, context, color), context);
         }
 
-        [Conditional("DEVELOPMENT")]
+        [Conditional("ENABLE_LOG")]
         public static void LogAssert(bool condition, object message, Object context = null, Color? color = null)
         {
             if (!condition)
