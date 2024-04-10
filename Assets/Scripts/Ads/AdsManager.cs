@@ -84,8 +84,8 @@ namespace NFramework.Ads
         #region Inter
         public bool IsInterReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (IsRemoveAds || DeviceInfo.IsNoAds)
-                return false;
+            if (IsRemoveAds || DeviceInfo.IsNoAds || Application.isEditor)
+                return true;
 
             if (specificAdapterType == EAdsAdapterType.None)
             {
@@ -126,7 +126,7 @@ namespace NFramework.Ads
 
         public void ShowInter(AdsShowData data = null, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (IsRemoveAds || DeviceInfo.IsNoAds)
+            if (IsRemoveAds || DeviceInfo.IsNoAds || Application.isEditor)
             {
                 data?.callback?.Invoke(true);
                 return;
@@ -136,7 +136,7 @@ namespace NFramework.Ads
             {
                 data?.callback?.Invoke(false);
                 return;
-            }    
+            }
 
             if (TryGetAdapter(specificAdapterType, out var adapter))
                 adapter.ShowInter(data);
@@ -148,8 +148,8 @@ namespace NFramework.Ads
         #region Reward
         public bool IsRewardReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (IsRemoveAds || DeviceInfo.IsNoAds)
-                return false;
+            if (IsRemoveAds || DeviceInfo.IsNoAds || Application.isEditor)
+                return true;
 
             if (specificAdapterType == EAdsAdapterType.None)
             {
@@ -190,7 +190,7 @@ namespace NFramework.Ads
 
         public void ShowReward(AdsShowData data = null, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (IsRemoveAds || DeviceInfo.IsNoAds)
+            if (IsRemoveAds || DeviceInfo.IsNoAds || Application.isEditor)
             {
                 data?.callback?.Invoke(true);
                 return;
