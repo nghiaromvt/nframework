@@ -4,6 +4,10 @@ namespace NFramework.Ads
 {
     public class IronSourceAdapter : AdsAdapterBase
     {
+        private const string INTERSTITIAL = "interstitial";
+        private const string REWARDED_VIDEO = "rewarded_video";
+        private const string BANNER = "banner";
+
         [SerializeField] private string _appKeyAndroid;
         [SerializeField] private string _appKeyIOS;
         [Header("Debug")]
@@ -83,8 +87,34 @@ namespace NFramework.Ads
             if (AdsTypeUse.HasFlag(EAdsType.Inter))
                 InitializeReward();
 
-            IronSourceEvents.onImpressionDataReadyEvent += data => HandleAdsRevenuePaid(new AdsRevenueData("ironSource", data.adNetwork,
-                  data.instanceName, data.adUnit, data.revenue.GetValueOrDefault(), "USD", data.placement));
+            IronSourceEvents.onImpressionDataReadyEvent += data =>
+            {
+                if (data.revenue == null)
+                {
+                    Logger.LogError($"IronSource revenue is null", this);
+                    return;
+                }
+
+                EAdsType adType;
+                switch (data.adUnit)
+                {
+                    case INTERSTITIAL:
+                        adType = EAdsType.Inter;
+                        break;
+                    case REWARDED_VIDEO:
+                        adType = EAdsType.Reward;
+                        break;
+                    case BANNER:
+                        adType = EAdsType.Banner;
+                        break;
+                    default:
+                        Logger.LogError($"TODO: IronSource adUnit:{data.adUnit}");
+                        return;
+                }
+
+                HandleAdsRevenuePaid(new AdsRevenueData("ironSource", data.adNetwork, data.instanceName,
+                    data.adUnit, data.revenue.GetValueOrDefault(), "USD", data.placement, adType));
+            };
         }
 
         private void SetConsent(EConsentStatus status) => IronSource.Agent.setConsent(AdsManager.I.ConsentStatus == EConsentStatus.Yes);
