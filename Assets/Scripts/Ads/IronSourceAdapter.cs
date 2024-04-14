@@ -112,8 +112,9 @@ namespace NFramework.Ads
                         return;
                 }
 
-                HandleAdsRevenuePaid(new AdsRevenueData("ironSource", data.adNetwork, data.instanceName,
-                    data.adUnit, data.revenue.GetValueOrDefault(), "USD", data.placement, adType));
+                HandleAdsRevenuePaid(new AdsRevenueData("ironSource", data.adNetwork,
+                    data.instanceName, data.adUnit, data.revenue.GetValueOrDefault(), "USD",
+                    data.placement, data.precision, data.country, data.lifetimeRevenue, adType));
             };
         }
 

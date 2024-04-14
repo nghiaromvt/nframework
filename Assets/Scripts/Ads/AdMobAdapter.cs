@@ -86,8 +86,8 @@ namespace NFramework.Ads
         private void RegisterAOAEventHandlers(AppOpenAd ad)
         {
             ad.OnAdPaid += (AdValue adValue) => HandleAdsRevenuePaid(new AdsRevenueData("adMob", "",
-                    "", "", adValue.Value, adValue.CurrencyCode, ""));
-
+                "", "", adValue.Value, adValue.CurrencyCode,
+                "", "", "", null, EAdsType.AOA));
 
             ad.OnAdFullScreenContentClosed += HandleAOAHidden;
             ad.OnAdFullScreenContentFailed += error => HandleAOADisplayFailed(error.ToString());

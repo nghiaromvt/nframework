@@ -488,10 +488,13 @@ namespace NFramework.Ads
         public double value;
         public string currency;
         public string placement;
+        public string precision;
+        public string country;
+        public double? lifetimeRevenue;
         public EAdsType adType;
 
-        public AdsRevenueData(string adPlatform, string adSource, string adUnitName,
-            string adFormat, double value, string currency, string placement, EAdsType adType)
+        public AdsRevenueData(string adPlatform, string adSource, string adUnitName, string adFormat, double value, 
+            string currency, string placement, string precision, string country, double? lifetimeRevenue, EAdsType adType)
         {
             this.adPlatform = adPlatform;
             this.adSource = adSource;
@@ -500,6 +503,9 @@ namespace NFramework.Ads
             this.value = value;
             this.currency = currency;
             this.placement = placement;
+            this.precision = precision;
+            this.country = country;
+            this.lifetimeRevenue = lifetimeRevenue;
             this.adType = adType;
         }
     }
