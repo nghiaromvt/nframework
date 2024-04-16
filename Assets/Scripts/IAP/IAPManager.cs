@@ -124,37 +124,43 @@ namespace NFramework.IAP
             Logger.Log($"Start ProcessPurchase purchasedProductId:{purchasedProduct.definition.id}");
 
             var product = _controller.products.WithID(purchasedProduct.definition.id);
-            if (product == null)
-            {
-                Logger.LogError($"ProcessPurchase failed! id:{purchasedProduct.definition.id} - reason:ERROR_UNKNOWN_PRODUCT");
-                FinishPurchaseFail();
-                return PurchaseProcessingResult.Pending;
-            }
 
             if (_isPurchaseInProgress)
             {
-                // Test
-                Logger.Log($"Test purchasedProduct == myProduct:{purchasedProduct == product}");
-
-                if (_curPurchaseProductId != product.definition.id)
+                if (product == null)
+                {
+                    Logger.LogError($"ProcessPurchase failed! id:{purchasedProduct.definition.id} - reason:ERROR_UNKNOWN_PRODUCT");
+                    FinishPurchaseFail();
+                    return PurchaseProcessingResult.Pending;
+                }
+                else if (_curPurchaseProductId != product.definition.id)
                 {
                     Logger.LogError($"ProcessPurchase failed! id:{purchaseEvent.purchasedProduct.definition.id} - reason:ERROR_WRONG_PRODUCT_ID");
                     FinishPurchaseFail();
                     return PurchaseProcessingResult.Pending;
                 }
-
-                Logger.Log($"Purchase OK: {purchasedProduct.hasReceipt} {purchasedProduct.transactionID} {purchasedProduct.definition.id}", this);
-                FinishPurchaseSuccess();
-                OnPurchased?.Invoke(purchasedProduct, _purchaseLocation);
-                return PurchaseProcessingResult.Complete;
+                else
+                {
+                    Logger.Log($"Purchase OK => hasReceipt:{purchasedProduct.hasReceipt} - transactionID:{purchasedProduct.transactionID} - id:{purchasedProduct.definition.id}", this);
+                    FinishPurchaseSuccess();
+                    OnPurchased?.Invoke(purchasedProduct, _purchaseLocation);
+                    return PurchaseProcessingResult.Complete;
+                }
             }
             else
             {
                 // We suppose its a restore if the method is called while _isPurchaseInProgress == false
-                Logger.Log($"Restoring: {purchasedProduct.hasReceipt} {purchasedProduct.transactionID} {purchasedProduct.definition.id}", this);
-                ProcessRestore(product.definition.id);
+                if (product == null)
+                {
+                    Logger.Log($"Skip restore => reason:ERROR_UNKNOWN_PRODUCT - purchasedProduct:{purchasedProduct.definition.id}", this);
+                }
+                else
+                {
+                    Logger.Log($"Restoring => hasReceipt:{purchasedProduct.hasReceipt} - transactionID:{purchasedProduct.transactionID} - id:{purchasedProduct.definition.id}", this);
+                    ProcessRestore(product.definition.id);
+                }
                 return PurchaseProcessingResult.Complete;
-            }  
+            }
         }
 
         // Obsolete
