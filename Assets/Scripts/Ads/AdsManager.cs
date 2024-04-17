@@ -148,7 +148,7 @@ namespace NFramework.Ads
         #region Reward
         public bool IsRewardReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (IsRemoveAds || DeviceInfo.IsNoAds || Application.isEditor)
+            if (DeviceInfo.IsNoAds || Application.isEditor)
                 return true;
 
             if (specificAdapterType == EAdsAdapterType.None)
@@ -170,7 +170,7 @@ namespace NFramework.Ads
 
         public void LoadReward(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (IsRemoveAds || DeviceInfo.IsNoAds)
+            if (DeviceInfo.IsNoAds)
                 return;
 
             if (specificAdapterType == EAdsAdapterType.None)
@@ -190,7 +190,7 @@ namespace NFramework.Ads
 
         public void ShowReward(AdsShowData data = null, EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
-            if (IsRemoveAds || DeviceInfo.IsNoAds || Application.isEditor)
+            if (DeviceInfo.IsNoAds || Application.isEditor)
             {
                 data?.callback?.Invoke(true);
                 return;
@@ -289,7 +289,7 @@ namespace NFramework.Ads
         public bool IsAOAReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
             if (IsRemoveAds || DeviceInfo.IsNoAds)
-                return false;
+                return true;
 
             if (specificAdapterType == EAdsAdapterType.None)
             {
