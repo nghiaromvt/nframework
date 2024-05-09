@@ -16,6 +16,10 @@ namespace NFramework.Ads
         public Dictionary<EAdsAdapterType, AdsAdapterBase> AdapterDic { get; private set; } = new Dictionary<EAdsAdapterType, AdsAdapterBase>();
         public bool IsAllAdapterInitialized => !AdapterDic.Values.Any(x => !x.IsInitialized);
         public bool IsFullscreenAdShowing => AdapterDic.Values.Any(x => x.IsFullscreenAdShowing);
+        public string CachedInterAdLocation { get; private set; }
+        public string CachedInterAdPlacement { get; private set; }
+        public string CachedRewardAdLocation { get; private set; }
+        public string CachedRewardAdPlacement { get; private set; }
 
         public bool IsRemoveAds
         {
@@ -139,9 +143,15 @@ namespace NFramework.Ads
             }
 
             if (TryGetAdapter(specificAdapterType, out var adapter))
+            {
                 adapter.ShowInter(data);
+                CachedInterAdLocation = data.location;
+                CachedInterAdPlacement = data.placement;
+            }
             else
+            {
                 data?.callback?.Invoke(false);
+            }
         }
         #endregion
 
@@ -203,9 +213,15 @@ namespace NFramework.Ads
             }
 
             if (TryGetAdapter(specificAdapterType, out var adapter))
+            {
                 adapter.ShowReward(data);
+                CachedRewardAdLocation = data.location;
+                CachedRewardAdPlacement = data.placement;
+            }
             else
+            {
                 data?.callback?.Invoke(false);
+            }
         }
         #endregion
 
@@ -493,7 +509,7 @@ namespace NFramework.Ads
         public double? lifetimeRevenue;
         public EAdsType adType;
 
-        public AdsRevenueData(string adPlatform, string adSource, string adUnitName, string adFormat, double value, 
+        public AdsRevenueData(string adPlatform, string adSource, string adUnitName, string adFormat, double value,
             string currency, string placement, string precision, string country, double? lifetimeRevenue, EAdsType adType)
         {
             this.adPlatform = adPlatform;
