@@ -48,7 +48,7 @@ namespace NFramework.Editors
             // Create Play button
             Button playButton = new Button(SceneSwitcherControl.PlayFirstScene)
             {
-                text = "Play first scene"
+                text = "Play 1st scene"
             };
             layout.Add(playButton);
 

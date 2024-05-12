@@ -5,7 +5,8 @@ namespace NFramework
 {
     public class Pool : MonoBehaviour
     {
-        public static Pool CreatePool(bool initializeAtAwake, bool autoExpandPool, int initPoolSize, PooledObject objectToPool)
+        public static Pool CreatePool(bool initializeAtAwake, bool autoExpandPool, int initPoolSize, PooledObject objectToPool,
+            int maxPoolSize = -1)
         {
             var go = new GameObject($"Pool_{objectToPool.name}", typeof(Pool));
             var pool = go.GetComponent<Pool>();
@@ -13,6 +14,7 @@ namespace NFramework
             pool._initPoolSize = initPoolSize;
             pool._initPoolSize = initPoolSize;
             pool._objectToPool = objectToPool;
+            pool._maxPoolSize = maxPoolSize;
             
             pool._initializeAtAwake = initializeAtAwake;
             if (initializeAtAwake)
@@ -23,6 +25,7 @@ namespace NFramework
 
         [SerializeField] private bool _initializeAtAwake;
         [SerializeField] private bool _autoExpandPool = true;
+        [SerializeField, ConditionalField(nameof(_autoExpandPool))] private int _maxPoolSize; // less or equal 0 is infinity
         [SerializeField] private int _initPoolSize = 5;
         [SerializeField] private PooledObject _objectToPool;
 
@@ -93,14 +96,21 @@ namespace NFramework
                 return;
             }
 
-            pooledObject.gameObject.SetActive(false);
-            pooledObject.transform.SetParent(transform);
-            _poolQueue.Enqueue(pooledObject);
-
             if (_activeObjects.Contains(pooledObject))
                 _activeObjects.Remove(pooledObject);
             else
                 Logger.LogError($"Something went wrong! {pooledObject.name} isn't in activeObjects", this);
+
+            if (_autoExpandPool && _maxPoolSize > 0 && _poolQueue.Count >= _maxPoolSize)
+            {
+                Destroy(pooledObject.gameObject);
+            }
+            else
+            {
+                pooledObject.gameObject.SetActive(false);
+                pooledObject.transform.SetParent(transform);
+                _poolQueue.Enqueue(pooledObject);
+            }
         }
 
         public void ReturnAllToPool()

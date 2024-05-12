@@ -25,7 +25,7 @@ namespace NFramework
         public static event Action<BaseUIView> OnOpenedView;
         public static event Action<BaseUIView> OnClosedView;
 
-        [SerializeField] private string _uiRootPath = "UI";
+        [SerializeField] private string _uiRootPath;
 
         private CanvasGroup _canvasGroup;
         private Dictionary<string, Stack<BaseUIView>> _cachedView = new Dictionary<string, Stack<BaseUIView>>();

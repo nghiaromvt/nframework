@@ -171,7 +171,7 @@ namespace NFramework
                 DOVirtual.Float(_musicAudioSource.volume, 0f, fadeTime, value =>
                 {
                     _musicAudioSource.volume = value;
-                }).SetEase(Ease.Linear).OnComplete(() => _musicAudioSource.Stop());
+                }).SetUpdate(true).SetEase(Ease.Linear).OnComplete(() => _musicAudioSource.Stop());
             }
         }
 
@@ -227,7 +227,7 @@ namespace NFramework
                 DOVirtual.Float(0f, targetVol, fadeTime, value =>
                 {
                     audioSource.volume = value;
-                }).SetEase(Ease.Linear);
+                }).SetUpdate(true).SetEase(Ease.Linear);
             }
             audioSource.Play();
         }
