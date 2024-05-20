@@ -37,6 +37,7 @@ namespace NFramework
         /// <summary>
         /// Computes and returns the angle between two vectors, on a 360° scale
         /// This is use for 2D (XY)
+        /// vectorB usually is Vector2.right
         /// </summary>
         public static float AngleBetween2D(Vector2 vectorA, Vector2 vectorB)
         {
@@ -104,6 +105,16 @@ namespace NFramework
         public static float NormalizeFloat(float value, int fractNum)
         {
             return Mathf.RoundToInt(value * Mathf.Pow(10, fractNum)) / Mathf.Pow(10, fractNum);
+        }
+
+        public static float GetAngle(Vector3 start, Vector3 end)
+        {
+            return Mathf.Atan2(start.z - end.z, start.x - end.x) * Mathf.Rad2Deg;
+        }
+
+        public static float GetAngle(Vector2 start, Vector2 end)
+        {
+            return Mathf.Atan2(start.y - end.y, start.x - end.x) * Mathf.Rad2Deg;
         }
     }
 }
