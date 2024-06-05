@@ -1,4 +1,4 @@
-#if USE_FIRESEBASE && USE_FIREBASE_REMOTECONFIG 
+#if USE_FIREBASE && USE_FIREBASE_REMOTECONFIG 
 using Firebase.Extensions;
 using Firebase.RemoteConfig;
 #endif
@@ -19,7 +19,7 @@ namespace NFramework.FirebaseService
 
         public static void Init(Dictionary<string, object> defaults)
         {
-#if USE_FIRESEBASE && USE_FIREBASE_REMOTECONFIG
+#if USE_FIREBASE && USE_FIREBASE_REMOTECONFIG
             FirebaseServiceManager.CheckAndTryInit(() =>
             {
                 FirebaseRemoteConfig.DefaultInstance.SetDefaultsAsync(defaults).ContinueWithOnMainThread(task =>
@@ -33,7 +33,7 @@ namespace NFramework.FirebaseService
 
         public static Task FetchDataAsync()
         {
-#if USE_FIRESEBASE && USE_FIREBASE_REMOTECONFIG
+#if USE_FIREBASE && USE_FIREBASE_REMOTECONFIG
             if (IsFetching)
                 return null;
 
@@ -48,7 +48,7 @@ namespace NFramework.FirebaseService
 
         private static void FetchComplete(Task fetchTask)
         {
-#if USE_FIRESEBASE && USE_FIREBASE_REMOTECONFIG
+#if USE_FIREBASE && USE_FIREBASE_REMOTECONFIG
             if (!fetchTask.IsCompleted)
             {
                 Debug.LogError("[FirebaseRemoteConfigService] Retrieval hasn't finished.");

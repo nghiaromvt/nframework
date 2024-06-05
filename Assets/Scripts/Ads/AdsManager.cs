@@ -9,6 +9,7 @@ namespace NFramework.Ads
     {
         public static event Action<bool> OnIsRemoveAdsChanged;
         public static event Action<EConsentStatus> OnConsentStatusChanged;
+        public static event Action<EAdsAdapterType> OnNativeAdLoaded;
 
         [SerializeField] private SaveData _saveData;
         [SerializeField] private EAdsBannerPosition _defaultBannerPosition = EAdsBannerPosition.BottomCenter;
@@ -225,7 +226,7 @@ namespace NFramework.Ads
         }
         #endregion
 
-        #region
+        #region Banner
         public void LoadBanner(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
         {
             if (IsRemoveAds || DeviceInfo.IsNoAds)
@@ -365,6 +366,52 @@ namespace NFramework.Ads
         }
         #endregion
 
+        #region Native Ad
+        public bool IsNativeAdReady(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        {
+            if (IsRemoveAds || DeviceInfo.IsNoAds)
+                return true;
+
+            if (specificAdapterType == EAdsAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.AOA))
+                        return adapter.IsNativeAdReady();
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    return adapter.IsNativeAdReady();
+            }
+
+            return false;
+        }
+
+        public void LoadNativeAd(EAdsAdapterType specificAdapterType = EAdsAdapterType.None)
+        {
+            if (IsRemoveAds || DeviceInfo.IsNoAds)
+                return;
+
+            if (specificAdapterType == EAdsAdapterType.None)
+            {
+                foreach (var adapter in AdapterDic.Values)
+                {
+                    if (adapter.AdsTypeUse.HasFlag(EAdsType.AOA))
+                        adapter.LoadNativeAd();
+                }
+            }
+            else
+            {
+                if (TryGetAdapter(specificAdapterType, out var adapter))
+                    adapter.LoadNativeAd();
+            }
+        }
+
+        public void InvokeOnNativeAdLoaded(EAdsAdapterType adapterType) => OnNativeAdLoaded?.Invoke(adapterType);
+        #endregion
+
         public bool TryGetAdapter(EAdsAdapterType specificAdapterType, out AdsAdapterBase adapter)
         {
             adapter = null;
@@ -441,6 +488,7 @@ namespace NFramework.Ads
         Inter_Reward = 1 << 3,
         MRec = 1 << 4,
         AOA = 1 << 5,
+        Native = 1 << 6,
     }
 
     public enum EAdsBannerPosition
@@ -509,7 +557,7 @@ namespace NFramework.Ads
         public double? lifetimeRevenue;
         public EAdsType adType;
 
-        public AdsRevenueData(string adPlatform, string adSource, string adUnitName, string adFormat, double value,
+        public AdsRevenueData(string adPlatform, string adSource, string adUnitName, string adFormat, double value, 
             string currency, string placement, string precision, string country, double? lifetimeRevenue, EAdsType adType)
         {
             this.adPlatform = adPlatform;

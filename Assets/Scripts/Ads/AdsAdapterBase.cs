@@ -12,8 +12,13 @@ namespace NFramework.Ads
         protected int _interLoadRetryAttempt;
         protected int _rewardLoadRetryAttempt;
         protected int _aoaLoadRetryAttempt;
+        protected int _nativeLoadRetryAttempt;
         protected AdsAdapterConfig _config;
         private Coroutine _crDelayResetIsFullscreenAdShowing;
+        private Coroutine _crTryReloadInter;
+        private Coroutine _crTryReloadReward;
+        private Coroutine _crTryReloadAOA;
+        private Coroutine _crTryReloadNativeAd;
 
         public virtual EAdsAdapterType AdapterType => EAdsAdapterType.None;
         public bool IsInitialized { get; protected set; }
@@ -60,6 +65,9 @@ namespace NFramework.Ads
                 Logger.LogError($"Adapter didn't initialize", this);
                 return;
             }
+
+            if (_crTryReloadInter != null)
+                StopCoroutine(_crTryReloadInter);
 
             if (_adsTypeUse.HasFlag(EAdsType.Inter))
                 LoadInterSDK();
@@ -114,7 +122,7 @@ namespace NFramework.Ads
             Debug.LogError($"HandleInterLoadFailed error:{error}", this);
             _interLoadRetryAttempt++;
             var retryDelay = Mathf.Pow(2, Mathf.Min(6, _interLoadRetryAttempt));
-            this.InvokeDelayRealtime(retryDelay, LoadInter);
+            _crTryReloadInter = this.InvokeDelayRealtime(retryDelay, LoadInter);
             _config.adsCallbackListener?.OnInterLoadFailed();
         }
 
@@ -174,6 +182,9 @@ namespace NFramework.Ads
                 return;
             }
 
+            if (_crTryReloadReward != null)
+                StopCoroutine(_crTryReloadReward);
+
             if (_adsTypeUse.HasFlag(EAdsType.Reward))
                 LoadRewardSDK();
             else
@@ -221,7 +232,7 @@ namespace NFramework.Ads
             Debug.LogError($"HandleRewardLoadFailed error:{error}", this);
             _rewardLoadRetryAttempt++;
             var retryDelay = Mathf.Pow(2, Mathf.Min(6, _rewardLoadRetryAttempt));
-            this.InvokeDelayRealtime(retryDelay, LoadReward);
+            _crTryReloadReward = this.InvokeDelayRealtime(retryDelay, LoadReward);
             _config.adsCallbackListener?.OnRewardLoadFailed();
         }
 
@@ -330,6 +341,9 @@ namespace NFramework.Ads
                 return;
             }
 
+            if (_crTryReloadAOA != null)
+                StopCoroutine(_crTryReloadAOA);
+
             if (_adsTypeUse.HasFlag(EAdsType.AOA))
                 LoadAOASDK();
             else
@@ -353,6 +367,10 @@ namespace NFramework.Ads
                     IsFullscreenAdShowing = true;
                     ShowAOASDK();
                 }
+                else
+                {
+                    LoadAOA();
+                }
             }
             else
             {
@@ -367,7 +385,7 @@ namespace NFramework.Ads
             Debug.LogError($"HandleAOALoadFailed error:{error}", this);
             _aoaLoadRetryAttempt++;
             var retryDelay = Mathf.Pow(2, Mathf.Min(6, _aoaLoadRetryAttempt));
-            this.InvokeDelayRealtime(retryDelay, LoadAOA);
+            _crTryReloadAOA = this.InvokeDelayRealtime(retryDelay, LoadAOA);
         }
 
         protected void HandleAOALoaded() => _aoaLoadRetryAttempt = 0;
@@ -386,6 +404,62 @@ namespace NFramework.Ads
         }
 
         protected void HandleAOADisplayed() => _config.adsCallbackListener?.OnAOADisplayed();
+        #endregion
+
+        #region Native Ad
+        public bool IsNativeAdReady()
+        {
+            if (!IsInitialized)
+            {
+                Logger.LogError($"Adapter didn't initialize", this);
+                return false;
+            }
+
+            if (_adsTypeUse.HasFlag(EAdsType.Native))
+            {
+                return IsNativeAdReadySDK();
+            }
+            else
+            {
+                Logger.LogError($"Adapter doesn't handle Native", this);
+                return false;
+            }
+        }
+
+        protected virtual bool IsNativeAdReadySDK() => false;
+
+        public void LoadNativeAd()
+        {
+            if (!IsInitialized)
+            {
+                Logger.LogError($"Adapter didn't initialize", this);
+                return;
+            }
+
+            if (_crTryReloadNativeAd != null)
+                StopCoroutine(_crTryReloadNativeAd);
+
+            if (_adsTypeUse.HasFlag(EAdsType.Native))
+                LoadNativeAdSDK();
+            else
+                Logger.LogError($"Adapter doesn't handle Native", this);
+        }
+
+        protected virtual void LoadNativeAdSDK() { }
+
+        protected void HandleNativeAdLoadFailed(string error = "")
+        {
+            Debug.LogError($"HandleNativeLoadFailed error:{error}", this);
+            _nativeLoadRetryAttempt++;
+            var retryDelay = Mathf.Pow(2, Mathf.Min(6, _nativeLoadRetryAttempt));
+            _crTryReloadNativeAd = this.InvokeDelayRealtime(retryDelay, LoadNativeAd);
+        }
+
+        protected void HandleNativeAdLoaded()
+        {
+            _nativeLoadRetryAttempt = 0;
+            AdsManager.I.InvokeOnNativeAdLoaded(AdapterType);
+        }
         #endregion
 
         protected void HandleAdsRevenuePaid(AdsRevenueData data) => _config.adsCallbackListener?.OnAdsRevenuePaid(data);

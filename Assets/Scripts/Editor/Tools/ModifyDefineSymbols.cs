@@ -15,16 +15,15 @@ namespace NFramework.Editors
         public const string IRONSOURCE_AD_QUALITY_SYMBOL = "USE_IRONSOURCE_AD_QUALITY";
         public const string APPLOVIN_ADS_SYMBOL = "USE_APPLOVIN_ADS";
         public const string ADMOB_ADS_SYMBOL = "USE_ADMOB_ADS";
+        public const string ADMOB_NATIVE_AD_SYMBOL = "USE_ADMOB_NATIVE_AD";
         public const string NO_TRACKING_SYMBOL = "NO_TRACKING";
         public const string FIREBASE_ANALYTICS_SYMBOL = "USE_FIREBASE_ANALYTICS";
-        public const string APPSFLYER_SYMBOL = "USE_APPSFLYER";
         public const string FIREBASE_CRASHLYTICS_SYMBOL = "USE_FIREBASE_CRASHLYTICS";
+        public const string APPSFLYER_SYMBOL = "USE_APPSFLYER";
         public const string ADJUST_ANALYTICS_SYMBOL = "USE_ADJUST_ANALYTICS";
-        public const string ENABLE_LOG_SYMBOL = "ENABLE_LOG";
 
         [Separator("Development")]
         [SerializeField] private bool _isDevelopment;
-        [SerializeField] private bool _enableLog;
         [Separator("Remote Config")]
         [SerializeField] private bool _useFirebaseRemoteConfig;
         [Separator("IAP")]
@@ -35,6 +34,7 @@ namespace NFramework.Editors
         [SerializeField, ConditionalField(nameof(_useIronSourceAds))] private bool _useIronSourceAdQuality;
         [SerializeField] private bool _useAppLovinAds;
         [SerializeField] private bool _useAdMobAds;
+        [SerializeField, ConditionalField(nameof(_useAdMobAds))] private bool _useAdMobNativeAd;
         [Separator("Tracking")]
         [SerializeField] private bool _isNoTracking;
         [SerializeField] private bool _useFirebaseAnalytics;
@@ -54,7 +54,6 @@ namespace NFramework.Editors
             var scriptingDefinesStringList = scriptingDefinesString.Split(';').ToList();
 
             wizard._isDevelopment = scriptingDefinesStringList.Contains(DEVELOPMENT_SYMBOL);
-            wizard._enableLog = scriptingDefinesStringList.Contains(ENABLE_LOG_SYMBOL);
             wizard._useFirebaseRemoteConfig = scriptingDefinesStringList.Contains(FIREBASE_REMOTECONFIG_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
             wizard._useUnityPurchasing = scriptingDefinesStringList.Contains(UNITY_PURCHASING_SYMBOL);
             wizard._isNoAds = scriptingDefinesStringList.Contains(NO_ADS_SYMBOL);
@@ -62,11 +61,13 @@ namespace NFramework.Editors
             wizard._useIronSourceAdQuality = scriptingDefinesStringList.Contains(IRONSOURCE_AD_QUALITY_SYMBOL);
             wizard._useAppLovinAds = scriptingDefinesStringList.Contains(APPLOVIN_ADS_SYMBOL);
             wizard._useAdMobAds = scriptingDefinesStringList.Contains(ADMOB_ADS_SYMBOL);
+            wizard._useAdMobNativeAd = scriptingDefinesStringList.Contains(ADMOB_NATIVE_AD_SYMBOL);
             wizard._isNoTracking = scriptingDefinesStringList.Contains(NO_TRACKING_SYMBOL);
             wizard._useFirebaseAnalytics = scriptingDefinesStringList.Contains(FIREBASE_ANALYTICS_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
             wizard._useAppsFlyer = scriptingDefinesStringList.Contains(APPSFLYER_SYMBOL);
             wizard._useFirebaseCrashlytics = scriptingDefinesStringList.Contains(FIREBASE_CRASHLYTICS_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
             wizard._useAdjustAnalytics = scriptingDefinesStringList.Contains(ADJUST_ANALYTICS_SYMBOL);
+
         }
 
         private void OnWizardCreate()
@@ -78,11 +79,6 @@ namespace NFramework.Editors
                 scriptingDefinesStringHashSet.Add(DEVELOPMENT_SYMBOL);
             else
                 scriptingDefinesStringHashSet.Remove(DEVELOPMENT_SYMBOL);
-
-            if (_enableLog)
-                scriptingDefinesStringHashSet.Add(ENABLE_LOG_SYMBOL);
-            else
-                scriptingDefinesStringHashSet.Remove(ENABLE_LOG_SYMBOL);
 
             if (_useFirebaseRemoteConfig || _useFirebaseAnalytics || _useFirebaseCrashlytics)
                 scriptingDefinesStringHashSet.Add(FIREBASE_SYMBOL);
@@ -124,9 +120,18 @@ namespace NFramework.Editors
                 scriptingDefinesStringHashSet.Remove(APPLOVIN_ADS_SYMBOL);
 
             if (_useAdMobAds)
+            {
                 scriptingDefinesStringHashSet.Add(ADMOB_ADS_SYMBOL);
+                if (_useAdMobNativeAd)
+                    scriptingDefinesStringHashSet.Add(ADMOB_NATIVE_AD_SYMBOL);
+                else
+                    scriptingDefinesStringHashSet.Remove(ADMOB_NATIVE_AD_SYMBOL);
+            }
             else
+            {
                 scriptingDefinesStringHashSet.Remove(ADMOB_ADS_SYMBOL);
+                scriptingDefinesStringHashSet.Remove(ADMOB_NATIVE_AD_SYMBOL);
+            }
 
             if (_isNoTracking)
                 scriptingDefinesStringHashSet.Add(NO_TRACKING_SYMBOL);
