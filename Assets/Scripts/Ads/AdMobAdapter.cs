@@ -29,6 +29,7 @@ namespace NFramework.Ads
         private DateTime _nativeAdExpireTime;
 
         public override EAdsAdapterType AdapterType => EAdsAdapterType.AdMob;
+        public bool AutoShowCollapsibleAtRefresh { get; set; }
 
         public string AOAUnitId
         {
@@ -155,7 +156,9 @@ namespace NFramework.Ads
             // create our request used to load the ad.
             var adRequest = new AdRequest();
             adRequest.Extras.Add("collapsible", "bottom");
-            adRequest.Extras.Add("collapsible_request_id", Guid.NewGuid().ToString());
+
+            if (!AutoShowCollapsibleAtRefresh)
+                adRequest.Extras.Add("collapsible_request_id", Guid.NewGuid().ToString());
 
             // send the request to load the ad.
             _bannerView?.LoadAd(adRequest);
