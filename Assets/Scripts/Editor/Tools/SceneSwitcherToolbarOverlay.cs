@@ -10,45 +10,45 @@ namespace NFramework.Editors
         public override VisualElement CreatePanelContent()
         {
             // Create a VisualElement to serve as the root of our UI.
-            VisualElement _root = new VisualElement();
+            VisualElement root = new VisualElement();
 
             // Create a vertical layout container.
-            VisualElement _layout = createContentElements(FlexDirection.Column);
+            VisualElement layout = CreateContentElements(FlexDirection.Column);
 
             // Add the vertical layout to the root.
-            _root.Add(_layout);
-            return _root;
+            root.Add(layout);
+            return root;
         }
 
         public OverlayToolbar CreateHorizontalToolbarContent()
         {
             OverlayToolbar overlayToolbar = new OverlayToolbar();
-            overlayToolbar.Add(createContentElements());
+            overlayToolbar.Add(CreateContentElements());
             return overlayToolbar;
         }
 
         public OverlayToolbar CreateVerticalToolbarContent()
         {
             OverlayToolbar overlayToolbar = new OverlayToolbar();
-            overlayToolbar.Add(createContentElements(FlexDirection.Column));
+            overlayToolbar.Add(CreateContentElements(FlexDirection.Column));
             return overlayToolbar;
         }
 
-        private VisualElement createContentElements(FlexDirection _flexDirection = FlexDirection.Row)
+        private VisualElement CreateContentElements(FlexDirection flexDirection = FlexDirection.Row)
         {
             // Create a layout container.
             VisualElement layout = new VisualElement()
             {
                 style =
                 {
-                    flexDirection = _flexDirection,
+                    flexDirection = flexDirection,
                 }
             };
 
             // Create Play button
-            Button playButton = new Button(SceneSwitcherControl.PlayFirstScene)
+            Button playButton = new Button(SceneSwitcherControl.PlayGame)
             {
-                text = "Play 1st scene"
+                text = "Play Game"
             };
             layout.Add(playButton);
 
@@ -58,11 +58,11 @@ namespace NFramework.Editors
             // Create buttons for each scene.
             foreach (string scene in scenes)
             {
-                Button _sceneButton = new Button(() => SceneSwitcherControl.OpenScene(scene))
+                Button sceneButton = new Button(() => SceneSwitcherControl.OpenScene(scene))
                 {
-                    text = scene + " scene"
+                    text = scene + " Scene"
                 };
-                layout.Add(_sceneButton);
+                layout.Add(sceneButton);
             }
             return layout;
         }
