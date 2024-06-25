@@ -13,7 +13,6 @@ namespace NFramework
 
             if (setActive)
             {
-                yield return new WaitForEndOfFrame();
                 var curScene = SceneManager.GetSceneByBuildIndex(sceneBuildIndex);
                 SceneManager.SetActiveScene(curScene);
             }
@@ -33,7 +32,6 @@ namespace NFramework
 
             if (setActive)
             {
-                yield return new WaitForEndOfFrame();
                 var curScene = SceneManager.GetSceneByName(sceneName);
                 SceneManager.SetActiveScene(curScene);
             }
