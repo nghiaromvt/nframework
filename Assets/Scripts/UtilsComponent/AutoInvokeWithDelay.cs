@@ -17,5 +17,7 @@ namespace NFramework
             else
                 this.InvokeDelay(_delay, () => OnInvoke?.Invoke());
         }
+
+        public void DestroySelf() => Destroy(gameObject);
     }
 }
