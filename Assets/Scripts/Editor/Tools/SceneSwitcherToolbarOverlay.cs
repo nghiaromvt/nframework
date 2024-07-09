@@ -60,7 +60,7 @@ namespace NFramework.Editors
             {
                 Button sceneButton = new Button(() => SceneSwitcherControl.OpenScene(scene))
                 {
-                    text = scene + " Scene"
+                    text = scene.ToString(),
                 };
                 layout.Add(sceneButton);
             }
