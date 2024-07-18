@@ -50,6 +50,7 @@ namespace NFramework
                 var instance = Instantiate(_objectToPool, transform);
                 instance.Pool = this;
                 instance.gameObject.SetActive(false);
+                instance.name += $"_{i}";
                 _poolQueue.Enqueue(instance);
             }
         }
@@ -62,6 +63,7 @@ namespace NFramework
                 {
                     var instance = Instantiate(_objectToPool, transform);
                     instance.Pool = this;
+                    instance.name += $"_{_activeObjects.Count}";
                     instance.gameObject.SetActive(true);
                     _activeObjects.Add(instance);
                     return instance;

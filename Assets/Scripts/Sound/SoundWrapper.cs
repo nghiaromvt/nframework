@@ -6,6 +6,9 @@ namespace NFramework
     {
         [SerializeField] private SoundSO _soundSO;
 
+        public bool isSFX;
+        public bool autoPlay;
+        [Separator]
         public bool loop;
         public float volumeScale = 1f;
         public float pitchScale = 1f;
@@ -15,14 +18,19 @@ namespace NFramework
 
         public SoundSO SoundSO => _soundSO;
 
-        public void PlayMusic()
+        private void OnEnable()
         {
-            _soundSO.PlayMusic(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+            if (autoPlay)
+                Play();
         }
 
-        public void PlaySFX()
+        [ButtonMethod]
+        public void Play()
         {
-            _soundSO.PlaySFX(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+            if (isSFX)
+                _soundSO.PlayMusic(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+            else
+                _soundSO.PlaySFX(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
     }
 }
