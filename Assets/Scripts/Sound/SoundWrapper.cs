@@ -28,9 +28,9 @@ namespace NFramework
         public void Play()
         {
             if (isSFX)
-                _soundSO.PlayMusic(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
-            else
                 _soundSO.PlaySFX(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
+            else
+                _soundSO.PlayMusic(loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
     }
 }
