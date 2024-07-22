@@ -1,9 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 
 namespace NFramework
 {
     public class PooledObject : MonoBehaviour
     {
+        public UnityEvent EventOnSpawnedFromPool;
+        public UnityEvent EventOnBeforeReturnPool;
+
         private Pool _pool;
 
         public Pool Pool
@@ -23,6 +27,10 @@ namespace NFramework
             if (Pool)
                 Pool.HandlePooledObjectOnDestroy(this);
         }
+
+        public virtual void OnSpawnedFromPool() => EventOnSpawnedFromPool?.Invoke();
+
+        public virtual void OnBeforeReturnToPool() => EventOnBeforeReturnPool?.Invoke();
 
         public void ReturnToPool()
         {

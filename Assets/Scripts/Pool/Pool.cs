@@ -66,6 +66,7 @@ namespace NFramework
                     instance.name += $"_{_activeObjects.Count}";
                     instance.gameObject.SetActive(true);
                     _activeObjects.Add(instance);
+                    instance.OnSpawnedFromPool();
                     return instance;
                 }
                 else if (_activeObjects.Count > 0)
@@ -73,6 +74,7 @@ namespace NFramework
                     var instance = _activeObjects[0];
                     _activeObjects.RemoveAt(0);
                     _activeObjects.Add(instance);
+                    instance.OnSpawnedFromPool();
                     return instance;
                 }
                 else
@@ -86,6 +88,7 @@ namespace NFramework
                 var instance = _poolQueue.Dequeue();
                 instance.gameObject.SetActive(true);
                 _activeObjects.Add(instance);
+                instance.OnSpawnedFromPool();
                 return instance;
             }
         }
@@ -102,6 +105,8 @@ namespace NFramework
                 _activeObjects.Remove(pooledObject);
             else
                 Logger.LogError($"Something went wrong! {pooledObject.name} isn't in activeObjects", this);
+
+            pooledObject.OnBeforeReturnToPool();
 
             if (_autoExpandPool && _maxPoolSize > 0 && _poolQueue.Count >= _maxPoolSize)
             {

@@ -7,7 +7,7 @@ namespace NFramework
         [SerializeField] private SoundSO _soundSO;
 
         public bool isSFX;
-        public bool autoPlay;
+        public bool autoPlayAtEnable;
         [Separator]
         public bool loop;
         public float volumeScale = 1f;
@@ -20,7 +20,7 @@ namespace NFramework
 
         private void OnEnable()
         {
-            if (autoPlay)
+            if (autoPlayAtEnable)
                 Play();
         }
 

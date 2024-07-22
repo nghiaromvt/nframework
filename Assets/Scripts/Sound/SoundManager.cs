@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
+using Random = UnityEngine.Random;
 #if ADDRESSABLE
 using System.Threading.Tasks;
 using UnityEngine.AddressableAssets;
@@ -150,7 +151,8 @@ namespace NFramework
              bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
             var volume = soundSO.volume * volumeScale;
-            var pitch = soundSO.pitch * pitchScale;
+            var pitch = soundSO.randomPitch ? Random.Range(soundSO.minRandomPitch, soundSO.maxRandomPitch) : soundSO.pitch;
+            pitch *= pitchScale;
             PlayMusic(soundSO.clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 
@@ -179,7 +181,8 @@ namespace NFramework
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
             var volume = soundSO.volume * volumeScale;
-            var pitch = soundSO.pitch * pitchScale;
+            var pitch = soundSO.randomPitch ? Random.Range(soundSO.minRandomPitch, soundSO.maxRandomPitch) : soundSO.pitch;
+            pitch *= pitchScale;
             return PlaySFX(soundSO.clip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 

@@ -9,7 +9,10 @@ namespace NFramework
         public string identifier;
         public AudioClip clip;
         [Range(0f, 1f)] public float volume = 1f;
-        [Range(-3f, 3f)] public float pitch = 1f;
+        [ConditionalField(nameof(randomPitch), true), Range(-3f, 3f)] public float pitch = 1f;
+        public bool randomPitch;
+        [ConditionalField(nameof(randomPitch)), Range(-3f, 3f)] public float minRandomPitch = 1f;
+        [ConditionalField(nameof(randomPitch)), Range(-3f, 3f)] public float maxRandomPitch = 1f;
 
         public void PlayMusic(bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
                   bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
