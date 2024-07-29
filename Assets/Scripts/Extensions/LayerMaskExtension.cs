@@ -5,8 +5,6 @@ namespace NFramework
 {
     public static class LayerMaskExtension
     {
-        public static int GetRaycastValue(this LayerMask mask) => 1 << mask;
-
         /// <summary>
         /// Returns bool if layer index is within layermask
         /// </summary>
