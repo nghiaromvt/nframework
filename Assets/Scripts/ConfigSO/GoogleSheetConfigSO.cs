@@ -11,18 +11,31 @@ namespace NFramework
 #if UNITY_EDITOR
         [Header("Editor")]
         [SerializeField] protected string _sheetId;
+        [SerializeField] protected bool _isSheetIdEncrypted;
         [SerializeField] protected string _gridId;
         [SerializeField] protected string _tsvCachePath;
         [SerializeField] protected string _jsonCachePath;
 
         [ButtonMethod(ButtonMethodAttribute.EDrawOrder.BeforeInspector)]
-        public void OpenSheet() => 
-            Application.OpenURL($"https://docs.google.com/spreadsheets/d/{_sheetId}/edit#gid={_gridId}");
+        public void OpenSheet()
+        {
+            var sheeId = _sheetId;
+            if (_isSheetIdEncrypted)
+                sheeId = AESUtils.DecryptAES(sheeId, AESUtils.GetGlobalEditorAESKey());
+
+            Application.OpenURL($"https://docs.google.com/spreadsheets/d/{sheeId}/edit#gid={_gridId}");
+        }
 
         [ButtonMethod(ButtonMethodAttribute.EDrawOrder.BeforeInspector)]
-        protected void Sync() =>
-            GoogleSheetHelper.GetConfig<T>(_sheetId, _gridId, OnSynced, _tsvCachePath, _jsonCachePath);
-        
+        protected void Sync()
+        {
+            var sheeId = _sheetId;
+            if (_isSheetIdEncrypted)
+                sheeId = AESUtils.DecryptAES(sheeId, AESUtils.GetGlobalEditorAESKey());
+
+            GoogleSheetHelper.GetConfig<T>(sheeId, _gridId, OnSynced, _tsvCachePath, _jsonCachePath);
+        }
+
         protected virtual void OnSynced(List<T> googleSheetData)
         {
             _datas = googleSheetData;
