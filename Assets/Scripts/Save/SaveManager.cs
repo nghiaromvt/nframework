@@ -1,4 +1,5 @@
-﻿using RotaryHeart.Lib.SerializableDictionary;
+﻿using Newtonsoft.Json;
+using RotaryHeart.Lib.SerializableDictionary;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,9 +45,6 @@ namespace NFramework
             }
         }
 #endif
-
-        [Serializable]
-        public class LoadDictionary : SerializableDictionaryBase<string, string> { }
 
         private const string SAVE_NAME = "mwovjtpamcjaytifnhyqlbprths";
         private const string BACKUP_SAVE_NAME = "_" + SAVE_NAME;
@@ -122,18 +120,18 @@ namespace NFramework
 
                 if (hasChanged)
                 {
-                    LoadDictionary temp = new LoadDictionary();
+                    Dictionary<string, string> temp = new();
                     bool checkValid = false;
                     foreach (string key in _saveDict.Keys)
                     {
-                        temp[key] = JsonUtility.ToJson(_saveDict[key].GetData());
+                        temp[key] = JsonConvert.SerializeObject(_saveDict[key].GetData());
                         checkValid = true;
                         _saveDict[key].DataChanged = false;
                     }
 
                     if (checkValid)
                     {
-                        byte[] data = System.Text.Encoding.UTF8.GetBytes(JsonUtility.ToJson(temp));
+                        byte[] data = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(temp));
 
                         if (DeviceInfo.IsWebGL)
                             SaveToPlayerPrefs(data);
@@ -150,7 +148,7 @@ namespace NFramework
 
         public void Load(bool notification = true)
         {
-            LoadDictionary loadDictionary = null;
+            Dictionary<string, string> loadDictionary = null;
             try
             {
                 byte[] data = null;
@@ -160,10 +158,11 @@ namespace NFramework
                 else
                     LoadFromFile(ref data);
 
-                loadDictionary = JsonUtility.FromJson<LoadDictionary>(data == null ? "{}" : System.Text.Encoding.UTF8.GetString(data, 0, data.Length));
+                loadDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(data == null ? "{}" : System.Text.Encoding.UTF8.GetString(data, 0, data.Length));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.LogException(ex);
                 loadDictionary = null;
             }
 
