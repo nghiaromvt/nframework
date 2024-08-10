@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RotaryHeart.Lib.SerializableDictionary;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -48,6 +47,8 @@ namespace NFramework
 
         private const string SAVE_NAME = "mwovjtpamcjaytifnhyqlbprths";
         private const string BACKUP_SAVE_NAME = "_" + SAVE_NAME;
+
+        public static event Action<string> OnSave;
 
         private static Dictionary<string, ISaveable> _saveDict = new Dictionary<string, ISaveable>();
 
@@ -131,14 +132,17 @@ namespace NFramework
 
                     if (checkValid)
                     {
-                        byte[] data = System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(temp));
+                        var dataJson = JsonConvert.SerializeObject(temp);
+                        byte[] dataBytes = System.Text.Encoding.UTF8.GetBytes(dataJson);
 
                         if (DeviceInfo.IsWebGL)
-                            SaveToPlayerPrefs(data);
+                            SaveToPlayerPrefs(dataBytes);
                         else
-                            SaveToFile(data, hasBackup);
+                            SaveToFile(dataBytes, hasBackup);
 
                         result = true;
+
+                        OnSave?.Invoke(dataJson);
                     }
                 }
             }

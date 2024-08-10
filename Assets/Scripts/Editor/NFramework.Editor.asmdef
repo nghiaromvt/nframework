@@ -1,11 +1,11 @@
 {
-    "name": "pingak9.Mobile-Dialog-Unity",
+    "name": "NFramework.Editor",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "GUID:89a2398b92390af488f98366dda9d1ce"
+    ],
     "includePlatforms": [
-        "Android",
-        "Editor",
-        "iOS"
+        "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
