@@ -2,7 +2,8 @@
     "name": "NFramework.Runtime",
     "rootNamespace": "",
     "references": [
-        "GUID:57a0b9bc628ab4740af4b6f1f0b2e134"
+        "GUID:57a0b9bc628ab4740af4b6f1f0b2e134",
+        "GUID:9166019891254ca498cc0bcad6c84540"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
