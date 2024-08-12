@@ -15,7 +15,7 @@ namespace NFramework
         /// <param name="color">Color.</param>
         /// <param name="arrowLength">Arrow length.</param>
         /// <param name="arrowHeadLength">Arrow head length.</param>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawArrow(Vector3 origin, Vector3 direction, float arrowLength = 1, float arrowHeadLength = 0.20f, Color color = default)
         {
             if (direction == Vector3.zero)
@@ -33,7 +33,7 @@ namespace NFramework
         /// <summary>
         /// Draws a debug cross of the specified size and color at the specified point
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawCross(Vector3 spot, float crossSize = 1f, Color color = default)
         {
             if (color == default)
@@ -67,7 +67,7 @@ namespace NFramework
 		/// <param name="color">Color.</param>
 		/// <param name="arrowHeadLength">Arrow head length.</param>
         /// <param name="arrowHeadAngle">Arrow head angle.</param>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         private static void DrawArrowEnd(Vector3 arrowEndPosition, Vector3 direction, Color color, float arrowHeadLength = 0.25f, float arrowHeadAngle = 40.0f)
         {
             if (direction == Vector3.zero)
@@ -87,7 +87,7 @@ namespace NFramework
         /// <summary>
 		/// Draws a rectangle based on a Rect and color
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawRectangle(Rect rectangle, Color color = default)
         {
             if (color == default)
@@ -102,7 +102,7 @@ namespace NFramework
         /// <summary>
         /// Draws a rectangle of the specified color and size at the specified position
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawRectangle(Vector3 position, Vector3 size, Color color = default)
         {
             if (color == default)
@@ -127,7 +127,7 @@ namespace NFramework
         /// <summary>
         /// Draws a point of the specified color and size at the specified position
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawPoint(Vector3 position, float size = 1, Color color = default)
         {
             if (color == default)
@@ -160,7 +160,7 @@ namespace NFramework
             Debug.DrawLine(points[5], points[3], color);
         }
 
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawRay(Ray ray, float length = 1f, Color color = default, float duration = 0f, bool depthTest = true)
         {
             if (color == default)
@@ -172,7 +172,7 @@ namespace NFramework
         /// <summary>
         /// Draws a gizmo sphere of the specified size and color at a position
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawGizmoPoint(Vector3 position, float size, Color color)
         {
             Gizmos.color = color;
@@ -182,7 +182,7 @@ namespace NFramework
         /// <summary>
         /// Draws handles to materialize the bounds of an object on screen.
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawHandlesBounds(Bounds bounds, Color color)
         {
 #if UNITY_EDITOR
@@ -221,7 +221,7 @@ namespace NFramework
         /// <summary>
         /// Draws a solid rectangle at the specified position and size, and of the specified colors
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawSolidRectangle(Vector3 position, Vector3 size, Color borderColor, Color solidColor)
         {
 #if UNITY_EDITOR
@@ -239,7 +239,7 @@ namespace NFramework
         /// <summary>
         /// Draws a cube at the specified position, and of the specified color and size
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawCube(Vector3 position, Color color, Vector3 size)
         {
             Vector3 halfSize = size / 2f;
@@ -265,7 +265,7 @@ namespace NFramework
         /// <summary>
         /// Draws a cube at the specified position, offset, and of the specified size
         /// </summary>
-        [Conditional("IS_DEBUG")]
+        [Conditional("DEVELOPMENT")]
         public static void DrawGizmoCube(Transform transform, Vector3 offset, Vector3 cubeSize, bool wireOnly)
         {
             Matrix4x4 rotationMatrix = transform.localToWorldMatrix;
