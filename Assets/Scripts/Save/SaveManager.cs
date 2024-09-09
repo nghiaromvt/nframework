@@ -180,6 +180,29 @@ namespace NFramework
             }
         }
 
+        public void Load(string data, bool notification = true)
+        {
+            Dictionary<string, string> loadDictionary = null;
+            try
+            {
+                loadDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(data == null ? "{}" : data);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+                loadDictionary = null;
+            }
+
+            foreach (string key in _saveDict.Keys)
+                _saveDict[key].SetData(loadDictionary != null && loadDictionary.ContainsKey(key) && loadDictionary[key] != null ? loadDictionary[key] : "");
+
+            if (notification)
+            {
+                foreach (string key in _saveDict.Keys)
+                    _saveDict[key].OnAllDataLoaded();
+            }
+        }
+
         private bool SaveToFile(byte[] data, bool hasBackup = true)
         {
             try

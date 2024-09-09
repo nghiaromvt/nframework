@@ -2,11 +2,10 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace NFramework
+namespace NFramework.Editors
 {
     public static class ScriptableObjectAssetCreator
     {
-#if UNITY_EDITOR
         [MenuItem("Assets/Create ScriptableObject")]
         public static void Create()
         {
@@ -23,6 +22,5 @@ namespace NFramework
             var script = Selection.activeObject as MonoScript;
             return script != null && script.GetClass().IsSubclassOf(typeof(ScriptableObject));
         }
-#endif
     }
 }

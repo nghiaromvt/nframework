@@ -256,7 +256,7 @@ namespace NFramework
 
         public void CloseAll(string identifier, bool destroy = false, List<BaseUIView> ignoreList = null)
         {
-            var views = GetOpenedViewsWithIdentifier(identifier);
+            var views = GetOpenedViews(identifier);
             foreach (var view in views)
             {
                 if (!ignoreList.IsNullOrEmpty() && ignoreList.Contains(view))
@@ -401,7 +401,20 @@ namespace NFramework
             return false;
         }
 
-        public List<BaseUIView> GetOpenedViewsWithIdentifier(string identifier)
+        public BaseUIView GetOpennedView(string identifier)
+        {
+            foreach (var views in _openedView.Values)
+            {
+                foreach (var view in views)
+                {
+                    if (view.Identifier == identifier)
+                        return view;
+                }
+            }
+            return null;
+        }
+
+        public List<BaseUIView> GetOpenedViews(string identifier)
         {
             var openedViews = new List<BaseUIView>();
             foreach (var views in _openedView.Values)
