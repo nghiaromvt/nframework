@@ -82,13 +82,48 @@ namespace NFramework
             return new string(chars);
         }
 
-        public static float TryParseToFloat(this string @this)
+        public static bool IsNullOrEmpty(this string @this) => string.IsNullOrEmpty(@this);
+
+        public static int ParseToInt(this string @this, int defaultValue = 0)
         {
-            bool canParse = float.TryParse(@this, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out var result);
-            if (canParse)
-                return result;
-            else
-                return 0;
+            if (string.IsNullOrEmpty(@this))
+                return defaultValue;
+
+            return int.TryParse(@this, NumberStyles.Integer,
+                CultureInfo.InvariantCulture.NumberFormat, out int result) ? result : defaultValue;
+        }
+
+        public static bool TryParseToInt(this string @this, out int result)
+        {
+            return int.TryParse(@this, NumberStyles.Integer, CultureInfo.InvariantCulture.NumberFormat, out result);
+        }
+
+        public static float ParseToFloat(this string @this, float defaultValue = 0)
+        {
+            if (string.IsNullOrEmpty(@this))
+                return defaultValue;
+
+            return float.TryParse(@this, NumberStyles.Float,
+                CultureInfo.InvariantCulture.NumberFormat, out var result) ? result : defaultValue;
+        }
+
+        public static bool TryParseToFloat(this string @this, out float result)
+        {
+            return float.TryParse(@this, NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out result);
+        }
+
+        public static T ParseToEnum<T>(this string @this, T defaultValue = default, bool ignoreCase = true) where T : struct
+        {
+            if (string.IsNullOrEmpty(@this))
+                return defaultValue;
+
+            T result;
+            return Enum.TryParse(@this, ignoreCase, out result) ? result : defaultValue;
+        }
+
+        public static bool TryParseToEnum<T>(this string @this, out T result, bool ignoreCase = true) where T : struct
+        {
+            return Enum.TryParse(@this, ignoreCase, out result);
         }
     }
 }
