@@ -16,7 +16,7 @@ namespace NFramework
         [SerializeField] protected string _tsvCachePath;
         [SerializeField] protected string _jsonCachePath;
 
-        [ButtonMethod(ButtonMethodAttribute.EDrawOrder.BeforeInspector)]
+        [ButtonMethod(ButtonMethodDrawOrder.BeforeInspector)]
         public void OpenSheet()
         {
             var sheeId = _sheetId;
@@ -26,7 +26,7 @@ namespace NFramework
             Application.OpenURL($"https://docs.google.com/spreadsheets/d/{sheeId}/edit#gid={_gridId}");
         }
 
-        [ButtonMethod(ButtonMethodAttribute.EDrawOrder.BeforeInspector)]
+        [ButtonMethod(ButtonMethodDrawOrder.BeforeInspector)]
         protected void Sync()
         {
             var sheeId = _sheetId;
