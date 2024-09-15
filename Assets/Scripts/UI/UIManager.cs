@@ -401,7 +401,7 @@ namespace NFramework
             return false;
         }
 
-        public BaseUIView GetOpennedView(string identifier)
+        public BaseUIView GetOpenedView(string identifier)
         {
             foreach (var views in _openedView.Values)
             {
@@ -412,6 +412,12 @@ namespace NFramework
                 }
             }
             return null;
+        }
+
+        public T GetOpenedView<T>(string identifier) where T : BaseUIView
+        {
+            var view = GetOpenedView(identifier);
+            return view == null ? null : view as T;
         }
 
         public List<BaseUIView> GetOpenedViews(string identifier)
