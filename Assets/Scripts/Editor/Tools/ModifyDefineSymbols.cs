@@ -7,7 +7,7 @@ namespace NFramework.Editors
     public class ModifyDefineSymbols : ScriptableWizard
     {
         public const string DEVELOPMENT_SYMBOL = "DEVELOPMENT";
-        public const string ENABKE_LOG_SYMBOL = "ENABLE_LOG";
+        public const string ENABLE_LOG_SYMBOL = "ENABLE_LOG";
         public const string FIREBASE_SYMBOL = "USE_FIREBASE";
         public const string UNITY_PURCHASING_SYMBOL = "USE_UNITY_PURCHASING";
         public const string FIREBASE_REMOTECONFIG_SYMBOL = "USE_FIREBASE_REMOTECONFIG";
@@ -56,7 +56,7 @@ namespace NFramework.Editors
             var scriptingDefinesStringList = scriptingDefinesString.Split(';').ToList();
 
             wizard._isDevelopment = scriptingDefinesStringList.Contains(DEVELOPMENT_SYMBOL);
-            wizard._enableLog = scriptingDefinesStringList.Contains(ENABKE_LOG_SYMBOL);
+            wizard._enableLog = scriptingDefinesStringList.Contains(ENABLE_LOG_SYMBOL);
             wizard._useFirebaseRemoteConfig = scriptingDefinesStringList.Contains(FIREBASE_REMOTECONFIG_SYMBOL) && scriptingDefinesStringList.Contains(FIREBASE_SYMBOL);
             wizard._useUnityPurchasing = scriptingDefinesStringList.Contains(UNITY_PURCHASING_SYMBOL);
             wizard._isNoAds = scriptingDefinesStringList.Contains(NO_ADS_SYMBOL);
@@ -83,9 +83,9 @@ namespace NFramework.Editors
                 scriptingDefinesStringHashSet.Remove(DEVELOPMENT_SYMBOL);
 
             if (_enableLog)
-                scriptingDefinesStringHashSet.Add(ENABKE_LOG_SYMBOL);
+                scriptingDefinesStringHashSet.Add(ENABLE_LOG_SYMBOL);
             else
-                scriptingDefinesStringHashSet.Remove(ENABKE_LOG_SYMBOL);
+                scriptingDefinesStringHashSet.Remove(ENABLE_LOG_SYMBOL);
 
             if (_useFirebaseRemoteConfig || _useFirebaseAnalytics || _useFirebaseCrashlytics)
                 scriptingDefinesStringHashSet.Add(FIREBASE_SYMBOL);

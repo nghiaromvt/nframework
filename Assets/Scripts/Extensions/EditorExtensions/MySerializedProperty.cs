@@ -7,7 +7,7 @@ using System.Reflection;
 using UnityEditor;
 using Object = UnityEngine.Object;
 
-namespace NFramework.EditorTools
+namespace NFramework
 {
 	public static class MySerializedProperty
 	{
