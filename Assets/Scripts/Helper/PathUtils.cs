@@ -56,7 +56,7 @@ namespace NFramework
                 var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
                 var fileName = Path.GetFileNameWithoutExtension(path);
                 if (pathDic.ContainsKey(fileName))
-                    Logger.LogWarning($"Already have key [{fileName}] => ignore");
+                    Debug.LogWarning($"Already have key [{fileName}] => ignore");
                 else
                     pathDic.Add(fileName, path);
             }

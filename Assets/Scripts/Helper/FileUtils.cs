@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace NFramework
 {
@@ -74,7 +75,7 @@ namespace NFramework
             if (pathDic.ContainsKey(assetName))
                 return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(pathDic[assetName]);
 
-            Logger.LogError($"Cannot find asset with name: {assetName}");
+            Debug.LogError($"Cannot find asset with name: {assetName}");
             return null;
         }
 #endif

@@ -66,7 +66,7 @@ namespace NFramework
         {
             if (string.IsNullOrEmpty(path))
             {
-                Logger.Log(text);
+                Debug.Log(text);
                 return;
             }
 

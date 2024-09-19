@@ -29,7 +29,7 @@ namespace NFramework
         {
             if (I != this)
             {
-                Logger.LogError($"An instance of {typeof(T).Name} already existed! Destroy this!");
+                Debug.LogError($"An instance of {typeof(T).Name} already existed! Destroy this!");
                 Destroy(gameObject);
             }
         }

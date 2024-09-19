@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace NFramework
 {
@@ -39,7 +41,7 @@ namespace NFramework
         {
             if (_speedTestDict.ContainsKey(testID))
             {
-                Logger.LogError($"TestID[{testID}] already exist and will be overrided");
+                Debug.LogError($"TestID[{testID}] already exist and will be overrided");
                 _speedTestDict.Remove(testID);
             }
 
@@ -54,7 +56,7 @@ namespace NFramework
         {
             if (!_speedTestDict.ContainsKey(testID))
             {
-                Logger.LogError($"TestID[{testID}] is not exist");
+                Debug.LogError($"TestID[{testID}] is not exist");
                 return;
             }
 
@@ -62,7 +64,7 @@ namespace NFramework
             float elapsedTime = _speedTestDict[testID].timer.ElapsedMilliseconds / 1000f;
             _speedTestDict.Remove(testID);
 
-            Logger.Log($"TestID[{testID}] end test with {elapsedTime}s");
+            Debug.Log($"TestID[{testID}] end test with {elapsedTime}s");
         }
     }
 }

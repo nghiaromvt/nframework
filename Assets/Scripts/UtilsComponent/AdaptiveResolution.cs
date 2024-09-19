@@ -96,7 +96,7 @@ namespace NFramework
                 if (curAspect > info.minAspect)
                     return info;
             }
-            Logger.LogError($"Cannot GetAdaptiveInfo({curAspect})", this);
+            Debug.LogError($"Cannot GetAdaptiveInfo({curAspect})", this);
             return null;
         }     
     }

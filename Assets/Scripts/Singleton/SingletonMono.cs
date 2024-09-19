@@ -16,7 +16,7 @@ namespace NFramework
             }
             else
             {
-                Logger.LogError($"Duplicate singleton type of {typeof(T)}");
+                Debug.LogError($"Duplicate singleton type of {typeof(T)}");
                 Destroy(gameObject);
             }
         }
