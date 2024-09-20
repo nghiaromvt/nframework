@@ -110,9 +110,17 @@ namespace NFramework
         {
             if (_panels.IsNullOrEmpty())
             {
-                Logger.LogError("Cannot apply safe area - no RectTransform found on " + name, this);
-                Destroy(this);
-                return;
+                var selfRectTf = GetComponent<RectTransform>();
+                if (selfRectTf != null)
+                {
+                    _panels.Add(selfRectTf);
+                }
+                else
+                {
+                    Debug.LogError("Cannot apply safe area - no RectTransform found on " + name, this);
+                    Destroy(this);
+                    return;
+                }
             }
 
             Refresh();
