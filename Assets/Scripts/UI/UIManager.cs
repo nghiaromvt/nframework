@@ -60,7 +60,7 @@ namespace NFramework
 
         private void Update()
         {
-            if (!CanInteract && Application.isFocused && Input.anyKeyDown && _nextCheckTime < Time.unscaledTime)
+            if (CanInteract && Application.isFocused && Input.anyKeyDown && _nextCheckTime < Time.unscaledTime)
             {
                 _nextCheckTime = Time.unscaledTime + 0.15f;
                 var currentView = GetCurrentView();
