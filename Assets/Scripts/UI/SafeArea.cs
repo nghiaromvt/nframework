@@ -101,6 +101,7 @@ namespace NFramework
         [SerializeField] private bool _conformY = true;  // Conform to screen safe area on Y-axis (default true, disable to ignore)
         [SerializeField] private bool _logging = false;  // Conform to screen safe area on Y-axis (default true, disable to ignore)
         [SerializeField] private List<RectTransform> _panels = new List<RectTransform>();
+        [SerializeField] private bool _triggerOnlyOnce;
 
         private Rect _lastSafeArea = new Rect(0, 0, 0, 0);
         private Vector2Int _lastScreenSize = new Vector2Int(0, 0);
@@ -122,15 +123,15 @@ namespace NFramework
                     return;
                 }
             }
-
-            Refresh();
         }
+
+        private void OnEnable() => Refresh();
 
 #if UNITY_EDITOR
         private void FixedUpdate() => Refresh();
 #endif
 
-        private void Refresh()
+        public void Refresh()
         {
             Rect safeArea = GetSafeArea();
 
@@ -236,7 +237,7 @@ namespace NFramework
 
             if (_logging)
             {
-                Logger.Log(string.Format("New safe area applied to {0}: x={1}, y={2}, w={3}, h={4} on full extents w={5}, h={6}",
+                Debug.Log(string.Format("New safe area applied to {0}: x={1}, y={2}, w={3}, h={4} on full extents w={5}, h={6}",
                     name, r.x, r.y, r.width, r.height, Screen.width, Screen.height), this);
             }
         }

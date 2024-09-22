@@ -25,7 +25,7 @@ namespace NFramework
         public static event Action<BaseUIView> OnOpenedView;
         public static event Action<BaseUIView> OnClosedView;
 
-        [SerializeField] private string _uiRootPath;
+        [SerializeField] private string _resourceRootPath;
 
         private CanvasGroup _canvasGroup;
         private Dictionary<string, Stack<BaseUIView>> _cachedView = new Dictionary<string, Stack<BaseUIView>>();
@@ -175,7 +175,7 @@ namespace NFramework
                 return false;
             }
 
-            var loadPath = Path.Combine(_uiRootPath, identifier);
+            var loadPath = Path.Combine(_resourceRootPath, identifier);
             var prefab = Resources.Load<BaseUIView>(loadPath);
             if (!isNew && prefab.IsUnique)
                 Logger.LogError($"UI [{identifier}] is Unique!", this);
@@ -202,7 +202,7 @@ namespace NFramework
                 return false;
             }
 
-            var loadPath = Path.Combine(_uiRootPath, identifier);
+            var loadPath = Path.Combine(_resourceRootPath, identifier);
 
             var resourceRequest = Resources.LoadAsync<BaseUIView>(loadPath);
             while (!resourceRequest.isDone)

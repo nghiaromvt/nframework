@@ -2,6 +2,7 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.Audio;
 using Random = UnityEngine.Random;
@@ -27,6 +28,7 @@ namespace NFramework
         [SerializeField] private AudioMixerGroup _musicMixerGroup;
         [SerializeField] private AudioMixerGroup _sfxMixerGroup;
         [SerializeField] private int _sfxAudioSourceCount = 10;
+        [SerializeField] private string _resourceRootPath;
 
         private AudioSource _musicAudioSource;
         private List<AudioSource> _sfxAudioSources = new List<AudioSource>();
@@ -239,28 +241,32 @@ namespace NFramework
         public void PlayMusicResourceSO(string soundSOPath, bool loop = true, float volumeScale = 1f, float pitchScale = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
-            var soundSO = Resources.Load<SoundSO>(soundSOPath);
+            var loadPath = Path.Combine(_resourceRootPath, soundSOPath);
+            var soundSO = Resources.Load<SoundSO>(loadPath);
             PlayMusic(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 
         public void PlayMusicResource(string audioClipPath, bool loop = true, float volume = 1f, float pitch = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
-            var audioClip = Resources.Load<AudioClip>(audioClipPath);
+            var loadPath = Path.Combine(_resourceRootPath, audioClipPath);
+            var audioClip = Resources.Load<AudioClip>(loadPath);
             PlayMusic(audioClip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 
         public AudioSource PlaySFXResourceSO(string soundSOPath, bool loop = false, float volumeScale = 1f, float pitchScale = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
-            var soundSO = Resources.Load<SoundSO>(soundSOPath);
+            var loadPath = Path.Combine(_resourceRootPath, soundSOPath);
+            var soundSO = Resources.Load<SoundSO>(loadPath);
             return PlaySFX(soundSO, loop, volumeScale, pitchScale, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
 
         public AudioSource PlaySFXResource(string audioClipPath, bool loop = false, float volume = 1f, float pitch = 1f,
             bool ignoreListnerPause = false, bool ignoreLisnerVolume = false, float fadeTime = 0f)
         {
-            var audioClip = Resources.Load<AudioClip>(audioClipPath);
+            var loadPath = Path.Combine(_resourceRootPath, audioClipPath);
+            var audioClip = Resources.Load<AudioClip>(loadPath);
             return PlaySFX(audioClip, loop, volume, pitch, ignoreListnerPause, ignoreLisnerVolume, fadeTime);
         }
         #endregion

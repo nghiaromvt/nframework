@@ -6,7 +6,6 @@ namespace NFramework
     [CreateAssetMenu(menuName = "ScriptableObject/SoundSO")]
     public class SoundSO : ScriptableObject
     {
-        public string identifier;
         public AudioClip clip;
         [Range(0f, 1f)] public float volume = 1f;
         [ConditionalField(nameof(randomPitch), true), Range(-3f, 3f)] public float pitch = 1f;
@@ -35,9 +34,8 @@ namespace NFramework
             if (clip == null)
                 return;
 
-            identifier = clip.name;
             var path = UnityEditor.AssetDatabase.GetAssetPath(this);
-            UnityEditor.AssetDatabase.RenameAsset(path, $"{identifier}");
+            UnityEditor.AssetDatabase.RenameAsset(path, $"{clip.name}");
 #endif
         }
     }
