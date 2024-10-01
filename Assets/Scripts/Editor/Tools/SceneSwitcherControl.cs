@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEngine;
 
 namespace NFramework.Editors
 {
     public class SceneSwitcherControl
     {
-        private const string PREF_LAST_OPENED_SCENES = "Game.LastOpenedScenes";
-        private const string PREF_PLAYED_USING_RUN_UTILS = "Game.PlayedUsingRunUtils";
+        private static readonly string PREF_LAST_OPENED_SCENES = $"{Application.dataPath}.LastOpenedScenes";
+        private static readonly string PREF_PLAYED_USING_RUN_UTILS = $"{Application.dataPath}.PlayedUsingRunUtils";
 
         private static Dictionary<string, string> _scenePathStorage = new Dictionary<string, string>();
         private static string[] _sceneTitles = Array.Empty<string>();

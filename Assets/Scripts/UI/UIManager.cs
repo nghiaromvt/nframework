@@ -106,10 +106,12 @@ namespace NFramework
                 return false;
             }
 
-            var loadPath = Path.Combine(_uiRootPath, identifier);
-            var loadHandle = Addressables.LoadAssetAsync<GameObject>(loadPath);
+            var loadHandle = Addressables.LoadAssetAsync<GameObject>(identifier);
             while (!loadHandle.IsDone)
             {
+                if (destroyCancellationToken.IsCancellationRequested)
+                    return false;
+
                 await Task.Yield();
             }
 
@@ -317,6 +319,50 @@ namespace NFramework
                 return true;
             }
             return false;
+        }
+
+        public void DestroyCachedViews(string identifier)
+        {
+            var views = new List<BaseUIView>();
+            foreach (var cachedStack in _cachedView.Values)
+            {
+                if (cachedStack.Count > 0)
+                {
+                    var sample = cachedStack.Peek();
+                    if (sample.Identifier == identifier)
+                    {
+                        foreach (var view in cachedStack)
+                            views.Add(view);
+
+                        cachedStack.Clear();
+                    }
+                }
+            }
+
+            if (views.Count > 0)
+            {
+                foreach (var view in views)
+                    Destroy(view);
+            }
+        }
+
+        public void DestroyAllCachedViews()
+        {
+            var canDestroyViews = new List<BaseUIView>();
+            foreach (var cachedStack in _cachedView.Values)
+            {
+                if (cachedStack.Count > 0)
+                {
+                    var sample = cachedStack.Peek();
+                    foreach (var view in cachedStack)
+                        canDestroyViews.Add(view);
+
+                    cachedStack.Clear();
+                }
+            }
+
+            foreach (var view in canDestroyViews)
+                Destroy(view);
         }
 
         public void DestroyAllViewCanDestroy(bool includeOpened = true, bool includeCached = true)

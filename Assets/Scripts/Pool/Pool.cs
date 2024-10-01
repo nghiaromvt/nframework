@@ -79,7 +79,7 @@ namespace NFramework
                 }
                 else
                 {
-                    Logger.LogError($"Cannot get PooledObject", this);
+                    Debug.LogError($"Cannot get PooledObject", this);
                     return null;
                 }
             }
@@ -97,14 +97,14 @@ namespace NFramework
         {
             if (pooledObject.Pool != this)
             {
-                Logger.LogError($"Cannot return {pooledObject.name} to pool, because it's not in this pool", this);
+                Debug.LogError($"Cannot return {pooledObject.name} to pool, because it's not in this pool", this);
                 return;
             }
 
             if (_activeObjects.Contains(pooledObject))
                 _activeObjects.Remove(pooledObject);
             else
-                Logger.LogError($"Something went wrong! {pooledObject.name} isn't in activeObjects", this);
+                Debug.LogError($"Something went wrong! {pooledObject.name} isn't in activeObjects", this);
 
             pooledObject.OnBeforeReturnToPool();
 
