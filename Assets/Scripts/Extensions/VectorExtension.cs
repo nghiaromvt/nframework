@@ -256,6 +256,14 @@ namespace NFramework
 		public static Vector4 ScaleBy(this Vector4 source, Vector4 right) => Vector4.Scale(source, right);
 
 		#endregion
+
+		#region Round
+
+		public static Vector3 Round(this Vector3 source) => new Vector3(source.x.Round(), source.y.Round(), source.z.Round());
+		
+		public static Vector2 Round(this Vector2 source) => new Vector2(source.x.Round(), source.y.Round());
+
+		#endregion
 		
 		#region Vector2 Rotate
 

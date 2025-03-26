@@ -1,0 +1,227 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+using UnityEngine;
+
+namespace NFramework
+{
+    public enum EBuildEnvironment
+    {
+        Development = 0,
+        Staging = 1,
+        Production = 2,
+    }
+
+    public enum EDeviceHardwareLevel
+    {
+        Low = 0,
+        Medium = 1,
+        High = 2,
+    }
+    
+    public static class DeviceHelper
+    {
+        public static bool IsTallPhone
+        {
+            get
+            {
+                if (Screen.height > Screen.width) // Portrait
+                    return (float)Screen.height / Screen.width >= 2f;
+                else // Landscape
+                    return (float)Screen.width / Screen.height >= 2f;
+            }
+        }
+
+        public static bool IsIpad
+        {
+            get
+            {
+                if (Screen.height > Screen.width) // Portrait
+                    return (float)Screen.height / Screen.width <= 1.775f;
+                else // Landscape
+                    return (float)Screen.width / Screen.height <= 1.775f;
+            }
+        }
+
+        public static bool IsAndroid
+        {
+            get
+            {
+#if UNITY_ANDROID
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        public static bool IsIOS
+        {
+            get
+            {
+#if UNITY_IOS
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        public static bool IsWebGL
+        {
+            get
+            {
+#if UNITY_WEBGL
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        public static bool IsDevelopment => BuildEnvironment == EBuildEnvironment.Development;
+
+        public static EBuildEnvironment BuildEnvironment
+        {
+            get
+            {
+#if STAGING
+                return EBuildEnvironment.Staging;
+#elif PRODUCTION
+                return EBuildEnvironment.Production;
+#else
+                return EBuildEnvironment.Development;
+#endif
+            }
+        }
+
+        public static bool IsNoAds
+        {
+            get
+            {
+#if NO_ADS
+                return true;
+#endif
+                return false;
+            }
+        }
+
+        public static bool IsTestIAP
+        {
+            get
+            {
+#if TEST_IAP
+                return true;
+#endif
+                return false;
+            }
+        }
+
+        public static bool IsNoTracking
+        {
+            get
+            {
+#if NO_TRACKING
+                return true;
+#endif
+                return false;
+            }
+        }
+
+        public static bool NetworkReachabilityStatus() => Application.internetReachability != NetworkReachability.NotReachable;
+
+        public static List<string> GetLocalIPAddress()
+        {
+            List<string> localIPs = new List<string>();
+            var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    localIPs.Add(ip.ToString());
+            }
+            return localIPs;
+        }
+
+        private static string _deviceUDID = "";
+        public static string GetUDID()
+        {
+            if (_deviceUDID.Length <= 0)
+            {
+                _deviceUDID = PlayerPrefs.GetString("didu", string.Empty);
+                if (string.IsNullOrEmpty(_deviceUDID))
+                {
+                    _deviceUDID = SystemInfo.deviceUniqueIdentifier;
+                    PlayerPrefs.SetString("didu", _deviceUDID);
+                }
+            }
+            return _deviceUDID;
+        }
+
+        public static void OpenDeviceWifiSetting()
+        {
+            try
+            {
+#if UNITY_ANDROID
+                using (var unityClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                using (AndroidJavaObject currentActivityObject = unityClass.GetStatic<AndroidJavaObject>("currentActivity"))
+                {
+                    using (var intentObject = new AndroidJavaObject("android.content.Intent", "android.settings.WIFI_SETTINGS"))
+                    {
+                        currentActivityObject.Call("startActivity", intentObject);
+                    }
+                }
+#endif
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
+        }
+        
+        public static int GetAndroidSDKLevel() {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            using (var version = new AndroidJavaClass("android.os.Build$VERSION")) 
+            {
+                return version.GetStatic<int>("SDK_INT");
+            }
+#else
+            return 0;
+#endif
+        }
+        
+#if UNITY_EDITOR
+        public static List<string> GetScriptingDefinesStringList()
+        {
+            var scriptingDefinesString = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            var scriptingDefinesStringList = scriptingDefinesString.Split(';').ToList();
+            return scriptingDefinesStringList;
+        }
+#endif
+
+        public static EDeviceHardwareLevel GetDeviceHardwareLevel()
+        {
+            var ramGB = SystemInfo.systemMemorySize / 1024;
+            
+            if (IsAndroid)
+            {
+                if (ramGB <= 4)
+                    return EDeviceHardwareLevel.Low;
+                if (ramGB <= 6)
+                    return EDeviceHardwareLevel.Medium;
+            }
+            else if (IsIOS)
+            {
+                if (ramGB <= 2)
+                    return EDeviceHardwareLevel.Low;
+                if (ramGB <= 3)
+                    return EDeviceHardwareLevel.Medium;
+            }
+            
+            return EDeviceHardwareLevel.High;
+        }
+    }
+}
+
