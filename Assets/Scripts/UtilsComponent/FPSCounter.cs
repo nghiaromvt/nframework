@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace NFramework
 {
@@ -8,7 +7,6 @@ namespace NFramework
         private enum EAnchor { LeftTop, LeftBottom, RightTop, RightBottom }
 
         [SerializeField] private bool _editorOnly;
-        [SerializeField] private bool _developmentOnly = true;
         
         [Space]
         [SerializeField] private float _updateInterval = 1f;
@@ -19,37 +17,25 @@ namespace NFramework
         [SerializeField] private int _xOffset;
         [SerializeField] private int _yOffset;
 
-        [Space]
-        [SerializeField] private Color _goodColor = ColorHelper.Lime;
-        [SerializeField] private Color _okColor = ColorHelper.Yellow;
-        [SerializeField] private Color _badColor = ColorHelper.Red;
-
         /// <summary>
         /// Skip some time at start to skip performance drop on game start
         /// and produce more accurate Avg FPS
         /// </summary>
         private float _idleTime = 2f;
-
         private float _elapsed;
         private int _frames;
         private float _fps;
-
         private float _okFps;
         private float _badFps;
-
         private Rect _rect;
-
         private GUIStyle _style;
+        private readonly Color _goodColor = ColorHelper.Lime;
+        private readonly Color _okColor = ColorHelper.Yellow;
+        private readonly Color _badColor = ColorHelper.Red;
 
         private void Awake()
         {
             if (_editorOnly && !Application.isEditor)
-            {
-                Destroy(this);
-                return;
-            }
-
-            if (_developmentOnly && !DeviceHelper.IsDevelopment)
             {
                 Destroy(this);
                 return;
@@ -100,11 +86,11 @@ namespace NFramework
                 _frames = 0;
             }
         }
-
+        
+#if DEVELOPMENT
         private void OnGUI()
         {
-            if (_editorOnly && !Application.isEditor)
-                return;
+            if (_editorOnly && !Application.isEditor) return;
 
             var color = _goodColor;
             if (_fps <= _okFps) color = _okColor;
@@ -113,5 +99,6 @@ namespace NFramework
             GUI.Label(_rect, "FPS: " + (int)_fps, _style);
             _style.normal.textColor = GUI.color;
         }
+#endif
     }
 }

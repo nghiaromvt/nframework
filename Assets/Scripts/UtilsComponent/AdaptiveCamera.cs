@@ -18,14 +18,12 @@ namespace NFramework
         }
         
         [HideInInspector, SerializeField] private Camera _camera;
-        
         [FoldoutGroup("General"), SerializeField] private bool _adaptAtAwake;
         [FoldoutGroup("General"), SerializeField] private bool _adaptContinuity;
         [FoldoutGroup("General"), SerializeField] private bool _isOrtho;
         [FoldoutGroup("General"), SerializeField] private float _baseAspectRatio = 16f / 9;
         [FoldoutGroup("General"), ShowIf(nameof(_isOrtho)), SerializeField] private float _baseOrthoSize = 10f;
         [FoldoutGroup("General"), HideIf(nameof(_isOrtho)), SerializeField] private float _baseFov = 60f;
-
         [SerializeField] private List<ManualInfo> _manualInfos = new();
         
         private float _adaptedAspectRatio;

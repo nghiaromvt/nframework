@@ -8,6 +8,6 @@ namespace NFramework
     [SelectionBase]
     public class SelectionBase : MonoBehaviour
     {
-
+        
     }
 }
