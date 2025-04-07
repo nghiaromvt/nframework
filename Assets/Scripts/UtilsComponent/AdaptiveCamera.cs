@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace NFramework
 {
-    [RequireComponent(typeof(Camera))]
     public class AdaptiveCamera : MonoBehaviour
     {
         [Serializable]
@@ -17,18 +16,18 @@ namespace NFramework
             public float pov;
         }
         
-        [HideInInspector, SerializeField] private Camera _camera;
-        [FoldoutGroup("General"), SerializeField] private bool _adaptAtAwake;
-        [FoldoutGroup("General"), SerializeField] private bool _adaptContinuity;
-        [FoldoutGroup("General"), SerializeField] private bool _isOrtho;
-        [FoldoutGroup("General"), SerializeField] private float _baseAspectRatio = 16f / 9;
-        [FoldoutGroup("General"), ShowIf(nameof(_isOrtho)), SerializeField] private float _baseOrthoSize = 10f;
-        [FoldoutGroup("General"), HideIf(nameof(_isOrtho)), SerializeField] private float _baseFov = 60f;
+        [SerializeField] private Camera _camera;
+        [SerializeField] private bool _adaptAtAwake;
+        [SerializeField] private bool _adaptContinuity;
+        [SerializeField] private bool _isOrtho;
+        [SerializeField] private float _baseAspectRatio = 16f / 9;
+        [ShowIf(nameof(_isOrtho)), SerializeField] private float _baseOrthoSize = 10f;
+        [HideIf(nameof(_isOrtho)), SerializeField] private float _baseFov = 60f;
         [SerializeField] private List<ManualInfo> _manualInfos = new();
         
         private float _adaptedAspectRatio;
         
-        private void OnValidate() => _camera ??= GetComponent<Camera>();
+        protected virtual void OnValidate() => _camera ??= GetComponent<Camera>();
 
         private void Awake()
         {
@@ -60,17 +59,25 @@ namespace NFramework
             {
                 if (manualInfo.aspectRatioRange.x <= curAspectRatio && manualInfo.aspectRatioRange.y >= curAspectRatio)
                 {
-                    if (_isOrtho)
-                        _camera.orthographicSize = manualInfo.orthoSize;
-                    else
-                        _camera.fieldOfView = manualInfo.pov;
-                    
+                    Apply(manualInfo);
                     return;
                 }
             }
             
             var aspectScale = curAspectRatio / _baseAspectRatio;
-            
+            Apply(aspectScale);
+        }
+
+        protected virtual void Apply(ManualInfo manualInfo)
+        {
+            if (_isOrtho)
+                _camera.orthographicSize = manualInfo.orthoSize;
+            else
+                _camera.fieldOfView = manualInfo.pov;
+        }
+
+        protected virtual void Apply(float aspectScale)
+        {
             if (_isOrtho)
                 _camera.orthographicSize = _baseOrthoSize * aspectScale;
             else

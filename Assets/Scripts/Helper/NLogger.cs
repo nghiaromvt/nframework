@@ -1,7 +1,9 @@
+using System;
 using System.Diagnostics;
 using System.Text;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using Object = UnityEngine.Object;
 
 namespace NFramework
 {
@@ -19,10 +21,16 @@ namespace NFramework
             Debug.LogWarning(FormatMessage(message, context, color), context);
         }
 
-        [Conditional("ENABLE_LOG"), Conditional("UNITY_EDITOR")]
+        [Conditional("ENABLE_LOG"), Conditional("UNITY_EDITOR"), Conditional("ENABLE_ERROR_LOG")]
         public static void LogError(object message, Object context = null, Color? color = null)
         {
             Debug.LogError(FormatMessage(message, context, color), context);
+        }
+        
+        [Conditional("ENABLE_LOG"), Conditional("UNITY_EDITOR"), Conditional("ENABLE_ERROR_LOG")]
+        public static void LogException(Exception exception, Object context = null, Color? color = null)
+        {
+            Debug.Log(FormatMessage(exception.Message, context, color), context);
         }
 
         [Conditional("ENABLE_LOG"), Conditional("UNITY_EDITOR")]
