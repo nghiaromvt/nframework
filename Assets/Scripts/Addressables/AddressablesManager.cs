@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -25,6 +24,12 @@ namespace NFramework
         {
             base.Awake();
             if (_initializeOnAwake) Initialize().Forget();
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            ReleaseAll();
         }
 
         public async UniTask Initialize()
@@ -208,6 +213,16 @@ namespace NFramework
                 await ((AddressableSceneLoader)cachedLoader).Unload();
                 _cachedAddressableSceneLoaderDict.Remove(address);
             }
+        }
+        
+        private void ReleaseAll()
+        {
+            _cachedAddressableAssetLoaderDict.Values.ForEach(loader => loader.Release());
+            _cachedAddressableAssetsLoaderDict.Values.ForEach(loader => loader.Release());
+            _cachedAddressableSceneLoaderDict.Values.ForEach(loader => loader.Release());
+            _cachedAddressableAssetLoaderDict.Clear();
+            _cachedAddressableAssetsLoaderDict.Clear();
+            _cachedAddressableSceneLoaderDict.Clear();
         }
 
         #endregion

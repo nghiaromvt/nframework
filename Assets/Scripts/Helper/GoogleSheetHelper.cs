@@ -2,7 +2,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace NFramework
 {
@@ -25,14 +30,27 @@ namespace NFramework
             LoadTextFromWeb(url, callback);
         }
 
-        private static void LoadTextFromWeb(string url, Action<string> callBack)
+        private static async void LoadTextFromWeb(string url, Action<string> callBack)
         {
-            WWW request = new WWW(url);
-            while (!request.isDone)
+            UnityWebRequest uwr = UnityWebRequest.Get(url);
+            uwr.timeout = 15;
+            uwr.SendWebRequest();
+
+            while (!uwr.isDone)
             {
-                request.MoveNext();
+#if UNITY_EDITOR
+                EditorUtility.DisplayProgressBar("Processing", $"Progress {uwr.downloadProgress * 100}%", uwr.downloadProgress);
+#endif            
+                await Task.Yield();
             }
-            callBack?.Invoke(request.text);
+
+#if UNITY_EDITOR
+            EditorUtility.ClearProgressBar();
+            if (uwr.result != UnityWebRequest.Result.Success)
+                EditorUtility.DisplayDialog("Error", uwr.error, "OK");
+#endif            
+            callBack?.Invoke(uwr.result == UnityWebRequest.Result.Success ? uwr.downloadHandler.text : "");
+            uwr.Dispose();
         }
 
         public static string ConvertTSVTextToJsonListObject(string tsvText)
