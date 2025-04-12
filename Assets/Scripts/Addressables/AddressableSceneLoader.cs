@@ -24,43 +24,43 @@ namespace NFramework
 
         public override async UniTask Load()
         {
-            if (Status != EAddressableLoaderStatus.None) return;
+            if (Status != EAddressableOperationStatus.None) return;
             
             try
             {
-                Status = EAddressableLoaderStatus.Loading;
+                Status = EAddressableOperationStatus.Operating;
                 _handle = Addressables.LoadSceneAsync(Key, _loadSceneMode, _activateOnLoad);
                 await _handle;
                 
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
                 {
-                    AddressablesManager.Log($"Succeed to load scene with address:{Key}");
-                    Status = EAddressableLoaderStatus.Success;
+                    AddressablesManager.Log($"Succeed to load scene with key: {Key}");
+                    Status = EAddressableOperationStatus.Success;
                     if (_activateOnLoad && _setActiveScene) SceneManager.SetActiveScene(_handle.Result.Scene);
                 }
                 else
                 {
-                    AddressablesManager.LogError($"Failed to load asset with address:{Key}");
-                    Status = EAddressableLoaderStatus.Failed;
+                    AddressablesManager.LogError($"Failed to load scene with key: {Key}");
+                    Status = EAddressableOperationStatus.Failed;
                     Release();
                 }
             }
             catch (Exception e)
             {
                 AddressablesManager.LogError(e.Message);
-                Status = EAddressableLoaderStatus.Error;
+                Status = EAddressableOperationStatus.Error;
                 Release();
             }
         }
 
         public override void Release()
         {
-            if (Status == EAddressableLoaderStatus.Released) return;
-            Status = EAddressableLoaderStatus.Released;
+            if (Status == EAddressableOperationStatus.Released) return;
+            Status = EAddressableOperationStatus.Released;
             Unload().Forget();
         }
         
-        public SceneInstance GetResult() => Status != EAddressableLoaderStatus.Success ? default : _handle.Result;
+        public SceneInstance GetResult() => Status != EAddressableOperationStatus.Success ? default : _handle.Result;
 
         public async UniTask Unload()
         {

@@ -3,12 +3,10 @@ using System;
 
 namespace NFramework
 {
-    public enum EAddressableLoaderStatus { None, Loading, Success, Failed, Error, Released }
-    
     public abstract class BaseAddressableLoader
     {
         public string Key { get; protected set; }
-        public EAddressableLoaderStatus Status { get; protected set; }
+        public EAddressableOperationStatus Status { get; protected set; }
         
         protected BaseAddressableLoader(string key)
         {

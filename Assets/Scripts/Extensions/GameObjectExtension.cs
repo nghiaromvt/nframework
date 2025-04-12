@@ -20,5 +20,12 @@ namespace NFramework
                 obj.transform.GetChild(i).gameObject.SetActive(value);
             }
         }
+        
+        public static T GetOrAddComponent<T>(this GameObject gameObject) where T : Component
+        {
+            return gameObject.TryGetComponent<T>(out var component)
+                ? component
+                : gameObject.AddComponent<T>();
+        }
     }
 }

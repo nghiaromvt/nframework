@@ -18,41 +18,41 @@ namespace NFramework
 
         public override async UniTask Load()
         {
-            if (Status != EAddressableLoaderStatus.None) return;
+            if (Status != EAddressableOperationStatus.None) return;
 
             try
             {
-                Status = EAddressableLoaderStatus.Loading;
+                Status = EAddressableOperationStatus.Operating;
                 _handle = Addressables.LoadAssetsAsync<T>(Key, null, true);
                 await _handle;
                 
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
                 {
-                    AddressablesManager.Log($"Succeed to load assets with label:{Key}");
-                    Status = EAddressableLoaderStatus.Success;
+                    AddressablesManager.Log($"Succeed to load assets with key: {Key}");
+                    Status = EAddressableOperationStatus.Success;
                 }
                 else
                 {
-                    AddressablesManager.LogError($"Failed to load assets with label:{Key}");
-                    Status = EAddressableLoaderStatus.Failed;
+                    AddressablesManager.LogError($"Failed to load assets with key: {Key}");
+                    Status = EAddressableOperationStatus.Failed;
                     Release();
                 }
             }
             catch (Exception e)
             {
                 AddressablesManager.LogError(e.Message);
-                Status = EAddressableLoaderStatus.Error;
+                Status = EAddressableOperationStatus.Error;
                 Release();
             }
         }
 
         public override void Release()
         {
-            if (Status == EAddressableLoaderStatus.Released) return;
-            Status = EAddressableLoaderStatus.Released;
+            if (Status == EAddressableOperationStatus.Released) return;
+            Status = EAddressableOperationStatus.Released;
             if (_handle.IsValid()) Addressables.Release(_handle);
         }
 
-        public List<T> GetResult() => Status != EAddressableLoaderStatus.Success ? null : _handle.Result.ToList();
+        public List<T> GetResult() => Status != EAddressableOperationStatus.Success ? null : _handle.Result.ToList();
     }
 }

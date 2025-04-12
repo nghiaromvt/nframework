@@ -5,8 +5,7 @@ namespace NFramework
     public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour
     {
         public static T I { get; private set; }
-
-        public static bool IsSingletonAlive => I != null;
+        public static bool HasInstance => I != null;
 
         protected virtual void Awake()
         {
