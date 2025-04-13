@@ -33,8 +33,8 @@ namespace NFramework
             private static IEnumerable SortingLayers() => SortingLayer.layers.Select(layer => layer.name).ToArray();
         }
         
-        public static event Action<BaseUIView> OnOpenedView;
-        public static event Action<BaseUIView> OnClosedView;
+        public static event Action<BaseUIView, BaseUIInputData> OnOpenedView;
+        public static event Action<BaseUIView, BaseUIOutputData> OnClosedView;
         public static event Action<bool> OnInteractableChanged;
 
         [SerializeField] private List<UILayerInfo> _uiLayerOrders = new();
@@ -98,12 +98,13 @@ namespace NFramework
             gameObject.SetLayerRecursively(gameObject.layer);
         }
 
-        public static async UniTask<BaseUIView> Open(string id, Action<BaseUIView> onOpened = null, bool controlInteract = true)
+        public static async UniTask<BaseUIView> Open(string id, BaseUIInputData inputData = null, bool controlInteract = true)
         {
-            return await Open<BaseUIView>(id, onOpened, controlInteract);
+            return await Open<BaseUIView>(id, inputData, controlInteract);
         }
 
-        public static async UniTask<T> Open<T>(string id, Action<T> onOpened = null, bool controlInteract = true) where T : BaseUIView
+        public static async UniTask<T> Open<T>(string id, BaseUIInputData inputData = null,
+            bool controlInteract = true) where T : BaseUIView
         {
             T view = null;
             
@@ -119,19 +120,14 @@ namespace NFramework
             if (view is not null)
             {
                 view.transform.SetAsLastSibling();
-                view.OnOpen();
-
+                view.OnOpen(inputData);
                 _openedView[view.UILayer].Add(view);
-            
-                if (view.PauseGame) 
-                    PauseGameHandler.Pause(view);
             }
 
             if (controlInteract) 
                 EnableInteract(I);
 
-            onOpened?.Invoke(view);
-            OnOpenedView?.Invoke(view);
+            OnOpenedView?.Invoke(view, inputData);
             return view;
         }
 
@@ -227,28 +223,25 @@ namespace NFramework
             }
         }
 
-        public static bool Close(string id, bool destroy = false)
+        public static BaseUIOutputData Close(string id, bool destroy = false)
         {
             if (IsSpecificViewShown(id, out var view))
                 return Close(view, destroy);
             
-            return false;
+            return null;
         }
 
-        public static bool Close(BaseUIView view, bool destroy = false)
+        public static BaseUIOutputData Close(BaseUIView view, bool destroy = false)
         {
             var views = _openedView[view.UILayer];
             if (views.Count <= 0)
-                return false;
+                return null;
 
             var index = views.FindIndex((x) => x == view);
             if (index >= 0)
             {
                 views.RemoveAt(index);
-                view.OnClose();
-
-                if (view.PauseGame)
-                    PauseGameHandler.Unpause(view);
+                var outputData = view.OnClose();
 
                 if (destroy)
                 {
@@ -268,10 +261,10 @@ namespace NFramework
                     _cachedView[view.Id].Push(view);
                 }
 
-                OnClosedView?.Invoke(view);
-                return true;
+                OnClosedView?.Invoke(view, outputData);
+                return outputData;
             }
-            return false;
+            return null;
         }
         
         public static void DestroyCachedViews(string id)
@@ -471,9 +464,12 @@ namespace NFramework
 
         #region Resources
         
-        public static BaseUIView OpeResources(string id) => OpenResources<BaseUIView>(id);
+        public static BaseUIView OpenResources(string id, BaseUIInputData inputData = null)
+        {
+            return OpenResources<BaseUIView>(id, inputData);
+        }
 
-        public static T OpenResources<T>(string id, Action<T> onOpened = null) where T : BaseUIView
+        public static T OpenResources<T>(string id, BaseUIInputData inputData = null) where T : BaseUIView
         {
             T view = null;
             
@@ -483,16 +479,11 @@ namespace NFramework
             if (view is not null)
             {
                 view.transform.SetAsLastSibling();
-                view.OnOpen();
-
+                view.OnOpen(inputData);
                 _openedView[view.UILayer].Add(view);
-            
-                if (view.PauseGame) 
-                    PauseGameHandler.Pause(view);
             }
             
-            onOpened?.Invoke(view);
-            OnOpenedView?.Invoke(view);
+            OnOpenedView?.Invoke(view, inputData);
             return view;
         }
         

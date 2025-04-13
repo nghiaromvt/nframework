@@ -5,16 +5,10 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace NFramework
 {
-    public class AddressableAssetDownloader
+    public class AddressableAssetDownloader : AddressableOperator
     {
-        // Use that for purpose of display progress (downloadedBytes, totalBytes, downloadPercent)
-        public event Action<float, float, float> OnProgress;
-        
         private AsyncOperationHandle _handle;
-        
-        public string Key { get; private set; }
-        public EAddressableOperationStatus Status { get; protected set; }
-        
+
         public AddressableAssetDownloader(string key)
         {
             Key = key;

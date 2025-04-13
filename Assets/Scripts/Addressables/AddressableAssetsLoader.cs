@@ -24,7 +24,20 @@ namespace NFramework
             {
                 Status = EAddressableOperationStatus.Operating;
                 _handle = Addressables.LoadAssetsAsync<T>(Key, null, true);
-                await _handle;
+                
+                var progressPercent = 0f;
+
+                while (Status == EAddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
+                {
+                    var downloadStatus = _handle.GetDownloadStatus();
+                    if (downloadStatus.Percent > progressPercent * 1.1) // Report at most every 10% or so
+                    {
+                        progressPercent = downloadStatus.Percent; // More accurate %
+                        OnProgress?.Invoke(downloadStatus.DownloadedBytes, downloadStatus.TotalBytes, progressPercent);
+                    }
+
+                    await UniTask.Yield();
+                }
                 
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
                 {

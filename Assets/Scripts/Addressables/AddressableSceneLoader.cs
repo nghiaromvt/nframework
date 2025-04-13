@@ -30,7 +30,20 @@ namespace NFramework
             {
                 Status = EAddressableOperationStatus.Operating;
                 _handle = Addressables.LoadSceneAsync(Key, _loadSceneMode, _activateOnLoad);
-                await _handle;
+                
+                var progressPercent = 0f;
+
+                while (Status == EAddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
+                {
+                    var downloadStatus = _handle.GetDownloadStatus();
+                    if (downloadStatus.Percent > progressPercent * 1.1) // Report at most every 10% or so
+                    {
+                        progressPercent = downloadStatus.Percent; // More accurate %
+                        OnProgress?.Invoke(downloadStatus.DownloadedBytes, downloadStatus.TotalBytes, progressPercent);
+                    }
+
+                    await UniTask.NextFrame();
+                }
                 
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
                 {

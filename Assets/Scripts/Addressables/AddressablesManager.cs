@@ -87,41 +87,57 @@ namespace NFramework
 
         #region Load
 
-        public static async UniTask<T> LoadAsset<T>(string address) where T : Object
+        /// <summary>
+        /// Load specified asset
+        /// </summary>
+        /// <param name="key"> This can be the asset's address or the label. </param>
+        /// <param name="onProgress"> Use that for purpose of display progress (downloadedBytes, totalBytes, downloadPercent). </param>
+        /// <returns> Result of download </returns>
+        public static async UniTask<T> LoadAsset<T>(string key, Action<float, float, float> onProgress = null) where T : Object
         {
             if (!IsInitialized) return null;
-            if (address.IsNullOrEmpty()) return null;
+            if (key.IsNullOrEmpty()) return null;
 
-            if (_cachedAddressableAssetLoaderDict.TryGetValue(address, out var cachedLoader))
+            if (_cachedAddressableAssetLoaderDict.TryGetValue(key, out var cachedLoader))
             {
-                if (cachedLoader.Status == EAddressableOperationStatus.Operating)
-                    await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                if (onProgress != null)
+                    cachedLoader.OnProgress += onProgress;
+                
+                await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                
+                if (onProgress != null)
+                    cachedLoader.OnProgress -= onProgress;
 
-                Log($"Succeed to load asset in cached with address:{address}");
+                Log($"Succeed to load asset in cached with address:{key}");
                 return ((AddressableAssetLoader<T>)cachedLoader).GetResult();
             }
             
-            var loader = new AddressableAssetLoader<T>(address);
-            _cachedAddressableAssetLoaderDict.Add(address, loader);
+            var loader = new AddressableAssetLoader<T>(key);
+            _cachedAddressableAssetLoaderDict.Add(key, loader);
             
             await loader.Load();
 
             if (loader.Status == EAddressableOperationStatus.Success)
                 return loader.GetResult();
             
-            _cachedAddressableAssetLoaderDict.Remove(address);
+            _cachedAddressableAssetLoaderDict.Remove(key);
             return null;
         }
 
-        public static async UniTask<List<T>> LoadAssets<T>(string label) where T : Object
+        public static async UniTask<List<T>> LoadAssets<T>(string label, Action<float, float, float> onProgress = null) where T : Object
         {
             if (!IsInitialized) return null;
             if (label.IsNullOrEmpty()) return null;
 
             if (_cachedAddressableAssetsLoaderDict.TryGetValue(label, out var cachedLoader))
             {
-                if (cachedLoader.Status == EAddressableOperationStatus.Operating)
-                    await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                if (onProgress != null)
+                    cachedLoader.OnProgress += onProgress;
+                
+                await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                
+                if (onProgress != null)
+                    cachedLoader.OnProgress -= onProgress;
 
                 Log($"Succeed to load assets in cached with label:{label}");
                 return ((AddressableAssetsLoader<T>)cachedLoader).GetResult();
@@ -140,15 +156,20 @@ namespace NFramework
         }
 
         public static async UniTask<SceneInstance> LoadScene(string address, LoadSceneMode loadMode = LoadSceneMode.Single,
-            bool setActiveScene = true, bool activateOnLoad = true)
+            bool setActiveScene = true, bool activateOnLoad = true, Action<float, float, float> onProgress = null)
         {
             if (!IsInitialized) return default;
             if (address.IsNullOrEmpty()) return default;
 
             if (_cachedAddressableSceneLoaderDict.TryGetValue(address, out var cachedLoader))
             {
-                if (cachedLoader.Status == EAddressableOperationStatus.Operating)
-                    await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                if (onProgress != null)
+                    cachedLoader.OnProgress += onProgress;
+                
+                await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                
+                if (onProgress != null)
+                    cachedLoader.OnProgress -= onProgress;
 
                 Log($"Succeed to load scene in cached with address:{address}");
                 return ((AddressableSceneLoader)cachedLoader).GetResult();
@@ -305,6 +326,17 @@ namespace NFramework
       
             Log($"Failed to clear downloaded asset with key: {key}");
             return false;
+        }
+        
+        public static async UniTask<bool> CleanUnusedBundleCache()
+        {
+            var handle = Addressables.CleanBundleCache();
+            await handle.ToUniTask();
+            Addressables.Release(handle);
+
+            bool success = handle.Status == AsyncOperationStatus.Succeeded;
+            Log(success ? "Cleaned unused bundles." : "Failed to clean unused bundles.");
+            return success;
         }
         
         public static bool IsDownloadingAssets(string key) => _curAddressableAssetDownloaderDict.ContainsKey(key);
