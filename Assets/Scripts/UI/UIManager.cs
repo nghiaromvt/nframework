@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace NFramework
 {
-    public enum EUILayer
+    public enum EUiLayer
     {
         Background = 0,
         Menu = 1,
@@ -25,7 +25,7 @@ namespace NFramework
         [Serializable]
         private class UILayerInfo
         {
-            public EUILayer layer;
+            public EUiLayer layer;
             public bool overrideSorting;
             [ShowIf(nameof(overrideSorting)), ValueDropdown("SortingLayers")]  public string sortingLayer;
             [ShowIf(nameof(overrideSorting))] public int orderInLayer;
@@ -33,16 +33,16 @@ namespace NFramework
             private static IEnumerable SortingLayers() => SortingLayer.layers.Select(layer => layer.name).ToArray();
         }
         
-        public static event Action<BaseUIView, BaseUIInputData> OnOpenedView;
-        public static event Action<BaseUIView, BaseUIOutputData> OnClosedView;
+        public static event Action<BaseUiView, BaseUiInputData> OnOpenedView;
+        public static event Action<BaseUiView, BaseUiOutputData> OnClosedView;
         public static event Action<bool> OnInteractableChanged;
 
         [SerializeField] private List<UILayerInfo> _uiLayerOrders = new();
         [SerializeField] private bool _isLog = true;
         
-        private static readonly Dictionary<string, Stack<BaseUIView>> _cachedView = new();
-        private static readonly Dictionary<EUILayer, List<BaseUIView>> _openedView = new();
-        private static readonly Dictionary<EUILayer, RectTransform> _layerRectTfDict = new();
+        private static readonly Dictionary<string, Stack<BaseUiView>> _cachedView = new();
+        private static readonly Dictionary<EUiLayer, List<BaseUiView>> _openedView = new();
+        private static readonly Dictionary<EUiLayer, RectTransform> _layerRectTfDict = new();
         private static readonly List<object> _disableInteractRegisters = new();
         private static readonly List<CanvasGroup> _layerCanvasGroups = new();
         private static readonly List<string> _unloadingAddressableViewIds = new();
@@ -91,20 +91,20 @@ namespace NFramework
                 }
 
                 _layerRectTfDict[uiLayerInfo.layer] = rectTf;
-                _openedView.Add(uiLayerInfo.layer, new List<BaseUIView>());
+                _openedView.Add(uiLayerInfo.layer, new List<BaseUiView>());
                 _layerCanvasGroups.Add(rectTf.GetComponent<CanvasGroup>());
             }
             
             gameObject.SetLayerRecursively(gameObject.layer);
         }
 
-        public static async UniTask<BaseUIView> Open(string id, BaseUIInputData inputData = null, bool controlInteract = true)
+        public static async UniTask<BaseUiView> OpenAddressables(string id, BaseUiInputData inputData = null, bool controlInteract = true)
         {
-            return await Open<BaseUIView>(id, inputData, controlInteract);
+            return await OpenAddressables<BaseUiView>(id, inputData, controlInteract);
         }
 
-        public static async UniTask<T> Open<T>(string id, BaseUIInputData inputData = null,
-            bool controlInteract = true) where T : BaseUIView
+        public static async UniTask<T> OpenAddressables<T>(string id, BaseUiInputData inputData = null,
+            bool controlInteract = true) where T : BaseUiView
         {
             T view = null;
             
@@ -115,13 +115,13 @@ namespace NFramework
             if (hasCachedView)
                 view = OpenViewFromCached<T>(id);
             else
-                view = await CreateAndOpenView<T>(id);
+                view = await LoadAndInstantiateViewAddressables<T>(id);
 
             if (view is not null)
             {
                 view.transform.SetAsLastSibling();
                 view.OnOpen(inputData);
-                _openedView[view.UILayer].Add(view);
+                _openedView[view.UiLayer].Add(view);
             }
 
             if (controlInteract) 
@@ -131,7 +131,7 @@ namespace NFramework
             return view;
         }
 
-        public static async UniTask<bool> TryCacheView(string id, bool forceCacheMultiple = false)
+        public static async UniTask<bool> TryCacheViewAddressables(string id, bool forceCacheMultiple = false)
         {
             var curCachedViewCount = GetCachedViewCount(id);
             if (curCachedViewCount > 0 && !forceCacheMultiple)
@@ -146,8 +146,8 @@ namespace NFramework
                 return false;
             }
 
-            var prefab = loadAsset.GetComponent<BaseUIView>();
-            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var prefab = loadAsset.GetComponent<BaseUiView>();
+            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UiLayer]);
             cached.Id = id;
             cached.gameObject.SetActive(false);
             _cachedView[id].Push(cached);
@@ -157,12 +157,12 @@ namespace NFramework
         public static int GetCachedViewCount(string identifier)
         {
             if (!_cachedView.TryGetValue(identifier, out _))
-                _cachedView[identifier] = new Stack<BaseUIView>();
+                _cachedView[identifier] = new Stack<BaseUiView>();
             
             return _cachedView[identifier].Count;
         }
 
-        private static T OpenViewFromCached<T>(string identifier) where T : BaseUIView
+        private static T OpenViewFromCached<T>(string identifier) where T : BaseUiView
         {
             if (_cachedView[identifier].Count == 0)
             {
@@ -175,7 +175,7 @@ namespace NFramework
             return view;
         }
         
-        private static async UniTask<T> CreateAndOpenView<T>(string id) where T : BaseUIView
+        private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : BaseUiView
         {
             await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id));
             
@@ -187,19 +187,19 @@ namespace NFramework
             }
 
             var prefab = loadHandle.GetComponent<T>();
-            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var view = Instantiate(prefab, _layerRectTfDict[prefab.UiLayer]);
             view.Id = id;
             return view;
         }
 
-        public static void CloseCurrentInLayer(EUILayer layer, bool destroy = false)
+        public static void CloseCurrentInLayer(EUiLayer layer, bool destroy = false)
         {
             var views = _openedView[layer];
             if (views.Count > 0)
                 Close(views[views.Count - 1], destroy);
         }
 
-        public static void CloseAll(string id = null, bool destroy = false, List<BaseUIView> ignoreList = null)
+        public static void CloseAll(string id = null, bool destroy = false, List<BaseUiView> ignoreList = null)
         {
             var views = GetOpenedViews(id);
             foreach (var view in views)
@@ -211,9 +211,9 @@ namespace NFramework
             }
         }
 
-        public static void CloseAllInLayer(EUILayer layer, bool destroy = false, List<BaseUIView> ignoreList = null)
+        public static void CloseAllInLayer(EUiLayer layer, bool destroy = false, List<BaseUiView> ignoreList = null)
         {
-            var views = new List<BaseUIView>(_openedView[layer]);
+            var views = new List<BaseUiView>(_openedView[layer]);
             foreach (var view in views)
             {
                 if (!ignoreList.IsNullOrEmpty() && ignoreList.Contains(view))
@@ -223,7 +223,7 @@ namespace NFramework
             }
         }
 
-        public static BaseUIOutputData Close(string id, bool destroy = false)
+        public static BaseUiOutputData Close(string id, bool destroy = false)
         {
             if (IsSpecificViewShown(id, out var view))
                 return Close(view, destroy);
@@ -231,9 +231,9 @@ namespace NFramework
             return null;
         }
 
-        public static BaseUIOutputData Close(BaseUIView view, bool destroy = false)
+        public static BaseUiOutputData Close(BaseUiView view, bool destroy = false)
         {
-            var views = _openedView[view.UILayer];
+            var views = _openedView[view.UiLayer];
             if (views.Count <= 0)
                 return null;
 
@@ -269,7 +269,7 @@ namespace NFramework
         
         public static void DestroyCachedViews(string id)
         {
-            var views = new List<BaseUIView>();
+            var views = new List<BaseUiView>();
             foreach (var cachedStack in _cachedView.Values)
             {
                 if (cachedStack.Count > 0)
@@ -319,9 +319,9 @@ namespace NFramework
             _unloadingAddressableViewIds.Remove(id);
         }
 
-        public static bool IsAnyOpenedViewInLayer(EUILayer layer) => _openedView[layer].Count > 0;
+        public static bool IsAnyOpenedViewInLayer(EUiLayer layer) => _openedView[layer].Count > 0;
         
-        public static bool IsSpecificViewShown(string id, out BaseUIView view)
+        public static bool IsSpecificViewShown(string id, out BaseUiView view)
         {
             view = null;
             foreach (var views in _openedView.Values)
@@ -338,7 +338,7 @@ namespace NFramework
             return false;
         }
 
-        public static BaseUIView GetOpenedView(string id)
+        public static BaseUiView GetOpenedView(string id)
         {
             foreach (var views in _openedView.Values)
             {
@@ -351,15 +351,15 @@ namespace NFramework
             return null;
         }
 
-        public static T GetOpenedView<T>(string id) where T : BaseUIView
+        public static T GetOpenedView<T>(string id) where T : BaseUiView
         {
             var view = GetOpenedView(id);
             return view == null ? null : view as T;
         }
 
-        public static List<BaseUIView> GetOpenedViews(string id)
+        public static List<BaseUiView> GetOpenedViews(string id)
         {
-            var openedViews = new List<BaseUIView>();
+            var openedViews = new List<BaseUiView>();
             foreach (var views in _openedView.Values)
             {
                 foreach (var view in views)
@@ -371,9 +371,9 @@ namespace NFramework
             return openedViews;
         }
 
-        public static List<BaseUIView> GetOpenedViewsInLayer(EUILayer layer)
+        public static List<BaseUiView> GetOpenedViewsInLayer(EUiLayer layer)
         {
-            var openedViews = new List<BaseUIView>();
+            var openedViews = new List<BaseUiView>();
             foreach (var view in _openedView[layer])
             {
                 openedViews.Add(view);
@@ -381,18 +381,18 @@ namespace NFramework
             return openedViews;
         }
 
-        public static BaseUIView GetTopmostOpenedView(EUILayer topLayer = EUILayer.AlwaysOnTop)
+        public static BaseUiView GetTopmostOpenedView(EUiLayer topLayer = EUiLayer.AlwaysOnTop)
         {
             for (int i = (int)topLayer; i >= 0; --i)
             {
-                var view = GetTopmostOpenedViewInLayer((EUILayer)i);
+                var view = GetTopmostOpenedViewInLayer((EUiLayer)i);
                 if (view != null)
                     return view;
             }
             return null;
         }
 
-        public static BaseUIView GetTopmostOpenedViewInLayer(EUILayer layer)
+        public static BaseUiView GetTopmostOpenedViewInLayer(EUiLayer layer)
         {
             var views = _openedView[layer];
             if (views.Count > 0)
@@ -464,58 +464,61 @@ namespace NFramework
 
         #region Resources
         
-        public static BaseUIView OpenResources(string id, BaseUIInputData inputData = null)
+        public static async UniTask<BaseUiView> OpenResources(string id, BaseUiInputData inputData = null)
         {
-            return OpenResources<BaseUIView>(id, inputData);
+            return await OpenResources<BaseUiView>(id, inputData);
         }
 
-        public static T OpenResources<T>(string id, BaseUIInputData inputData = null) where T : BaseUIView
+        public static async UniTask<T> OpenResources<T>(string id, BaseUiInputData inputData = null) where T : BaseUiView
         {
             T view = null;
             
             var hasCachedView = GetCachedViewCount(id) > 0;
-            view = hasCachedView ? OpenViewFromCached<T>(id) : CreateAndOpenViewResources<T>(id);
+            if (hasCachedView)
+                view = OpenViewFromCached<T>(id);
+            else
+                view = await LoadAndInstantiateViewResources<T>(id);
 
             if (view is not null)
             {
                 view.transform.SetAsLastSibling();
                 view.OnOpen(inputData);
-                _openedView[view.UILayer].Add(view);
+                _openedView[view.UiLayer].Add(view);
             }
             
             OnOpenedView?.Invoke(view, inputData);
             return view;
         }
         
-        private static T CreateAndOpenViewResources<T>(string id) where T : BaseUIView
+        private static async UniTask<T> LoadAndInstantiateViewResources<T>(string id) where T : BaseUiView
         {
-            var prefab = Resources.Load<BaseUIView>(id);
-            if (prefab == null)
+            var temp = await Resources.LoadAsync<BaseUiView>(id);
+            if (temp is not T prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
                 return null;
             }
-
-            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            
+            var view = Instantiate(prefab, _layerRectTfDict[prefab.UiLayer]);
             view.Id = id;
             view.IsFromResources = true;
-            return view as T;
+            return view;
         }
 
-        public static bool TryCacheViewResources(string id, bool forceCacheMultiple = false)
+        public static async UniTask<bool> TryCacheViewResources(string id, bool forceCacheMultiple = false)
         {
             var curCachedViewCount = GetCachedViewCount(id);
             if (curCachedViewCount > 0 && !forceCacheMultiple)
                 return false;
 
-            var prefab = Resources.Load<BaseUIView>(id);
-            if (prefab == null)
+            var temp = await Resources.LoadAsync<BaseUiView>(id);
+            if (temp is not BaseUiView prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
                 return false;
             }
             
-            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UiLayer]);
             cached.Id = id;
             cached.IsFromResources = true;
             cached.gameObject.SetActive(false);

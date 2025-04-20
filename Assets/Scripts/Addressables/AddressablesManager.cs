@@ -14,7 +14,7 @@ namespace NFramework
     
     public class AddressablesManager : SingletonMono<AddressablesManager>
     {
-        [SerializeField] private bool _initializeOnAwake;
+        [SerializeField] private bool _initializeOnAwake = true;
         [SerializeField] private bool _isLog = true;
         
         private static readonly Dictionary<string, BaseAddressableLoader> _cachedAddressableAssetLoaderDict = new();
@@ -108,7 +108,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
 
-                Log($"Succeed to load asset in cached with address:{key}");
+                Log($"Succeed to load asset in cached with key: {key}");
                 return ((AddressableAssetLoader<T>)cachedLoader).GetResult();
             }
             
@@ -139,7 +139,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
 
-                Log($"Succeed to load assets in cached with label:{label}");
+                Log($"Succeed to load assets in cached with label: {label}");
                 return ((AddressableAssetsLoader<T>)cachedLoader).GetResult();
             }
             
@@ -155,13 +155,13 @@ namespace NFramework
             return null;
         }
 
-        public static async UniTask<SceneInstance> LoadScene(string address, LoadSceneMode loadMode = LoadSceneMode.Single,
+        public static async UniTask<SceneInstance> LoadScene(string key, LoadSceneMode loadMode = LoadSceneMode.Single,
             bool setActiveScene = true, bool activateOnLoad = true, Action<float, float, float> onProgress = null)
         {
             if (!IsInitialized) return default;
-            if (address.IsNullOrEmpty()) return default;
+            if (key.IsNullOrEmpty()) return default;
 
-            if (_cachedAddressableSceneLoaderDict.TryGetValue(address, out var cachedLoader))
+            if (_cachedAddressableSceneLoaderDict.TryGetValue(key, out var cachedLoader))
             {
                 if (onProgress != null)
                     cachedLoader.OnProgress += onProgress;
@@ -171,19 +171,19 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
 
-                Log($"Succeed to load scene in cached with address:{address}");
+                Log($"Succeed to load scene in cached with key: {key}");
                 return ((AddressableSceneLoader)cachedLoader).GetResult();
             }
             
-            var loader = new AddressableSceneLoader(address, loadMode, setActiveScene, activateOnLoad);
-            _cachedAddressableSceneLoaderDict.Add(address, loader);
+            var loader = new AddressableSceneLoader(key, loadMode, setActiveScene, activateOnLoad);
+            _cachedAddressableSceneLoaderDict.Add(key, loader);
             
             await loader.Load();
 
             if (loader.Status == EAddressableOperationStatus.Success)
                 return loader.GetResult();
             
-            _cachedAddressableSceneLoaderDict.Remove(address);
+            _cachedAddressableSceneLoaderDict.Remove(key);
             return default;
         }
 
@@ -372,6 +372,14 @@ namespace NFramework
             if (I._isLog) NLogger.LogError(message, I);
         }
 
+        #endregion
+
+        #region Others
+
+        public static bool IsSceneLoadByAddressables(string key) => _cachedAddressableSceneLoaderDict.ContainsKey(key);
+
+        public static bool IsAssetLoadedByAddressables(string key) => _cachedAddressableAssetLoaderDict.ContainsKey(key);
+        
         #endregion
     }
 }

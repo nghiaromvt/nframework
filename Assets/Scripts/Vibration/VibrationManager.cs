@@ -26,23 +26,24 @@ namespace NFramework
 
         [SerializeField] private SaveData _saveData;
 
-        public bool Status
+        public static bool Status
         {
-            get => _saveData.status;
+            get => I._saveData.status;
             set
             {
-                if (_saveData.status != value)
+                if (I._saveData.status != value)
                 {
-                    _saveData.status = value;
-                    DataChanged = true;
+                    I._saveData.status = value;
+                    I.DataChanged = true;
                     OnStatusChanged?.Invoke(value);
+                    NLogger.Log("Status changed to: " + value, I);
                 }
             }
         }
 
         public static void Haptic(EHapticType type)
         {
-            if (!I.Status) return;
+            if (!Status) return;
 
 #if MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
             HapticPatterns.PlayPreset((HapticPatterns.PresetType)type);
