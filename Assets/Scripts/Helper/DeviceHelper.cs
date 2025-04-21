@@ -88,12 +88,12 @@ namespace NFramework
         {
             get
             {
-#if STAGING
-                return EBuildEnvironment.Staging;
-#elif PRODUCTION
-                return EBuildEnvironment.Production;
-#else
+#if DEVELOPMENT
                 return EBuildEnvironment.Development;
+#elif STAGING
+                return EBuildEnvironment.Staging;
+#else
+                return EBuildEnvironment.Production;
 #endif
             }
         }

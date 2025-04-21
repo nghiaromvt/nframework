@@ -10,7 +10,19 @@ namespace NFramework
     {
         private static readonly byte[] _iv = new byte[16]; // Initialization vector
 #if UNITY_EDITOR
-        public const string DEFAULT_EDITOR_GLOBAL_AES_KEY = "123456";
+        public const string EDITOR_GLOBAL_AES_KEY_STRING = "EditorGlobalAESKey";
+        private const string DEFAULT_EDITOR_GLOBAL_AES_KEY = "123456";
+
+        public static string GetGlobalEditorAESKey()
+        {
+            var result = UnityEditor.EditorPrefs.GetString(EDITOR_GLOBAL_AES_KEY_STRING);
+            if (string.IsNullOrEmpty(result))
+            {
+                result = DEFAULT_EDITOR_GLOBAL_AES_KEY;
+                UnityEditor.EditorPrefs.SetString(EDITOR_GLOBAL_AES_KEY_STRING, DEFAULT_EDITOR_GLOBAL_AES_KEY);
+            }
+            return result;
+        }
 #endif
 
         public static string EncryptAES(string data, string key)
