@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Sirenix.OdinInspector;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -10,8 +9,8 @@ using UnityEngine;
 
 namespace NFramework
 {
-    [CreateAssetMenu(menuName = "NFramework/SoundContainerSO")]
-    public class SoundContainerSO : SerializedScriptableObject
+    [CreateAssetMenu(menuName = "NFramework/SoundGroupSO")]
+    public class SoundGroupSO : SerializedScriptableObject
     {
         [Searchable] public Dictionary<string, AudioClip> audioClipDict = new();
         [Searchable] public Dictionary<string, SoundSO> soundSODict = new();
@@ -33,7 +32,7 @@ namespace NFramework
         {
             var audioClipBody = "";
             var soundSOBody = "";
-            var className = name.Replace(" ", "").Replace("ContainerSO", "Define");
+            var className = name.Replace(" ", "").Replace("SO", "Define");
             var loadKeyBody = $"public const string LOAD_KEY = \"{loadKey}\";";
             
             if (!audioClipDict.IsNullOrEmpty())
