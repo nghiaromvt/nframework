@@ -1,19 +1,44 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using Sirenix.OdinInspector;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NFramework
 {
     [CreateAssetMenu(menuName = "NFramework/Sound/SoundGroup", fileName = "New Sound Group")]
     public class SoundGroupSO : SerializedScriptableObject
     {
-        [TabGroup("Audio Clip"), Searchable] public Dictionary<string, AudioClip> audioClipDict = new();
-        [TabGroup("Sound Info"), Searchable] public Dictionary<string, SoundInfoSO> soundInfoDict = new();
+        [Serializable]
+        public class KeyValueData<T>
+        {
+            [ValidateInput(nameof(IsValidVariableName), 
+                "Keys must start with a letter or underscore, and contain only letters, digits or underscores.")]
+            [HideLabel, HorizontalGroup] public string key;
+            [HideLabel, HorizontalGroup] public T value;
+            
+            private bool IsValidVariableName(string input)
+            {
+                // C# identifier rule: start with letter/_ ; then letters, digits or _
+                return !string.IsNullOrEmpty(input)
+                       && Regex.IsMatch(input, @"^[_a-zA-Z]\w*$");
+            }
+        }
+        
+        [Serializable]
+        public class AudioClipData : KeyValueData<AudioClip> { }
+        
+        [Serializable]
+        public class SoundInfoData : KeyValueData<SoundInfoSO> { }
+        
+        [TabGroup("Audio Clip"), Searchable] public List<AudioClipData> audioClipDatas = new();
+        [TabGroup("Sound Info"), Searchable] public List<SoundInfoData> soundInfoDatas = new();
         [Header("Script Define")]
         public string loadKey;
         public string scriptNamespace = "";
@@ -60,22 +85,22 @@ namespace NFramework
             var loadKeyBody = $"public const string LOAD_KEY = \"{loadKey}\";";
 
             var audioClipBuilder = new StringBuilder();
-            if (!audioClipDict.IsNullOrEmpty())
+            if (!audioClipDatas.IsNullOrEmpty())
             {
-                foreach (var kv in audioClipDict)
+                foreach (var kv in audioClipDatas)
                 {
-                    if (!string.IsNullOrEmpty(kv.Key))
-                        audioClipBuilder.AppendLine($"\t\t\tpublic const string {kv.Key} = \"{kv.Key}\";");
+                    if (!string.IsNullOrEmpty(kv.key))
+                        audioClipBuilder.AppendLine($"\t\t\tpublic const string {kv.key} = \"{kv.key}\";");
                 }
             }
 
             var soundSOBuilder = new StringBuilder();
-            if (!soundInfoDict.IsNullOrEmpty())
+            if (!soundInfoDatas.IsNullOrEmpty())
             {
-                foreach (var kv in soundInfoDict)
+                foreach (var kv in soundInfoDatas)
                 {
-                    if (!string.IsNullOrEmpty(kv.Key))
-                        soundSOBuilder.AppendLine($"\t\t\tpublic const string {kv.Key} = \"{kv.Key}\";");
+                    if (!string.IsNullOrEmpty(kv.key))
+                        soundSOBuilder.AppendLine($"\t\t\tpublic const string {kv.key} = \"{kv.key}\";");
                 }
             }
 

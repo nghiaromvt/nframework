@@ -6,10 +6,11 @@ namespace NFramework.Editor
 {
     public static class ScriptableObjectAssetCreator
     {
-        [MenuItem("NFramework/Create ScriptableObject")]
+        [MenuItem("Assets/Create ScriptableObject")]
         public static void Create()
         {
             var script = Selection.activeObject as MonoScript;
+            if (script == null) return;
             var type = script.GetClass();
             var scriptableObject = ScriptableObject.CreateInstance(type);
             var path = Path.GetDirectoryName(AssetDatabase.GetAssetPath(script));

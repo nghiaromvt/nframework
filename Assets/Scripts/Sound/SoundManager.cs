@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Cysharp.Threading.Tasks;
 using PrimeTween;
 using Sirenix.OdinInspector;
@@ -173,80 +172,80 @@ namespace NFramework
 
         #region Cache/Clear
 
-        public static async UniTask CacheSoundGroupAddressables(string id)
+        public static async UniTask CacheSoundGroupAddressables(string loadKey)
         {
             if (!IsInitialized) return;
-            if (_cacheSoundGroupAddressablesDict.ContainsKey(id))
+            if (_cacheSoundGroupAddressablesDict.ContainsKey(loadKey))
             {
-                LogWarning($"Already cache SoundGroup id: {id}");
+                LogWarning($"Already cache SoundGroup loadKey: {loadKey}");
                 return;
             }
 
-            var soundGroupSO = await AddressablesManager.LoadAsset<SoundGroupSO>(id);
+            var soundGroupSO = await AddressablesManager.LoadAsset<SoundGroupSO>(loadKey);
             if (!soundGroupSO) return;
 
             CacheSoundGroup(soundGroupSO);
-            _cacheSoundGroupAddressablesDict.Add(id, soundGroupSO);
+            _cacheSoundGroupAddressablesDict.Add(loadKey, soundGroupSO);
         }
 
-        public static async UniTask CacheSoundGroupResources(string id)
+        public static async UniTask CacheSoundGroupResources(string loadKey)
         {
             if (!IsInitialized) return;
-            if (_cacheSoundGroupResourcesDict.ContainsKey(id))
+            if (_cacheSoundGroupResourcesDict.ContainsKey(loadKey))
             {
-                LogWarning($"Already cache SoundGroup id: {id}");
+                LogWarning($"Already cache SoundGroup loadKey: {loadKey}");
                 return;
             }
             
-            var temp = await Resources.LoadAsync<SoundGroupSO>(id);
+            var temp = await Resources.LoadAsync<SoundGroupSO>(loadKey);
             if (temp is not SoundGroupSO soundGroupSO)
             {
-                LogError($"CacheSoundResources failed! {id}");
+                LogError($"CacheSoundResources failed! {loadKey}");
                 return;
             }
             
             CacheSoundGroup(soundGroupSO);
-            _cacheSoundGroupResourcesDict.Add(id, soundGroupSO);
+            _cacheSoundGroupResourcesDict.Add(loadKey, soundGroupSO);
         }
         
         private static void CacheSoundGroup(SoundGroupSO soundGroupSO)
         {
-            foreach (var kv in soundGroupSO.audioClipDict)
+            foreach (var kv in soundGroupSO.audioClipDatas)
             {
-                if (_cacheSoundInfos.ContainsKey(kv.Key))
+                if (_cacheSoundInfos.ContainsKey(kv.key))
                 {
-                    LogWarning($"Already have key in cacheAudioClips: {kv.Key}");
+                    LogWarning($"Already have key in cacheAudioClips: {kv.key}");
                     continue;
                 }
                 
-                _cacheAudioClips.Add(kv.Key, kv.Value);
+                _cacheAudioClips.Add(kv.key, kv.value);
             }
 
-            foreach (var kv in soundGroupSO.soundInfoDict)
+            foreach (var kv in soundGroupSO.soundInfoDatas)
             {
-                if (_cacheSoundInfos.ContainsKey(kv.Key))
+                if (_cacheSoundInfos.ContainsKey(kv.key))
                 {
-                    LogWarning($"Already have key in cacheSoundSO: {kv.Key}");
+                    LogWarning($"Already have key in cacheSoundInfos: {kv.key}");
                     continue;
                 }
                 
-                _cacheSoundInfos.Add(kv.Key, kv.Value);
+                _cacheSoundInfos.Add(kv.key, kv.value);
             }
         }
         
-        public static bool ClearSoundGroup(string id)
+        public static bool ClearSoundGroup(string loadKey)
         {
-            if (_cacheSoundGroupAddressablesDict.TryGetValue(id, out SoundGroupSO soundGroupSO))
+            if (_cacheSoundGroupAddressablesDict.TryGetValue(loadKey, out SoundGroupSO soundGroupSO))
             {
                 ClearSoundGroup(soundGroupSO);
-                AddressablesManager.ReleaseAsset(id);
-                _cacheSoundGroupAddressablesDict.Remove(id);
+                AddressablesManager.ReleaseAsset(loadKey);
+                _cacheSoundGroupAddressablesDict.Remove(loadKey);
                 return true;
             }
-            else if (_cacheSoundGroupResourcesDict.TryGetValue(id, out soundGroupSO))
+            else if (_cacheSoundGroupResourcesDict.TryGetValue(loadKey, out soundGroupSO))
             {
                 ClearSoundGroup(soundGroupSO);
-                _cacheSoundGroupResourcesDict.Remove(id);
+                _cacheSoundGroupResourcesDict.Remove(loadKey);
                 return true;
             }
             return false;
@@ -270,36 +269,36 @@ namespace NFramework
         
         private static void ClearSoundGroup(SoundGroupSO soundGroupSO)
         {
-            foreach (var kv in soundGroupSO.audioClipDict)
+            foreach (var kv in soundGroupSO.audioClipDatas)
             {
-                if (_bgmEmitter.AudioClip == kv.Value)
+                if (_bgmEmitter.AudioClip == kv.value)
                 {
                     _bgmEmitter.Stop();
                     continue;
                 }
                 
-                if (_playingAudioClipDict.TryGetValue(kv.Value, out var soundEmitters))
+                if (_playingAudioClipDict.TryGetValue(kv.value, out var soundEmitters))
                 {
                     var temp = new List<SoundEmitter>(soundEmitters);
                     temp.ForEach(x => x.Stop());
                 }
-                _cacheAudioClips.Remove(kv.Key);
+                _cacheAudioClips.Remove(kv.key);
             }
 
-            foreach (var kv in soundGroupSO.soundInfoDict)
+            foreach (var kv in soundGroupSO.soundInfoDatas)
             {
-                if (_bgmEmitter.AudioClip == kv.Value.clip)
+                if (_bgmEmitter.AudioClip == kv.value.clip)
                 {
                     _bgmEmitter.Stop();
                     continue;
                 }
                 
-                if (_playingAudioClipDict.TryGetValue(kv.Value.clip, out var soundEmitters))
+                if (_playingAudioClipDict.TryGetValue(kv.value.clip, out var soundEmitters))
                 {
                     var temp = new List<SoundEmitter>(soundEmitters);
                     temp.ForEach(x => x.Stop());
                 }
-                _cacheSoundInfos.Remove(kv.Key);
+                _cacheSoundInfos.Remove(kv.key);
             }
         }
         
@@ -368,7 +367,7 @@ namespace NFramework
                 }
                 case EAudioOverlapType.Skip:
                 {
-                    if (_playingAudioClipDict.TryGetValue(clip, out var soundEmitters))
+                    if (_playingAudioClipDict.TryGetValue(clip, out _))
                         return null;
 
                     break;
