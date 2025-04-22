@@ -2,7 +2,7 @@ using UnityEditor;
 
 namespace NFramework.Editor
 {
-    public static class ClearAllEditorPrefs
+    public static class ClearAllEditorPrefsMenuItem
     {
         [MenuItem("NFramework/Clear All EditorPrefs")]
         public static void Clear()

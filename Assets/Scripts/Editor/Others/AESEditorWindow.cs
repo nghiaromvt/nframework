@@ -12,7 +12,7 @@ namespace NFramework.Editor
         private string _editorGlobalAESKey;
         private bool _useCustomKey;
 
-        [MenuItem("NFramework/AES Editor")]
+        [MenuItem("NFramework/AES Window")]
         private static void Init()
         {
             AESEditorWindow window = (AESEditorWindow)GetWindow(typeof(AESEditorWindow));

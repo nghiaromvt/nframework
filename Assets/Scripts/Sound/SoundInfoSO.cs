@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace NFramework
 {
-    [CreateAssetMenu(menuName = "NFramework/SoundSO")]
-    public class SoundSO : ScriptableObject
+    [CreateAssetMenu(menuName = "NFramework/Sound/SoundInfo", fileName = "New Sound Info")]
+    public class SoundInfoSO : ScriptableObject
     {
         public AudioClip clip;
         [Range(0f, 1f)] public float volume = 1f;

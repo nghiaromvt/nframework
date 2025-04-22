@@ -20,7 +20,7 @@ namespace NFramework
         void OnAllDataLoaded();
     }
 
-    public class SaveManager : SingletonMono<SaveManager>
+    public class LocalSaveManager : SingletonMono<LocalSaveManager>
     {
         private const string SAVE_NAME = "mwovjtpamcjaytifnhyqlbprths";
         private const string BACKUP_SAVE_NAME = "_" + SAVE_NAME;
@@ -269,6 +269,28 @@ namespace NFramework
             return true;
         }
 
+        public static void DeleteSave()
+        {
+            _saveableDict.Clear();
+            try
+            {
+                var saveFolderPath = PathHelper.GetSaveFolderPath();
+                var savePath = saveFolderPath + $"/{SAVE_NAME}";
+                var backupSavePath = saveFolderPath + $"/{BACKUP_SAVE_NAME}";
+                if (File.Exists(savePath))
+                    File.Delete(savePath);
+
+                if (File.Exists(backupSavePath))
+                    File.Delete(backupSavePath);
+
+                NLogger.Log("Deleted save!");
+            }
+            catch (Exception e)
+            {
+                NLogger.LogError(e.Message);
+            }
+        }
+        
         //simple encrypt using UDID/decrypt
         private static void SimpleEncrypt(ref byte[] data)
         {

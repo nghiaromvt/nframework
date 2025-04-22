@@ -70,10 +70,10 @@ namespace NFramework
             if (string.IsNullOrEmpty(assetName))
                 return null;
 
-            var filter = overrideFilter != null ? overrideFilter : $"t:{typeof(T).Name}";
+            var filter = overrideFilter ?? $"t:{typeof(T).Name}";
             var pathDic = PathHelper.GetAssetsPathDictionary(filter);
-            if (pathDic.ContainsKey(assetName))
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(pathDic[assetName]);
+            if (pathDic.TryGetValue(assetName, out var paths))
+                return UnityEditor.AssetDatabase.LoadAssetAtPath<T>(paths[0]);
 
             Debug.LogError($"Cannot find asset with name: {assetName}");
             return null;

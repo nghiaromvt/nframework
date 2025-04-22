@@ -23,7 +23,6 @@ namespace NFramework
         private const string BGM_CHILD_VOLUME_KEY = "BgmChildVolume";
         private const string SFX_VOLUME_KEY = "SfxVolume";
         private const string SFX_CHILD_VOLUME_KEY = "SfxChildVolume";
-        private const BindingFlags BINDING_FLAGS = BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic;
 
         public static event Action<bool> OnBgmStatusChanged;
         public static event Action<bool> OnSfxStatusChanged;
@@ -42,13 +41,13 @@ namespace NFramework
         private static readonly List<SoundEmitter> _activeSoundEmitters = new();
         private static readonly Dictionary<string, SoundEmitter> _guidSoundEmitterDict = new();
         private static readonly Dictionary<AudioClip, List<SoundEmitter>> _playingAudioClipDict = new();
-        private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupResourcesDict = new();
-        private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupAddressablesDict = new();
         private static Tween _updateBgmMixerTween;
         private static Tween _updateSfxMixerTween;
 
+        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupResourcesDict = new();
+        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupAddressablesDict = new();
         [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, AudioClip> _cacheAudioClips = new();
-        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundSO> _cacheSoundSO = new();
+        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundInfoSO> _cacheSoundInfos = new();
 
         #region Status
         
@@ -214,7 +213,7 @@ namespace NFramework
         {
             foreach (var kv in soundGroupSO.audioClipDict)
             {
-                if (_cacheSoundSO.ContainsKey(kv.Key))
+                if (_cacheSoundInfos.ContainsKey(kv.Key))
                 {
                     LogWarning($"Already have key in cacheAudioClips: {kv.Key}");
                     continue;
@@ -223,15 +222,15 @@ namespace NFramework
                 _cacheAudioClips.Add(kv.Key, kv.Value);
             }
 
-            foreach (var kv in soundGroupSO.soundSODict)
+            foreach (var kv in soundGroupSO.soundInfoDict)
             {
-                if (_cacheSoundSO.ContainsKey(kv.Key))
+                if (_cacheSoundInfos.ContainsKey(kv.Key))
                 {
                     LogWarning($"Already have key in cacheSoundSO: {kv.Key}");
                     continue;
                 }
                 
-                _cacheSoundSO.Add(kv.Key, kv.Value);
+                _cacheSoundInfos.Add(kv.Key, kv.Value);
             }
         }
         
@@ -287,7 +286,7 @@ namespace NFramework
                 _cacheAudioClips.Remove(kv.Key);
             }
 
-            foreach (var kv in soundGroupSO.soundSODict)
+            foreach (var kv in soundGroupSO.soundInfoDict)
             {
                 if (_bgmEmitter.AudioClip == kv.Value.clip)
                 {
@@ -300,7 +299,7 @@ namespace NFramework
                     var temp = new List<SoundEmitter>(soundEmitters);
                     temp.ForEach(x => x.Stop());
                 }
-                _cacheSoundSO.Remove(kv.Key);
+                _cacheSoundInfos.Remove(kv.Key);
             }
         }
         
@@ -312,15 +311,15 @@ namespace NFramework
         /// Play sound through SoundSO
         /// </summary>
         /// <returns>guid use to stop sound if needed</returns>
-        public static string PlaySfx(SoundSO soundSO, Action onStop = null)
+        public static string PlaySfx(SoundInfoSO soundInfo, Action onStop = null)
         {
-            var pitch = soundSO.randomPitch ? Random.Range(soundSO.minRandomPitch, soundSO.maxRandomPitch) : soundSO.pitch;
-            return PlaySfx(soundSO.clip, soundSO.volume, soundSO.loop, pitch, soundSO.ignorePause, soundSO.overlapType, soundSO.fadeTime, onStop);
+            var pitch = soundInfo.randomPitch ? Random.Range(soundInfo.minRandomPitch, soundInfo.maxRandomPitch) : soundInfo.pitch;
+            return PlaySfx(soundInfo.clip, soundInfo.volume, soundInfo.loop, pitch, soundInfo.ignorePause, soundInfo.overlapType, soundInfo.fadeTime, onStop);
         }
         
         public static string PlaySfxInCacheSoundSO(string key, Action onStop = null)
         {
-            if (_cacheSoundSO.TryGetValue(key, out var soundSO))
+            if (_cacheSoundInfos.TryGetValue(key, out var soundSO))
             {
                 return PlaySfx(soundSO, onStop);
             }
@@ -420,15 +419,15 @@ namespace NFramework
             _bgmEmitter.Play("BGM", clip, volume, loop, pitch, ignorePause, fadeTime, onStop);
         }
 
-        public static void PlayBgm(SoundSO soundSO, Action onStop = null)
+        public static void PlayBgm(SoundInfoSO soundInfo, Action onStop = null)
         {
-            var pitch = soundSO.randomPitch ? Random.Range(soundSO.minRandomPitch, soundSO.maxRandomPitch) : soundSO.pitch;
-            PlayBgm(soundSO.clip, soundSO.volume, soundSO.loop, pitch, soundSO.ignorePause, soundSO.overlapType, soundSO.fadeTime, onStop);
+            var pitch = soundInfo.randomPitch ? Random.Range(soundInfo.minRandomPitch, soundInfo.maxRandomPitch) : soundInfo.pitch;
+            PlayBgm(soundInfo.clip, soundInfo.volume, soundInfo.loop, pitch, soundInfo.ignorePause, soundInfo.overlapType, soundInfo.fadeTime, onStop);
         }
 
         public static void PlayBgmInCacheSoundSO(string key, Action onStop = null)
         {
-            if (_cacheSoundSO.TryGetValue(key, out var soundSO))
+            if (_cacheSoundInfos.TryGetValue(key, out var soundSO))
                 PlayBgm(soundSO, onStop);
             else
                 LogError($"Cannot find SoundSO [{key}] in cache");
