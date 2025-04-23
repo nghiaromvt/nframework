@@ -274,7 +274,6 @@ namespace NFramework
                 if (_bgmEmitter.AudioClip == kv.value)
                 {
                     _bgmEmitter.Stop();
-                    continue;
                 }
                 
                 if (_playingAudioClipDict.TryGetValue(kv.value, out var soundEmitters))
@@ -290,7 +289,6 @@ namespace NFramework
                 if (_bgmEmitter.AudioClip == kv.value.clip)
                 {
                     _bgmEmitter.Stop();
-                    continue;
                 }
                 
                 if (_playingAudioClipDict.TryGetValue(kv.value.clip, out var soundEmitters))

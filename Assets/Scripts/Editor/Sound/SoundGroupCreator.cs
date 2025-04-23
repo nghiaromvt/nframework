@@ -10,21 +10,64 @@ namespace NFramework.Editor
     [Serializable]
     public class SoundGroupCreator
     {
-        [SerializeField, Required] private string _assetName = "New Sound Group";
-        [SerializeField, Required] private string _loadKey;
-        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField] private string _savePath = "";
-        [TabGroup("Audio Clip"), Searchable] private List<SoundGroupSO.AudioClipData> _audioClipDatas = new();
-        [TabGroup("Sound Info"), Searchable] private List<SoundGroupSO.SoundInfoData> _soundInfoDatas = new();
-        [Header("Script Define")] 
-        [SerializeField] private bool _generateScriptDefine = true;
+        public const string SAVE_PATH_PREFS_KEY = "SoundGroupCreatoravePath";
         
+        [SerializeField, Required] private string _assetName = "New Sound Group";
+        [SerializeField, ReadOnly] private string _defineKeyConstName;
+        [SerializeField, OnInspectorInit(nameof(OnKeyChanged)), OnValueChanged(nameof(OnKeyChanged))] 
+        private string _key;
+        
+        [HideLabel, ReadOnly, ShowInInspector, ShowIf(nameof(_showError)), GUIColor(1, 0.3f, 0.3f)] 
+        private string _errorMessage;
+        private bool _showError;
+        
+        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))] 
+        private string _savePath = EditorPrefs.GetString(EditorHelper.GetUniqueProjectPrefsKey(SAVE_PATH_PREFS_KEY), "");
+
+        [TabGroup("Audio Clip"), SerializeField, Searchable] private List<SoundGroupSO.AudioClipData> _audioClipDatas = new();
+        [TabGroup("Sound Info"), SerializeField, Searchable] private List<SoundGroupSO.SoundInfoData> _soundInfoDatas = new();
+        [Header("Script Define")] 
+        [SerializeField] private bool _updateScriptDefine = true;
+        
+        private void OnSavePathChanged()
+        {
+            var key = EditorHelper.GetUniqueProjectPrefsKey(SAVE_PATH_PREFS_KEY);
+            EditorPrefs.SetString(key, _savePath);
+        }
+        
+        private void OnKeyChanged()
+        {
+            _defineKeyConstName = _key.ToValidConstKey();
+            
+            if (string.IsNullOrEmpty(_key))
+            {
+                _showError = true;
+                _errorMessage = $"\u26a0 Key must not be empty!";
+                return;
+            }
+                
+            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
+            foreach (var soundGroup in soundGroups)
+            {
+                if (soundGroup.key == _key)
+                {
+                    _showError = true;
+                    _errorMessage = $"\u26a0 Duplicate key with other SoundGroup: {soundGroup.name}!";
+                    return;
+                }
+            }
+                
+            _showError = false;
+        }
+
         [Button(ButtonSizes.Gigantic)]
         private void Create()
         {
             var soundGroup = ScriptableObject.CreateInstance<SoundGroupSO>();
             soundGroup.audioClipDatas = _audioClipDatas;
             soundGroup.soundInfoDatas = _soundInfoDatas;
-            soundGroup.loadKey = _loadKey;
+            soundGroup.defineKeyConstName = _defineKeyConstName;
+            soundGroup.key = _key;
             
             var fullPath = Path.Combine($"Assets/{_savePath}", _assetName);
             var uniqueFileName = AssetDatabase.GenerateUniqueAssetPath(fullPath + ".asset");
@@ -32,6 +75,9 @@ namespace NFramework.Editor
             AssetDatabase.SaveAssets();
             
             Selection.activeObject = soundGroup;
+
+            if (_updateScriptDefine)
+                SoundScriptDefineMenu.UpdateScriptDefine();
         }
     }
 }

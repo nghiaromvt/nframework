@@ -1,14 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
 using Sirenix.OdinInspector;
 #if UNITY_EDITOR
-using UnityEditor;
 #endif
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace NFramework
 {
@@ -18,16 +13,58 @@ namespace NFramework
         [Serializable]
         public class KeyValueData<T>
         {
-            [ValidateInput(nameof(IsValidVariableName), 
-                "Keys must start with a letter or underscore, and contain only letters, digits or underscores.")]
-            [HideLabel, HorizontalGroup] public string key;
+            [ReadOnly] public string defineKeyConstName;
+            [HideLabel, HorizontalGroup, OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
             [HideLabel, HorizontalGroup] public T value;
             
-            private bool IsValidVariableName(string input)
+            [HideLabel, ReadOnly, ShowInInspector, ShowIf(nameof(_showError)), GUIColor(1, 0.3f, 0.3f)] 
+            private string _errorMessage;
+            private bool _showError;
+            
+            private void OnKeyChanged()
             {
-                // C# identifier rule: start with letter/_ ; then letters, digits or _
-                return !string.IsNullOrEmpty(input)
-                       && Regex.IsMatch(input, @"^[_a-zA-Z]\w*$");
+                defineKeyConstName = key.ToValidConstKey();
+                
+#if UNITY_EDITOR
+                if (string.IsNullOrEmpty(key))
+                {
+                    _showError = true;
+                    _errorMessage = $"\u26a0 Key must not be empty!";
+                    return;
+                }
+                
+                var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
+                foreach (var soundGroup in soundGroups)
+                {
+                    foreach (var audioClipData in soundGroup.audioClipDatas)
+                    {
+                        if ((object)audioClipData == this)
+                            continue;
+
+                        if (audioClipData.key == key)
+                        {
+                            _showError = true;
+                            _errorMessage = $"\u26a0 Duplicate key with other audioClipData from SoundGroup: {soundGroup.name}!";
+                            return;
+                        }
+                    }
+                    
+                    foreach (var soundInfoData in soundGroup.soundInfoDatas)
+                    {
+                        if ((object)soundInfoData == this)
+                            continue;
+
+                        if (soundInfoData.key == key)
+                        {
+                            _showError = true;
+                            _errorMessage = $"\u26a0 Duplicate key with other soundInfoData from SoundGroup: {soundGroup.name}!";
+                            return;
+                        }
+                    }
+                }
+                
+                _showError = false;
+#endif
             }
         }
         
@@ -37,114 +74,45 @@ namespace NFramework
         [Serializable]
         public class SoundInfoData : KeyValueData<SoundInfoSO> { }
         
+        [ReadOnly] public string defineKeyConstName;
+        [OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
+            
+        [HideLabel, ReadOnly, ShowInInspector, ShowIf(nameof(_showError)), GUIColor(1, 0.3f, 0.3f)] 
+        private string _errorMessage;
+        private bool _showError;
+        
+        [Space]
         [TabGroup("Audio Clip"), Searchable] public List<AudioClipData> audioClipDatas = new();
         [TabGroup("Sound Info"), Searchable] public List<SoundInfoData> soundInfoDatas = new();
-        [Header("Script Define")]
-        public string loadKey;
-        public string scriptNamespace = "";
 
-        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets")] public string scriptSavePath = "";
-
+        private void OnKeyChanged()
+        {
+            defineKeyConstName = key.ToValidConstKey();
+            
 #if UNITY_EDITOR
-        [Button(ButtonSizes.Large)]
-        public void GenerateScriptDefine()
-        {
-            GenerateScriptDefineWithoutRefresh();
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-        }
-        
-        [Button(ButtonSizes.Large), HorizontalGroup]
-        public void LocateScriptDefine()
-        {
-            var path = Path.Combine($"Assets/{scriptSavePath}", $"{GetScriptDefineName()}.cs");
-            var script = AssetDatabase.LoadAssetAtPath<Object>(path);
-            if (script)
-                EditorGUIUtility.PingObject(script);
-            else
-                NLogger.Log("Not found script define");
-        }
-        
-        [Button(ButtonSizes.Large), HorizontalGroup]
-        public void Delete()
-        {
-            var path = AssetDatabase.GetAssetPath(GetInstanceID());
-            if (EditorUtility.DisplayDialog("Delete this sound group and its script define?", path + "\n\nYou cannot undo this action", "Delete", "Cancel"))
+            if (string.IsNullOrEmpty(key))
             {
-                var definePath = Path.Combine($"Assets/{scriptSavePath}", $"{GetScriptDefineName()}.cs");
-                
-                if (File.Exists(definePath))
-                    File.Delete(definePath);
-                
-                AssetDatabase.DeleteAsset(path);
-                AssetDatabase.Refresh();
+                _showError = true;
+                _errorMessage = $"\u26a0 Key must not be empty!";
+                return;
             }
-        }
-        
-        public void GenerateScriptDefineWithoutRefresh()
-        {
-            var loadKeyBody = $"public const string LOAD_KEY = \"{loadKey}\";";
-
-            var audioClipBuilder = new StringBuilder();
-            if (!audioClipDatas.IsNullOrEmpty())
+                
+            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
+            foreach (var soundGroup in soundGroups)
             {
-                foreach (var kv in audioClipDatas)
+                if ((object)soundGroup == this)
+                    continue;
+
+                if (soundGroup.key == key)
                 {
-                    if (!string.IsNullOrEmpty(kv.key))
-                        audioClipBuilder.AppendLine($"\t\t\tpublic const string {kv.key} = \"{kv.key}\";");
+                    _showError = true;
+                    _errorMessage = $"\u26a0 Duplicate key with other SoundGroup: {soundGroup.name}!";
+                    return;
                 }
             }
-
-            var soundSOBuilder = new StringBuilder();
-            if (!soundInfoDatas.IsNullOrEmpty())
-            {
-                foreach (var kv in soundInfoDatas)
-                {
-                    if (!string.IsNullOrEmpty(kv.key))
-                        soundSOBuilder.AppendLine($"\t\t\tpublic const string {kv.key} = \"{kv.key}\";");
-                }
-            }
-
-            var classBuilder = new StringBuilder();
-
-            // Add auto-generated file comment
-            classBuilder.AppendLine("// This file is auto-generated.");
-            classBuilder.AppendLine("// Do not modify this file manually.\n");
-
-            if (!string.IsNullOrEmpty(scriptNamespace))
-            {
-                classBuilder.AppendLine($"namespace {scriptNamespace}");
-                classBuilder.AppendLine("{");
-            }
-
-            classBuilder.AppendLine($"\tpublic static class {GetScriptDefineName()}");
-            classBuilder.AppendLine("\t{");
-            classBuilder.AppendLine($"\t\t{loadKeyBody}\n");
-
-            classBuilder.AppendLine("\t\tpublic static class AudioClip");
-            classBuilder.AppendLine("\t\t{");
-            classBuilder.Append(audioClipBuilder);
-            classBuilder.AppendLine("\t\t}\n");
-
-            classBuilder.AppendLine("\t\tpublic static class SoundSO");
-            classBuilder.AppendLine("\t\t{");
-            classBuilder.Append(soundSOBuilder);
-            classBuilder.AppendLine("\t\t}");
-
-            classBuilder.AppendLine("\t}");
-
-            if (!string.IsNullOrEmpty(scriptNamespace))
-            {
-                classBuilder.AppendLine("}");
-            }
-
-            var filePath = Path.Combine(Application.dataPath, scriptSavePath, $"{GetScriptDefineName()}.cs");
-            using (var sw = new StreamWriter(filePath))
-            {
-                sw.Write(classBuilder.ToString());
-            }
-        }
-        
-        private string GetScriptDefineName() => name.Replace(" ", "").Replace("SO", "Define");
+                
+            _showError = false;
 #endif
+        }
     }
 }

@@ -162,5 +162,33 @@ namespace NFramework
 
         public static bool TryParseToColor(this string @this, out Color color) => 
             ColorUtility.TryParseHtmlString(@this, out color);
+        
+        public static string ToValidConstKey(this string rawKey)
+        {
+            if (string.IsNullOrWhiteSpace(rawKey))
+                return "_";
+
+            var builder = new StringBuilder();
+
+            foreach (char c in rawKey)
+            {
+                if (char.IsWhiteSpace(c))
+                {
+                    builder.Append('_');
+                }
+                else if (char.IsLetterOrDigit(c) || c == '_')
+                {
+                    builder.Append(c);
+                }
+            }
+
+            // Ensure the first character is a letter or underscore
+            if (builder.Length == 0 || (!char.IsLetter(builder[0]) && builder[0] != '_'))
+            {
+                builder.Insert(0, '_');
+            }
+
+            return builder.ToString().ToUpperInvariant();
+        }
     }
 }

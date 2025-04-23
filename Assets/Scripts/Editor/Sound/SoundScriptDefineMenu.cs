@@ -3,6 +3,7 @@ using System.Text;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace NFramework.Editor
 {
@@ -55,13 +56,13 @@ namespace NFramework.Editor
             stringBuilder.AppendLine("\tpublic static class SoundDefine");
             stringBuilder.AppendLine("\t{");
 
-            // LoadKey class
-            stringBuilder.AppendLine("\t\tpublic static class GroupKey");
+            // SoundGroupKey class
+            stringBuilder.AppendLine("\t\tpublic static class SoundGroupKey");
             stringBuilder.AppendLine("\t\t{");
             foreach (var group in soundGroups)
             {
-                var fieldName = ToValidConstKey(group.loadKey);
-                stringBuilder.AppendLine($"\t\t\tpublic const string {fieldName} = \"{group.loadKey}\";");
+                if (group.defineKeyConstName.IsNullOrEmpty()) continue;
+                stringBuilder.AppendLine($"\t\t\tpublic const string {group.defineKeyConstName} = \"{group.key}\";");
             }
 
             stringBuilder.AppendLine("\t\t}");
@@ -74,7 +75,8 @@ namespace NFramework.Editor
             {
                 foreach (var clipData in group.audioClipDatas)
                 {
-                    stringBuilder.AppendLine($"\t\t\tpublic const string {ToValidConstKey(clipData.key)} = \"{clipData.key}\";");
+                    if (clipData.defineKeyConstName.IsNullOrEmpty()) continue;
+                    stringBuilder.AppendLine($"\t\t\tpublic const string {clipData.defineKeyConstName} = \"{clipData.key}\";");
                 }
             }
 
@@ -88,7 +90,8 @@ namespace NFramework.Editor
             {
                 foreach (var infoData in group.soundInfoDatas)
                 {
-                    stringBuilder.AppendLine($"\t\t\tpublic const string {ToValidConstKey(infoData.key)} = \"{infoData.key}\";");
+                    if (infoData.defineKeyConstName.IsNullOrEmpty()) continue;
+                    stringBuilder.AppendLine($"\t\t\tpublic const string {infoData.defineKeyConstName} = \"{infoData.key}\";");
                 }
             }
 
@@ -112,44 +115,16 @@ namespace NFramework.Editor
         }
 
         [MenuItem("NFramework/Sound/Update Script Define")]
-        private static void UpdateScriptDefine()
+        public static void UpdateScriptDefine()
         {
         }
 
         [MenuItem("NFramework/Sound/Locate Script Define")]
-        private static void LocateScriptDefineStatic()
+        public static void LocateScriptDefineStatic()
         {
-            var script = FileHelper.LoadFirstAssetWithName<MonoScript>("SoundDefine", "SoundDefine");
-            if (!script)
+            var script = FileHelper.LoadFirstAssetWithName<Object>("SoundDefine", "SoundDefine");
+            if (script)
                 EditorGUIUtility.PingObject(script);
-        }
-        
-        private static string ToValidConstKey(string rawKey)
-        {
-            if (string.IsNullOrWhiteSpace(rawKey))
-                return "_";
-
-            var builder = new StringBuilder();
-
-            foreach (char c in rawKey)
-            {
-                if (char.IsWhiteSpace(c))
-                {
-                    builder.Append('_');
-                }
-                else if (char.IsLetterOrDigit(c) || c == '_')
-                {
-                    builder.Append(c);
-                }
-            }
-
-            // Ensure the first character is a letter or underscore
-            if (builder.Length == 0 || (!char.IsLetter(builder[0]) && builder[0] != '_'))
-            {
-                builder.Insert(0, '_');
-            }
-
-            return builder.ToString().ToUpperInvariant();
         }
     }
 }
