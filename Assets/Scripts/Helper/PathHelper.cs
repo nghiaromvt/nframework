@@ -48,23 +48,5 @@ namespace NFramework
 
             return path;
         }
-
-#if UNITY_EDITOR
-        public static Dictionary<string, List<string>> GetAssetsPathDictionary(string filter, string[] searchInFolder = null)
-        {
-            var guids = UnityEditor.AssetDatabase.FindAssets(filter, searchInFolder);
-            var pathDic = new Dictionary<string, List<string>>();
-            foreach (var guid in guids)
-            {
-                var path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
-                var fileName = Path.GetFileNameWithoutExtension(path);
-                if (pathDic.TryGetValue(fileName, out var pathList))
-                    pathList.Add(path);
-                else
-                    pathDic.Add(fileName, new List<string> { path });
-            }
-            return pathDic;
-        }
-#endif
     }
 }

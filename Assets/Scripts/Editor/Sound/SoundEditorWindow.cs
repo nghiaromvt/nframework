@@ -21,7 +21,7 @@ namespace NFramework.Editor
                 DrawSearchToolbar = true
             });
             tree.Add("Create New Sound Group", new SoundGroupCreator());
-            tree.Add("Generate All Script Defines", new GenerateAllScriptDefinesMenu());
+            tree.Add("Generate All Script Defines", new SoundScriptDefineMenu());
             tree.AddAllAssetsAtPath("Sound Groups", "Assets/", typeof(SoundGroupSO), true, true);
             return tree;
         }
@@ -35,17 +35,18 @@ namespace NFramework.Editor
             {
                 GUILayout.FlexibleSpace();
                 GUILayout.FlexibleSpace();
-                if (SirenixEditorGUI.ToolbarButton("Locate SO"))
+                if (SirenixEditorGUI.ToolbarButton("Locate"))
                 {
                     EditorGUIUtility.PingObject(soundGroup);
                 }
-                if (SirenixEditorGUI.ToolbarButton("Locate Script Define"))
-                {
-                    soundGroup.LocateScriptDefine();
-                }
                 if (SirenixEditorGUI.ToolbarButton("Delete"))
                 {
-                    soundGroup.Delete();
+                    var path = AssetDatabase.GetAssetPath(soundGroup.GetInstanceID());
+                    if (EditorUtility.DisplayDialog("Delete this sound group and its script define?", path + "\n\nYou cannot undo this action", "Delete", "Cancel"))
+                    {
+                        AssetDatabase.DeleteAsset(path);
+                        AssetDatabase.Refresh();
+                    }
                 }
             }
             SirenixEditorGUI.EndHorizontalToolbar();
