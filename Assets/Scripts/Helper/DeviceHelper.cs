@@ -8,14 +8,14 @@ using UnityEngine;
 
 namespace NFramework
 {
-    public enum EBuildEnvironment
+    public enum BuildEnvironment
     {
         Development = 0,
         Staging = 1,
         Production = 2,
     }
 
-    public enum EDeviceHardwareLevel
+    public enum DeviceHardwareLevel
     {
         Low = 0,
         Medium = 1,
@@ -82,18 +82,18 @@ namespace NFramework
             }
         }
 
-        public static bool IsDevelopment => BuildEnvironment == EBuildEnvironment.Development;
+        public static bool IsDevelopment => BuildEnvironment == BuildEnvironment.Development;
 
-        public static EBuildEnvironment BuildEnvironment
+        public static BuildEnvironment BuildEnvironment
         {
             get
             {
 #if DEVELOPMENT
-                return EBuildEnvironment.Development;
+                return BuildEnvironment.Development;
 #elif STAGING
-                return EBuildEnvironment.Staging;
+                return BuildEnvironment.Staging;
 #else
-                return EBuildEnvironment.Production;
+                return BuildEnvironment.Production;
 #endif
             }
         }
@@ -145,21 +145,6 @@ namespace NFramework
             return localIPs;
         }
 
-        private static string _deviceUDID = "";
-        public static string GetUDID()
-        {
-            if (_deviceUDID.Length <= 0)
-            {
-                _deviceUDID = PlayerPrefs.GetString("didu", string.Empty);
-                if (string.IsNullOrEmpty(_deviceUDID))
-                {
-                    _deviceUDID = SystemInfo.deviceUniqueIdentifier;
-                    PlayerPrefs.SetString("didu", _deviceUDID);
-                }
-            }
-            return _deviceUDID;
-        }
-
         public static void OpenDeviceWifiSetting()
         {
             try
@@ -181,7 +166,7 @@ namespace NFramework
             }
         }
         
-        public static int GetAndroidSDKLevel() {
+        public static int GetAndroidSdkLevel() {
 #if UNITY_ANDROID && !UNITY_EDITOR
             using (var version = new AndroidJavaClass("android.os.Build$VERSION")) 
             {
@@ -201,26 +186,26 @@ namespace NFramework
         }
 #endif
 
-        public static EDeviceHardwareLevel GetDeviceHardwareLevel()
+        public static DeviceHardwareLevel GetDeviceHardwareLevel()
         {
             var ramGB = SystemInfo.systemMemorySize / 1024;
             
             if (IsAndroid)
             {
                 if (ramGB <= 4)
-                    return EDeviceHardwareLevel.Low;
+                    return DeviceHardwareLevel.Low;
                 if (ramGB <= 6)
-                    return EDeviceHardwareLevel.Medium;
+                    return DeviceHardwareLevel.Medium;
             }
             else if (IsIOS)
             {
                 if (ramGB <= 2)
-                    return EDeviceHardwareLevel.Low;
+                    return DeviceHardwareLevel.Low;
                 if (ramGB <= 3)
-                    return EDeviceHardwareLevel.Medium;
+                    return DeviceHardwareLevel.Medium;
             }
             
-            return EDeviceHardwareLevel.High;
+            return DeviceHardwareLevel.High;
         }
     }
 }

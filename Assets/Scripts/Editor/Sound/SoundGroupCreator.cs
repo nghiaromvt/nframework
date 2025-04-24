@@ -10,7 +10,7 @@ namespace NFramework.Editor
     [Serializable]
     public class SoundGroupCreator
     {
-        public const string SAVE_PATH_PREFS_KEY = "SoundGroupCreatoravePath";
+        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("SoundGroupCreatorSavePath");
         
         [SerializeField, Required] private string _assetName = "New Sound Group";
         [SerializeField, ReadOnly] private string _defineKeyConstName;
@@ -22,19 +22,15 @@ namespace NFramework.Editor
         private bool _showError;
         
         [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))] 
-        private string _savePath = EditorPrefs.GetString(EditorHelper.GetUniqueProjectPrefsKey(SAVE_PATH_PREFS_KEY), "");
+        private string _savePath = EditorPrefs.GetString(EditorHelper.GetUniqueProjectPrefsKey(SavePathPrefsKey), "");
 
         [TabGroup("Audio Clip"), SerializeField, Searchable] private List<SoundGroupSO.AudioClipData> _audioClipDatas = new();
         [TabGroup("Sound Info"), SerializeField, Searchable] private List<SoundGroupSO.SoundInfoData> _soundInfoDatas = new();
         [Header("Script Define")] 
-        [SerializeField] private bool _updateScriptDefine = true;
+        [SerializeField] private bool _generateScriptDefine = true;
         
-        private void OnSavePathChanged()
-        {
-            var key = EditorHelper.GetUniqueProjectPrefsKey(SAVE_PATH_PREFS_KEY);
-            EditorPrefs.SetString(key, _savePath);
-        }
-        
+        private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
+
         private void OnKeyChanged()
         {
             _defineKeyConstName = _key.ToValidConstKey();
@@ -76,8 +72,8 @@ namespace NFramework.Editor
             
             Selection.activeObject = soundGroup;
 
-            if (_updateScriptDefine)
-                SoundScriptDefineMenu.UpdateScriptDefine();
+            if (_generateScriptDefine)
+                SoundScriptDefineMenu.GenerateScriptDefineStatic();
         }
     }
 }

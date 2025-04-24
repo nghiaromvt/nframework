@@ -19,7 +19,7 @@ namespace NFramework
             /// the name of the test, has to be unique
             public string testID;
             /// a stopwatch to compute time
-            public Stopwatch timer;
+            public readonly Stopwatch timer;
 
             /// <summary>
             /// Creates a speed test with the specified ID and starts the timer
@@ -53,13 +53,13 @@ namespace NFramework
         /// </summary>
         public static void EndTest(string testID)
         {
-            if (!_speedTestDict.ContainsKey(testID))
+            if (!_speedTestDict.TryGetValue(testID, out var value))
             {
                 Debug.LogError($"TestID[{testID}] is not exist");
                 return;
             }
 
-            _speedTestDict[testID].timer.Stop();
+            value.timer.Stop();
             float elapsedTime = _speedTestDict[testID].timer.ElapsedMilliseconds / 1000f;
             _speedTestDict.Remove(testID);
 

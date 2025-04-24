@@ -59,7 +59,7 @@ namespace NFramework
 		/// <returns>The new point position.</returns>
 		/// <param name="point">The point to rotate.</param>
 		/// <param name="pivot">The pivot's position.</param>
-		/// <param name="angles">The angle as a Vector3.</param>
+		/// <param name="angle">The angle as a Vector3.</param>
 		public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angle)
         {
             // we get point direction from the point to the pivot
@@ -71,13 +71,6 @@ namespace NFramework
             return point;
         }
 
-        /// <summary>
-        /// Rotates a point around the given pivot.
-        /// </summary>
-        /// <returns>The new point position.</returns>
-        /// <param name="point">The point to rotate.</param>
-        /// <param name="pivot">The pivot's position.</param>
-        /// <param name="angles">The angle as a Vector3.</param>
         public static Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Quaternion quaternion)
         {
             // we get point direction from the point to the pivot

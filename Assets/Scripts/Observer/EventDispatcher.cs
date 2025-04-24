@@ -5,7 +5,7 @@ namespace NFramework
 {
     public class EventDispatcher
     {
-        private static Dictionary<string, Action<BaseEventData>> _eventDic = new();
+        private static readonly Dictionary<string, Action<BaseEventData>> _eventDic = new();
 
         public static void Register(string eventId, Action<BaseEventData> action)
         {
@@ -29,8 +29,8 @@ namespace NFramework
 
         public static void TriggerEvent(string eventId, BaseEventData eventData)
         {
-            if (_eventDic.ContainsKey(eventId))
-                _eventDic[eventId]?.Invoke(eventData);
+            if (_eventDic.TryGetValue(eventId, out var value))
+                value?.Invoke(eventData);
             else
                 NLogger.LogError($"[{nameof(EventDispatcher)}] Not found event to trigger - eventId:{eventId}");
         }

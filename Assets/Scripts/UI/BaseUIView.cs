@@ -3,16 +3,16 @@ using UnityEngine;
 
 namespace NFramework
 {
-    public class BaseUiView : MonoBehaviour
+    public class BaseUIView : MonoBehaviour
     {
-        [SerializeField] private EUiLayer _uiLayer;
+        [SerializeField] private UILayer _uiLayer;
         [SerializeField] private bool _defaultPauseGameStatus;
 
         private CanvasGroup _canvasGroup;
         
-        public EUiLayer UiLayer => _uiLayer;
+        public UILayer UILayer => _uiLayer;
         public bool PauseGameStatus { get; protected set; }
-        public string Id { get; set; }
+        public string ID { get; set; }
         public bool IsFromResources { get; set; }
 
         public CanvasGroup CanvasGroup
@@ -26,13 +26,13 @@ namespace NFramework
             }
         }
 
-        public virtual void OnOpen(BaseUiInputData inputData)
+        public virtual void OnOpen(BaseUIInputData inputData)
         {
             PauseGameStatus = inputData.pauseStatus switch
             {
-                BaseUiInputData.EPauseGameStatus.UseDefault => _defaultPauseGameStatus,
-                BaseUiInputData.EPauseGameStatus.Pause => true,
-                BaseUiInputData.EPauseGameStatus.NoPause => false,
+                BaseUIInputData.EPauseGameStatus.UseDefault => _defaultPauseGameStatus,
+                BaseUIInputData.EPauseGameStatus.Pause => true,
+                BaseUIInputData.EPauseGameStatus.NoPause => false,
                 _ => PauseGameStatus
             };
 
@@ -40,20 +40,20 @@ namespace NFramework
                 PauseGameHandler.Pause(this);
         }
 
-        public virtual BaseUiOutputData OnClose()
+        public virtual BaseUIOutputData OnClose()
         {
             if (PauseGameStatus) 
                 PauseGameHandler.Unpause(this);
             
-            return BaseUiOutputData.Empty;
+            return BaseUIOutputData.Empty;
         }
         
-        public BaseUiOutputData CloseSelf(bool destroy = false) => UIManager.Close(this, destroy);
+        public BaseUIOutputData CloseSelf(bool destroy = false) => UIManager.Close(this, destroy);
     }
     
 
     [Serializable]
-    public class BaseUiInputData
+    public class BaseUIInputData
     {
         public enum EPauseGameStatus { UseDefault, Pause, NoPause }
         
@@ -61,8 +61,8 @@ namespace NFramework
     }
 
     [Serializable]
-    public class BaseUiOutputData
+    public class BaseUIOutputData
     {
-        public static readonly BaseUiOutputData Empty = new();
+        public static readonly BaseUIOutputData Empty = new();
     }
 }

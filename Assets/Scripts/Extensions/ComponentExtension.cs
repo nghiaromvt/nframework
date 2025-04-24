@@ -21,7 +21,7 @@ namespace NFramework
 				if (!prop.CanWrite || !prop.CanWrite || prop.Name == "name") continue;
 				prop.SetValue(dst, prop.GetValue(original, null), null);
 			}
-			return (T)dst;
+			return dst;
 		}
 	}
 }

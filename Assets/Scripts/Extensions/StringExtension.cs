@@ -1,17 +1,16 @@
 using System;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace NFramework
 {
-    public enum EStringMatchType
+    public enum StringMatchType
     {
         Exactly,
-        Exactly_IgnoreCase,
+        ExactlyIgnoreCase,
         Contains,
-        Contains_IgnoreCase
+        ContainsIgnoreCase
     }
     
     public static class StringExtension
@@ -19,18 +18,18 @@ namespace NFramework
         /// <summary>
         /// Compare 2 string
         /// </summary>
-        public static bool IsMatchWith(this string @this, string comparedString, EStringMatchType matchType = EStringMatchType.Exactly)
+        public static bool IsMatchWith(this string @this, string comparedString, StringMatchType matchType = StringMatchType.Exactly)
         {
             switch (matchType)
             {
                 default:
-                case EStringMatchType.Exactly:
-                    return string.Equals(@this, comparedString, System.StringComparison.Ordinal);
-                case EStringMatchType.Exactly_IgnoreCase:
-                    return string.Equals(@this, comparedString, System.StringComparison.OrdinalIgnoreCase);
-                case EStringMatchType.Contains:
+                case StringMatchType.Exactly:
+                    return string.Equals(@this, comparedString, StringComparison.Ordinal);
+                case StringMatchType.ExactlyIgnoreCase:
+                    return string.Equals(@this, comparedString, StringComparison.OrdinalIgnoreCase);
+                case StringMatchType.Contains:
                     return @this.Contains(comparedString);
-                case EStringMatchType.Contains_IgnoreCase:
+                case StringMatchType.ContainsIgnoreCase:
                     return @this.Contains(comparedString, true);
             }
         }
@@ -168,27 +167,23 @@ namespace NFramework
             if (string.IsNullOrWhiteSpace(rawKey))
                 return "_";
 
-            var builder = new StringBuilder();
+            // 1) Replace all whitespace with underscore
+            var cleaned = Regex.Replace(rawKey, @"\s+", "_");
 
-            foreach (char c in rawKey)
-            {
-                if (char.IsWhiteSpace(c))
-                {
-                    builder.Append('_');
-                }
-                else if (char.IsLetterOrDigit(c) || c == '_')
-                {
-                    builder.Append(c);
-                }
-            }
+            // 2) Remove any character that's not letter/digit/underscore
+            cleaned = Regex.Replace(cleaned, @"[^A-Za-z0-9_]", "");
 
-            // Ensure the first character is a letter or underscore
-            if (builder.Length == 0 || (!char.IsLetter(builder[0]) && builder[0] != '_'))
-            {
-                builder.Insert(0, '_');
-            }
+            // 3a) Add underscore before an uppercase letter preceded by a lowercase or digit:
+            cleaned = Regex.Replace(cleaned, @"(?<=[a-z0-9])([A-Z])", "_$1");
+            // 3b) Also handle the case of multiple uppercase letters followed by lowercase:
+            cleaned = Regex.Replace(cleaned, @"(?<=[A-Z])([A-Z][a-z])", "_$1");
 
-            return builder.ToString().ToUpperInvariant();
+            // 4) Ensure it starts with a letter or underscore
+            if (!Regex.IsMatch(cleaned, @"^[_A-Za-z]"))
+                cleaned = "_" + cleaned;
+
+            // 5) Uppercase everything
+            return cleaned.ToUpperInvariant();
         }
     }
 }

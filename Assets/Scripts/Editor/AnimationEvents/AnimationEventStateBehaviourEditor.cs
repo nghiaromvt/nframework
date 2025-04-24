@@ -9,9 +9,9 @@ namespace NFramework.Editor
     [CustomEditor(typeof(AnimationEventStateBehaviour))]
     public class AnimationEventStateBehaviourEditor : UnityEditor.Editor
     {
-        AnimationClip previewClip;
-        float previewTime;
-        bool isPreviewing;
+        private AnimationClip _previewClip;
+        private float _previewTime;
+        private bool _isPreviewing;
 
         public override void OnInspectorGUI()
         {
@@ -23,12 +23,12 @@ namespace NFramework.Editor
             {
                 GUILayout.Space(10);
 
-                if (isPreviewing)
+                if (_isPreviewing)
                 {
                     if (GUILayout.Button("Stop Preview"))
                     {
                         EnforceTPose();
-                        isPreviewing = false;
+                        _isPreviewing = false;
                         AnimationMode.StopAnimationMode();
                     }
                     else
@@ -38,11 +38,11 @@ namespace NFramework.Editor
                 }
                 else if (GUILayout.Button("Preview"))
                 {
-                    isPreviewing = true;
+                    _isPreviewing = true;
                     AnimationMode.StartAnimationMode();
                 }
 
-                GUILayout.Label($"Previewing at {previewTime:F2}s", EditorStyles.helpBox);
+                GUILayout.Label($"Previewing at {_previewTime:F2}s", EditorStyles.helpBox);
             }
             else
             {
@@ -52,11 +52,11 @@ namespace NFramework.Editor
 
         void PreviewAnimationClip(AnimationEventStateBehaviour stateBehaviour)
         {
-            if (previewClip == null) return;
+            if (_previewClip == null) return;
 
-            previewTime = stateBehaviour.triggerTime * previewClip.length;
+            _previewTime = stateBehaviour.triggerTime * _previewClip.length;
 
-            AnimationMode.SampleAnimationClip(Selection.activeGameObject, previewClip, previewTime);
+            AnimationMode.SampleAnimationClip(Selection.activeGameObject, _previewClip, _previewTime);
         }
 
         bool Validate(AnimationEventStateBehaviour stateBehaviour, out string errorMessage)
@@ -68,8 +68,8 @@ namespace NFramework.Editor
                 .SelectMany(layer => layer.stateMachine.states)
                 .FirstOrDefault(state => state.state.behaviours.Contains(stateBehaviour));
 
-            previewClip = matchingState.state?.motion as AnimationClip;
-            if (previewClip == null)
+            _previewClip = matchingState.state?.motion as AnimationClip;
+            if (_previewClip == null)
             {
                 errorMessage = "No valid AnimationClip found for the current state.";
                 return false;

@@ -4,30 +4,30 @@ using UnityEngine;
 
 namespace NFramework.Editor
 {
-    public class AESEditorWindow : EditorWindow
+    public class AesEditorWindow : EditorWindow
     {
         private string _inputText;
         private string _outputText;
         private string _key;
-        private string _editorGlobalAESKey;
+        private string _editorGlobalAesKey;
         private bool _useCustomKey;
 
         [MenuItem("NFramework/AES Window")]
         private static void Init()
         {
-            AESEditorWindow window = (AESEditorWindow)GetWindow(typeof(AESEditorWindow));
+            AesEditorWindow window = (AesEditorWindow)GetWindow(typeof(AesEditorWindow));
             window.Show();
         }
 
         private void OnGUI()
         {
-            GUILayout.Label("EditorGlobalAESKey:", EditorStyles.boldLabel);
-            _editorGlobalAESKey = AESHelper.GetGlobalEditorAESKey();
-            _editorGlobalAESKey = EditorGUILayout.TextField(_editorGlobalAESKey);
+            GUILayout.Label("EditorGlobalAesKey:", EditorStyles.boldLabel);
+            _editorGlobalAesKey = AesHelper.GetGlobalEditorAesKey();
+            _editorGlobalAesKey = EditorGUILayout.TextField(_editorGlobalAesKey);
             if (GUILayout.Button("Update"))
             {
-                EditorPrefs.SetString(AESHelper.EDITOR_GLOBAL_AES_KEY_STRING, _editorGlobalAESKey);
-                Debug.Log($"{AESHelper.EDITOR_GLOBAL_AES_KEY_STRING} => {_editorGlobalAESKey}");
+                EditorPrefs.SetString(AesHelper.EditorGlobalAesPrefs, _editorGlobalAesKey);
+                Debug.Log($"{AesHelper.EditorGlobalAesPrefs} => {_editorGlobalAesKey}");
             }
 
             GUILayout.Space(25);
@@ -50,7 +50,7 @@ namespace NFramework.Editor
             {
                 try
                 {
-                    _outputText = AESHelper.EncryptAES(_inputText, _useCustomKey ? _key : AESHelper.GetGlobalEditorAESKey());
+                    _outputText = AesHelper.EncryptAes(_inputText, _useCustomKey ? _key : AesHelper.GetGlobalEditorAesKey());
                 }
                 catch (Exception e)
                 {
@@ -62,7 +62,7 @@ namespace NFramework.Editor
             {
                 try
                 {
-                    _outputText = AESHelper.DecryptAES(_inputText, _useCustomKey ? _key : AESHelper.GetGlobalEditorAESKey());
+                    _outputText = AesHelper.DecryptAes(_inputText, _useCustomKey ? _key : AesHelper.GetGlobalEditorAesKey());
                 }
                 catch (Exception e)
                 {

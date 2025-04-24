@@ -10,7 +10,7 @@ using Object = UnityEngine.Object;
 
 namespace NFramework
 {
-    public enum EAddressableOperationStatus { None, Operating, Success, Failed, Error, Released }
+    public enum AddressableOperationStatus { None, Operating, Success, Failed, Error, Released }
     
     public class AddressablesManager : SingletonMono<AddressablesManager>
     {
@@ -103,7 +103,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress += onProgress;
                 
-                await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating);
                 
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
@@ -117,7 +117,7 @@ namespace NFramework
             
             await loader.Load();
 
-            if (loader.Status == EAddressableOperationStatus.Success)
+            if (loader.Status == AddressableOperationStatus.Success)
                 return loader.GetResult();
             
             _cachedAddressableAssetLoaderDict.Remove(key);
@@ -134,7 +134,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress += onProgress;
                 
-                await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating);
                 
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
@@ -148,7 +148,7 @@ namespace NFramework
             
             await loader.Load();
 
-            if (loader.Status == EAddressableOperationStatus.Success)
+            if (loader.Status == AddressableOperationStatus.Success)
                 return loader.GetResult();
             
             _cachedAddressableAssetsLoaderDict.Remove(label);
@@ -166,7 +166,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress += onProgress;
                 
-                await UniTask.WaitUntil(() => cachedLoader.Status != EAddressableOperationStatus.Operating);
+                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating);
                 
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
@@ -180,7 +180,7 @@ namespace NFramework
             
             await loader.Load();
 
-            if (loader.Status == EAddressableOperationStatus.Success)
+            if (loader.Status == AddressableOperationStatus.Success)
                 return loader.GetResult();
             
             _cachedAddressableSceneLoaderDict.Remove(key);
@@ -272,12 +272,12 @@ namespace NFramework
                 if (onProgress != null)
                     downloader.OnProgress += onProgress;
                 
-                await UniTask.WaitUntil(() => downloader.Status != EAddressableOperationStatus.Operating);
+                await UniTask.WaitUntil(() => downloader.Status != AddressableOperationStatus.Operating);
                 
                 if (onProgress != null)
                     downloader.OnProgress -= onProgress;
                 
-                return downloader.Status == EAddressableOperationStatus.Success;
+                return downloader.Status == AddressableOperationStatus.Success;
             }
             else
             {
@@ -293,7 +293,7 @@ namespace NFramework
                     downloader.OnProgress -= onProgress;
                 
                 _curAddressableAssetDownloaderDict.Remove(key);
-                return downloader.Status == EAddressableOperationStatus.Success;
+                return downloader.Status == AddressableOperationStatus.Success;
             }
         }
 

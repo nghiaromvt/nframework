@@ -165,7 +165,7 @@ namespace NFramework
             Dictionary<string, string> loadDictionary = null;
             try
             {
-                loadDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(data == null ? "{}" : data);
+                loadDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(data ?? "{}");
             }
             catch (Exception ex)
             {

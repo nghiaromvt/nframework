@@ -67,7 +67,7 @@ namespace NFramework
                     IsPaused = true;
                     _cachedTimeScale = Time.timeScale;
                     Time.timeScale = 0f;
-                    //SoundManager.I.PauseSound();
+                    SoundManager.Pause();
                 }
             }
             else
@@ -76,7 +76,7 @@ namespace NFramework
                 {
                     IsPaused = false;
                     Time.timeScale = _cachedTimeScale;
-                    //SoundManager.I.UnpauseSound();
+                    SoundManager.Unpause();
                 }
             }
         }

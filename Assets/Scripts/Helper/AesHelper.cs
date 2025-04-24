@@ -2,30 +2,30 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using UnityEngine;
 
 namespace NFramework
 {
-    public class AESHelper
+    public static class AesHelper
     {
         private static readonly byte[] _iv = new byte[16]; // Initialization vector
 #if UNITY_EDITOR
-        public const string EDITOR_GLOBAL_AES_KEY_STRING = "EditorGlobalAESKey";
+        public static string EditorGlobalAesPrefs => EditorHelper.GetUniqueProjectPrefsKey("EditorGlobalAesKey");
+        
         private const string DEFAULT_EDITOR_GLOBAL_AES_KEY = "123456";
 
-        public static string GetGlobalEditorAESKey()
+        public static string GetGlobalEditorAesKey()
         {
-            var result = UnityEditor.EditorPrefs.GetString(EDITOR_GLOBAL_AES_KEY_STRING);
+            var result = UnityEditor.EditorPrefs.GetString(EditorGlobalAesPrefs);
             if (string.IsNullOrEmpty(result))
             {
                 result = DEFAULT_EDITOR_GLOBAL_AES_KEY;
-                UnityEditor.EditorPrefs.SetString(EDITOR_GLOBAL_AES_KEY_STRING, DEFAULT_EDITOR_GLOBAL_AES_KEY);
+                UnityEditor.EditorPrefs.SetString(EditorGlobalAesPrefs, DEFAULT_EDITOR_GLOBAL_AES_KEY);
             }
             return result;
         }
 #endif
 
-        public static string EncryptAES(string data, string key)
+        public static string EncryptAes(string data, string key)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -40,17 +40,17 @@ namespace NFramework
 
             try
             {
-                byte[] encryptedBytes = EncryptAES(dataBytes, keyBytes);
+                byte[] encryptedBytes = EncryptAes(dataBytes, keyBytes);
                 return Convert.ToBase64String(encryptedBytes);
             }
             catch (CryptographicException ex)
             {
-                Debug.LogError("Encryption failed: " + ex.Message);
+                NLogger.LogError("Encryption failed: " + ex.Message);
                 throw; // Re-throw the exception for handling at a higher level
             }
         }
 
-        public static string DecryptAES(string encryptedData, string key)
+        public static string DecryptAes(string encryptedData, string key)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -63,22 +63,22 @@ namespace NFramework
                 byte[] keyBytes = Encoding.UTF8.GetBytes(key);
                 keyBytes = TruncateOrPadKey(keyBytes, 16);
 
-                byte[] decryptedBytes = DecryptAES(encryptedBytes, keyBytes);
+                byte[] decryptedBytes = DecryptAes(encryptedBytes, keyBytes);
                 return Encoding.UTF8.GetString(decryptedBytes);
             }
             catch (FormatException ex)
             {
-                Debug.LogError("Invalid Base64 string: " + ex.Message);
+                NLogger.LogError("Invalid Base64 string: " + ex.Message);
                 throw;
             }
             catch (CryptographicException ex)
             {
-                Debug.LogError("Decryption failed: " + ex.Message);
+                NLogger.LogError("Decryption failed: " + ex.Message);
                 throw;
             }
         }
 
-        public static byte[] EncryptAES(byte[] data, byte[] key)
+        public static byte[] EncryptAes(byte[] data, byte[] key)
         {
             using (Aes aesAlg = Aes.Create())
             {
@@ -93,7 +93,7 @@ namespace NFramework
             }
         }
 
-        public static byte[] DecryptAES(byte[] encryptedData, byte[] key)
+        public static byte[] DecryptAes(byte[] encryptedData, byte[] key)
         {
             using (Aes aesAlg = Aes.Create())
             {

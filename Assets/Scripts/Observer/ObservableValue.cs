@@ -7,7 +7,7 @@ namespace NFramework
     {
         public event Action<T> OnValueChanged;
 
-        private T _value = default;
+        private T _value;
 
         public T Value
         {

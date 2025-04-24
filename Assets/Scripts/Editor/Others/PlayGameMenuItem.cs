@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine;
 
 namespace NFramework.Editor
 {
@@ -15,12 +14,12 @@ namespace NFramework.Editor
 
     public static class SceneSwitcherControl
     {
-        private static readonly string PREF_LAST_OPENED_SCENES = $"{Application.dataPath}.LastOpenedScenes";
-        private static readonly string PREF_PLAYED_USING_RUN_UTILS = $"{Application.dataPath}.PlayedUsingRunUtils";
+        private static string LastOpenedScenesPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("LastOpenedScenes");
+        private static string PlayedUsingRunUtilsPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("PlayedUsingRunUtils");
 
-        private static Dictionary<string, string> _scenePathStorage = new Dictionary<string, string>();
+        private static Dictionary<string, string> _scenePathStorage = new();
         private static string[] _sceneTitles = Array.Empty<string>();
-        private static bool _aboutToRun = false;
+        private static bool _aboutToRun;
 
         [InitializeOnLoadMethod]
         public static void InitializeEditor()
@@ -32,11 +31,11 @@ namespace NFramework.Editor
         public static void PlayGame()
         {
             SaveOpenedScenes();
-            EditorBuildSettingsScene firstScene = EditorBuildSettings.scenes.FirstOrDefault(scene => scene.enabled == true);
+            EditorBuildSettingsScene firstScene = EditorBuildSettings.scenes.FirstOrDefault(scene => scene.enabled);
             var isAccept = OpenSceneWithSaveConfirm(firstScene.path);
             if (isAccept)
             {
-                EditorPrefs.SetBool(PREF_PLAYED_USING_RUN_UTILS, true);
+                EditorPrefs.SetBool(PlayedUsingRunUtilsPrefsKey, true);
                 _aboutToRun = true;
                 EditorApplication.isPlaying = true;
             }
@@ -62,7 +61,7 @@ namespace NFramework.Editor
                 return;
 
             setups = setups.OrderByDescending(x => x.isLoaded).ThenByDescending(x => x.isActive).ToArray();
-            // Use '?' to add more info of scene and '|' to seperate scenes
+            // Use '?' to add more info of scene and '|' to separate scenes
             var str = "";
             for (int i = 0; i < setups.Length; i++)
             {
@@ -75,7 +74,7 @@ namespace NFramework.Editor
                 }
             }
 
-            EditorPrefs.SetString(PREF_LAST_OPENED_SCENES, str);
+            EditorPrefs.SetString(LastOpenedScenesPrefsKey, str);
         }
 
         private static void LoadLastOpenedScene(PlayModeStateChange modeStateChange)
@@ -87,7 +86,7 @@ namespace NFramework.Editor
                 return;
             }
 
-            if (!EditorPrefs.GetBool(PREF_PLAYED_USING_RUN_UTILS))
+            if (!EditorPrefs.GetBool(PlayedUsingRunUtilsPrefsKey))
             {
                 // this means that normal play mode might have been used
                 return;
@@ -103,7 +102,7 @@ namespace NFramework.Editor
 
             // at this point, the scene has stopped playing
             // so we load the last opened scenes
-            var lastOpenedScenes = EditorPrefs.GetString(PREF_LAST_OPENED_SCENES);
+            var lastOpenedScenes = EditorPrefs.GetString(LastOpenedScenesPrefsKey);
             if (!string.IsNullOrEmpty(lastOpenedScenes))
             {
                 var scenes = lastOpenedScenes.Split('|');
@@ -118,7 +117,7 @@ namespace NFramework.Editor
                 }
             }
 
-            EditorPrefs.SetBool(PREF_PLAYED_USING_RUN_UTILS, false); // reset flag
+            EditorPrefs.SetBool(PlayedUsingRunUtilsPrefsKey, false); // reset flag
         }
 
         private static bool OpenSceneWithSaveConfirm(string scenePath)
@@ -143,7 +142,7 @@ namespace NFramework.Editor
             {
                 EditorBuildSettingsScene scene = EditorBuildSettings.scenes[i];
 
-                if (scene.enabled == true)
+                if (scene.enabled)
                 {
                     string scenePath = scene.path;
                     string key = ExtractSceneName(scenePath);
@@ -152,9 +151,9 @@ namespace NFramework.Editor
             }
         }
 
-        private static string ExtractSceneName(string _fullPathScene)
+        private static string ExtractSceneName(string fullPathScene)
         {
-            string sceneName = System.IO.Path.GetFileNameWithoutExtension(_fullPathScene);
+            string sceneName = System.IO.Path.GetFileNameWithoutExtension(fullPathScene);
             return sceneName;
         }
 

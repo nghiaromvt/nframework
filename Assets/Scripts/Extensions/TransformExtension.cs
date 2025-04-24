@@ -32,7 +32,7 @@ namespace NFramework
         /// Finds (first) child by name, breadth first
         /// </summary>
         public static Transform FindDeepChildBFS(this Transform parent, string childName,
-            EStringMatchType matchType = EStringMatchType.Exactly)
+            StringMatchType matchType = StringMatchType.Exactly)
         {
             if (childName == null)
                 return null;
@@ -57,7 +57,7 @@ namespace NFramework
         /// Finds children by name, depth first
         /// </summary>
         public static Transform FindDeepChildDFS(this Transform parent, string childName,
-            EStringMatchType matchType = EStringMatchType.Exactly)
+            StringMatchType matchType = StringMatchType.Exactly)
         {
             if (childName == null)
                 return null;
@@ -83,7 +83,7 @@ namespace NFramework
         /// Note: children is just under 1 level.
         /// </summary>
         public static void DestroyAllChildren(this Transform transform, Type exceptChildType = null, string exceptChildName = null,
-            EStringMatchType matchType = EStringMatchType.Exactly)
+            StringMatchType matchType = StringMatchType.Exactly)
         {
             for (int t = transform.childCount - 1; t >= 0; t--)
             {
@@ -95,7 +95,7 @@ namespace NFramework
                         continue;
                 }
 
-                if (exceptChildType != null && child.TryGetComponent(exceptChildType, out var component))
+                if (exceptChildType != null && child.TryGetComponent(exceptChildType, out _))
                     continue;
 
                 if (Application.isPlaying)

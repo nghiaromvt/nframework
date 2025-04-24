@@ -16,16 +16,16 @@ namespace NFramework
 
         public async UniTask<bool> Download()
         {
-            if (Status != EAddressableOperationStatus.None) return false;
+            if (Status != AddressableOperationStatus.None) return false;
             
             try
             {
-                Status = EAddressableOperationStatus.Operating;
+                Status = AddressableOperationStatus.Operating;
                 _handle = Addressables.DownloadDependenciesAsync(Key, false);
                 
                 var progressPercent = 0f;
 
-                while (Status == EAddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
+                while (Status == AddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
                 {
                     var downloadStatus = _handle.GetDownloadStatus();
                     if (downloadStatus.Percent > progressPercent * 1.1) // Report at most every 10% or so
@@ -37,19 +37,19 @@ namespace NFramework
                     await UniTask.Yield();
                 }
                 
-                if (Status != EAddressableOperationStatus.Operating)
+                if (Status != AddressableOperationStatus.Operating)
                     return false;
                 
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
                 {
                     AddressablesManager.Log($"Succeed to download asset with key: {Key}");
-                    Status = EAddressableOperationStatus.Success;
+                    Status = AddressableOperationStatus.Success;
                     return true;
                 }
                 else
                 {
                     AddressablesManager.LogError($"Failed to load asset with address: {Key}");
-                    Status = EAddressableOperationStatus.Failed;
+                    Status = AddressableOperationStatus.Failed;
                     Release();
                     return false;
                 }
@@ -57,7 +57,7 @@ namespace NFramework
             catch (Exception e)
             {
                 AddressablesManager.LogError(e.Message);
-                Status = EAddressableOperationStatus.Error;
+                Status = AddressableOperationStatus.Error;
                 Release();
                 return false;
             }
@@ -65,8 +65,8 @@ namespace NFramework
 
         public void Release()
         {
-            if (Status == EAddressableOperationStatus.Released) return;
-            Status = EAddressableOperationStatus.Released;
+            if (Status == AddressableOperationStatus.Released) return;
+            Status = AddressableOperationStatus.Released;
             if (_handle.IsValid()) Addressables.Release(_handle);
         }
     }

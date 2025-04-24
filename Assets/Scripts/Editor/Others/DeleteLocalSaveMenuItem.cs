@@ -2,7 +2,7 @@ using UnityEditor;
 
 namespace NFramework.Editor
 {
-    public class DeleteLocalSaveMenuItem
+    public static class DeleteLocalSaveMenuItem
     {
         [MenuItem("NFramework/Delete Local Save")]
         public static void DeleteSave()

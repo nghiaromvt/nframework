@@ -24,16 +24,16 @@ namespace NFramework
 
         public override async UniTask Load()
         {
-            if (Status != EAddressableOperationStatus.None) return;
+            if (Status != AddressableOperationStatus.None) return;
             
             try
             {
-                Status = EAddressableOperationStatus.Operating;
+                Status = AddressableOperationStatus.Operating;
                 _handle = Addressables.LoadSceneAsync(Key, _loadSceneMode, _activateOnLoad);
                 
                 var progressPercent = 0f;
 
-                while (Status == EAddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
+                while (Status == AddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
                 {
                     var downloadStatus = _handle.GetDownloadStatus();
                     if (downloadStatus.Percent > progressPercent * 1.1) // Report at most every 10% or so
@@ -48,32 +48,32 @@ namespace NFramework
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
                 {
                     AddressablesManager.Log($"Succeed to load scene with key: {Key}");
-                    Status = EAddressableOperationStatus.Success;
+                    Status = AddressableOperationStatus.Success;
                     if (_activateOnLoad && _setActiveScene) SceneManager.SetActiveScene(_handle.Result.Scene);
                 }
                 else
                 {
                     AddressablesManager.LogError($"Failed to load scene with key: {Key}");
-                    Status = EAddressableOperationStatus.Failed;
+                    Status = AddressableOperationStatus.Failed;
                     Release();
                 }
             }
             catch (Exception e)
             {
                 AddressablesManager.LogError(e.Message);
-                Status = EAddressableOperationStatus.Error;
+                Status = AddressableOperationStatus.Error;
                 Release();
             }
         }
 
         public override void Release()
         {
-            if (Status == EAddressableOperationStatus.Released) return;
-            Status = EAddressableOperationStatus.Released;
+            if (Status == AddressableOperationStatus.Released) return;
+            Status = AddressableOperationStatus.Released;
             Unload().Forget();
         }
         
-        public SceneInstance GetResult() => Status != EAddressableOperationStatus.Success ? default : _handle.Result;
+        public SceneInstance GetResult() => Status != AddressableOperationStatus.Success ? default : _handle.Result;
 
         public async UniTask Unload()
         {

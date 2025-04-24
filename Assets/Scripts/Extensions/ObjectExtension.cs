@@ -1,5 +1,4 @@
 using System.Reflection;
-using UnityEngine;
 
 namespace NFramework
 {
@@ -18,20 +17,20 @@ namespace NFramework
 		{
 			if (target == null)
 			{
-				Debug.LogError("Trying to get field from null");
+				NLogger.LogError("Trying to get field from null");
 				return default;
 			}
 
 			if (fieldName.IsNullOrEmpty())
 			{
-				Debug.LogError("Trying to fet unspecified field");
+				NLogger.LogError("Trying to fet unspecified field");
 				return default;
 			}
 
 			var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
 			if (field == null)
 			{
-				Debug.LogError($"Field {fieldName} not found in {target.GetType()}");
+				NLogger.LogError($"Field {fieldName} not found in {target.GetType()}");
 				return default;
 			}
 
@@ -42,26 +41,26 @@ namespace NFramework
 		{
 			if (target == null)
 			{
-				Debug.LogError("Trying to set field to null");
+				NLogger.LogError("Trying to set field to null");
 				return;
 			}
 
 			if (fieldName.IsNullOrEmpty())
 			{
-				Debug.LogError("Trying to set unspecified field");
+				NLogger.LogError("Trying to set unspecified field");
 				return;
 			}
 
 			var field = target.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
 			if (field == null)
 			{
-				Debug.LogError($"Field {fieldName} not found in {target.GetType()}");
+				NLogger.LogError($"Field {fieldName} not found in {target.GetType()}");
 				return;
 			}
 
 			if (field.FieldType != typeof(T))
 			{
-				Debug.LogError($"Field {fieldName} is of type {field.FieldType} while trying to set {value.GetType()}");
+				NLogger.LogError($"Field {fieldName} is of type {field.FieldType} while trying to set {value.GetType()}");
 				return;
 			}
 
@@ -73,20 +72,20 @@ namespace NFramework
 		{
 			if (target == null)
 			{
-				Debug.LogError("Trying to get property from null");
+				NLogger.LogError("Trying to get property from null");
 				return default;
 			}
 
 			if (propertyName.IsNullOrEmpty())
 			{
-				Debug.LogError("Trying to get unspecified property");
+				NLogger.LogError("Trying to get unspecified property");
 				return default;
 			}
 
 			var property = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.NonPublic);
 			if (property == null)
 			{
-				Debug.LogError($"Property {propertyName} not found in {target.GetType()}");
+				NLogger.LogError($"Property {propertyName} not found in {target.GetType()}");
 				return default;
 			}
 

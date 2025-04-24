@@ -8,7 +8,7 @@ namespace NFramework
 {
     public class VibrationManager : SingletonMono<VibrationManager>, ISaveable
     {
-        public enum EHapticType 
+        public enum HapticType 
         { 
             Selection = 0, 
             Success = 1, 
@@ -41,7 +41,7 @@ namespace NFramework
             }
         }
 
-        public static void Haptic(EHapticType type)
+        public static void Haptic(HapticType type)
         {
             if (!Status) return;
 

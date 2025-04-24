@@ -34,8 +34,9 @@ namespace NFramework
             var result = new List<int>();
             var values = Enum.GetValues(typeof(T));
             foreach (var value in values)
+            {
                 result.Add((int)value);
-
+            }
             return result;
         }
 
@@ -44,8 +45,9 @@ namespace NFramework
             var result = new List<string>();
             var values = Enum.GetValues(typeof(T));
             foreach (var value in values)
+            {
                 result.Add(value.ToString());
-
+            }
             return result;
         }
     }

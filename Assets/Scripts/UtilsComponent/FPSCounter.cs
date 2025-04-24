@@ -4,7 +4,7 @@ namespace NFramework
 {
     public class FPSCounter : MonoBehaviour
     {
-        private enum EAnchor { LeftTop, LeftBottom, RightTop, RightBottom }
+        private enum Anchor { LeftTop, LeftBottom, RightTop, RightBottom }
 
         [SerializeField] private bool _editorOnly;
         
@@ -13,7 +13,7 @@ namespace NFramework
         [SerializeField] private int _targetFrameRate = 60;
 
         [Space]
-        [SerializeField] private EAnchor _anchor;
+        [SerializeField] private Anchor _anchor;
         [SerializeField] private int _xOffset;
         [SerializeField] private int _yOffset;
 
@@ -57,8 +57,8 @@ namespace NFramework
             var yPos = 0;
             var linesHeight = 40;
             var linesWidth = 170;
-            if (_anchor == EAnchor.LeftBottom || _anchor == EAnchor.RightBottom) yPos = Screen.height - linesHeight;
-            if (_anchor == EAnchor.RightTop || _anchor == EAnchor.RightBottom) xPos = Screen.width - linesWidth;
+            if (_anchor == Anchor.LeftBottom || _anchor == Anchor.RightBottom) yPos = Screen.height - linesHeight;
+            if (_anchor == Anchor.RightTop || _anchor == Anchor.RightBottom) xPos = Screen.width - linesWidth;
             xPos += _xOffset;
             yPos += _yOffset;
             _rect = new Rect(xPos, yPos, linesWidth, linesHeight);

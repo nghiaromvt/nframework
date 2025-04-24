@@ -2,7 +2,7 @@
 
 namespace NFramework
 {
-    public static class StandardShaderUtils
+    public static class StandardShaderHelper
     {
         public enum BlendMode
         {

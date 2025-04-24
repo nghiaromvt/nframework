@@ -6,7 +6,6 @@ using Cysharp.Threading.Tasks;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Serialization;
 using Debug = UnityEngine.Debug;
 
 namespace NFramework

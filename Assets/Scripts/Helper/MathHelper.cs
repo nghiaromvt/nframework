@@ -87,7 +87,7 @@ namespace NFramework
         /// <summary>
         /// Projects a point on a line (perpendicularly) and returns the projected point.
         /// </summary>
-        /// <returns>The point on line.</returns>
+        /// <returns>Point on the line.</returns>
         public static Vector3 ProjectPointOnLine(Vector3 point, Vector3 lineStart, Vector3 lineEnd)
         {
             Vector3 rhs = point - lineStart;
@@ -96,10 +96,10 @@ namespace NFramework
             Vector3 lhs = vector2;
             if (magnitude > 1E-06f)
             {
-                lhs = (Vector3)(lhs / magnitude);
+                lhs = (lhs / magnitude);
             }
             float num2 = Mathf.Clamp(Vector3.Dot(lhs, rhs), 0f, magnitude);
-            return (lineStart + ((Vector3)(lhs * num2)));
+            return (lineStart + (lhs * num2));
         }
 
         public static float NormalizeFloat(float value, int fractNum)

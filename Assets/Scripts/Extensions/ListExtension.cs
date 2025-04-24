@@ -41,7 +41,7 @@ namespace NFramework
         public static T RemoveRandom<T>(this IList<T> list)
         {
             if (list.Count == 0) throw new System.IndexOutOfRangeException("Cannot remove a random item from an empty list");
-            int index = UnityEngine.Random.Range(0, list.Count);
+            int index = Random.Range(0, list.Count);
             T item = list[index];
             list.RemoveAt(index);
             return item;

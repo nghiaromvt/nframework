@@ -109,7 +109,7 @@ namespace NFramework
             Recalculate();
         }
 
-        public void Contains(T item) => _list.Contains(item);
+        public bool Contains(T item) => _list.Contains(item);
 
         public int IndexOf(T item) => _list.IndexOf(item);
 
@@ -181,7 +181,7 @@ namespace NFramework
         private readonly List<int> _alias = new List<int>();
         private readonly Random _rand;
         private int _totalWeight;
-        private bool _areAllProbabilitiesIdentical = false;
+        private bool _areAllProbabilitiesIdentical;
         private int _minWeight;
         private int _maxWeight;
 

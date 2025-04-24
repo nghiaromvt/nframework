@@ -10,45 +10,41 @@ namespace NFramework.Editor
     [Serializable]
     public class SoundScriptDefineMenu
     {
-        public const string SAVE_PATH_PREFS_KEY = "SoundScriptDefineSavePath";
-        public const string NAME_SPACE_PREFS_KEY = "SoundScriptDefineNameSpace";
+        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("SoundScriptDefineSavePath");
+        public static string NameSpacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("SoundScriptDefineNameSpace");
 
         [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
-        private string _savePath = EditorPrefs.GetString(EditorHelper.GetUniqueProjectPrefsKey(SAVE_PATH_PREFS_KEY), "");
+        private string _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
 
         [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
-        private string _nameSpace = EditorPrefs.GetString(EditorHelper.GetUniqueProjectPrefsKey(NAME_SPACE_PREFS_KEY),
-            EditorSettings.projectGenerationRootNamespace);
+        private string _nameSpace = EditorPrefs.GetString(NameSpacePrefsKey, EditorSettings.projectGenerationRootNamespace);
 
-        private void OnSavePathChanged()
-        {
-            var key = EditorHelper.GetUniqueProjectPrefsKey(SAVE_PATH_PREFS_KEY);
-            EditorPrefs.SetString(key, _savePath);
-        }
+        private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
 
-        private void OnNameSpaceChanged()
-        {
-            var key = EditorHelper.GetUniqueProjectPrefsKey(NAME_SPACE_PREFS_KEY);
-            EditorPrefs.SetString(key, _nameSpace);
-        }
+        private void OnNameSpaceChanged() => EditorPrefs.SetString(NameSpacePrefsKey, _nameSpace);
 
         [Button(ButtonSizes.Gigantic)]
         private void LocateScriptDefine() => LocateScriptDefineStatic();
 
         [Button(ButtonSizes.Gigantic)]
-        private void GenerateScriptDefine()
+        private void GenerateScriptDefine() => GenerateScriptDefineStatic();
+
+        [MenuItem("NFramework/Sound/Generate Script Define")]
+        public static void GenerateScriptDefineStatic()
         {
             var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
             var stringBuilder = new StringBuilder();
+            var nameSpace = EditorPrefs.GetString(NameSpacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+            var savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
 
             // Header
             stringBuilder.AppendLine("// This file is auto-generated.");
             stringBuilder.AppendLine("// Do not modify this file manually.\n");
 
             // Namespace open
-            if (!string.IsNullOrWhiteSpace(_nameSpace))
+            if (!string.IsNullOrWhiteSpace(nameSpace))
             {
-                stringBuilder.AppendLine($"namespace {_nameSpace}");
+                stringBuilder.AppendLine($"namespace {nameSpace}");
                 stringBuilder.AppendLine("{");
             }
 
@@ -101,22 +97,18 @@ namespace NFramework.Editor
             stringBuilder.AppendLine("\t}");
 
             // Namespace close
-            if (!string.IsNullOrWhiteSpace(_nameSpace))
+            if (!string.IsNullOrWhiteSpace(nameSpace))
             {
                 stringBuilder.AppendLine("}");
             }
 
             // Write to file
-            var fullPath = System.IO.Path.Combine(Application.dataPath, _savePath, "SoundDefine.cs");
+            var fullPath = System.IO.Path.Combine(Application.dataPath, savePath, "SoundDefine.cs");
             System.IO.File.WriteAllText(fullPath, stringBuilder.ToString());
 
             AssetDatabase.Refresh();
-            NLogger.Log($"SoundDefine.cs generated at: {_savePath}");
-        }
-
-        [MenuItem("NFramework/Sound/Update Script Define")]
-        public static void UpdateScriptDefine()
-        {
+            NLogger.Log($"SoundDefine.cs generated at: {fullPath}");
+            LocateScriptDefineStatic();
         }
 
         [MenuItem("NFramework/Sound/Locate Script Define")]

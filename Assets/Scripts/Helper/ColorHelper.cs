@@ -8,7 +8,7 @@ namespace NFramework
 
         #region Preset color
         // via https://gist.github.com/LotteMakesStuff/f7ce43f11e545a151b95b5e87f76304c
-        // NOTE: The follwing color names come from the CSS3 specification, Section 4.3 Extended Color Keywords
+        // NOTE: The following color names come from the CSS3 specification, Section 4.3 Extended Color Keywords
         // http://www.w3.org/TR/css3-color/#svg-color
 
         public static readonly Color AliceBlue = new Color32(240, 248, 255, 255);
@@ -77,7 +77,7 @@ namespace NFramework
         public static readonly Color LightBlue = new Color32(173, 216, 230, 255);
         public static readonly Color LightCoral = new Color32(240, 128, 128, 255);
         public static readonly Color LightCyan = new Color32(224, 255, 255, 255);
-        public static readonly Color LightGoldenodYellow = new Color32(250, 250, 210, 255);
+        public static readonly Color LightGoldenrodYellow = new Color32(250, 250, 210, 255);
         public static readonly Color LightGray = new Color32(211, 211, 211, 255);
         public static readonly Color LightGreen = new Color32(144, 238, 144, 255);
         public static readonly Color LightPink = new Color32(255, 182, 193, 255);
@@ -116,7 +116,7 @@ namespace NFramework
         public static readonly Color PaleGoldenrod = new Color32(238, 232, 170, 255);
         public static readonly Color PaleGreen = new Color32(152, 251, 152, 255);
         public static readonly Color PaleTurquoise = new Color32(175, 238, 238, 255);
-        public static readonly Color PaleVioletred = new Color32(219, 112, 147, 255);
+        public static readonly Color PaleVioletRed = new Color32(219, 112, 147, 255);
         public static readonly Color PapayaWhip = new Color32(255, 239, 213, 255);
         public static readonly Color PeachPuff = new Color32(255, 218, 185, 255);
         public static readonly Color Peru = new Color32(205, 133, 63, 255);
@@ -239,7 +239,7 @@ namespace NFramework
                 case 63: return LightBlue;
                 case 64: return LightCoral;
                 case 65: return LightCyan;
-                case 66: return LightGoldenodYellow;
+                case 66: return LightGoldenrodYellow;
                 case 67: return LightGray;
                 case 68: return LightGreen;
                 case 69: return LightPink;
@@ -278,7 +278,7 @@ namespace NFramework
                 case 102: return PaleGoldenrod;
                 case 103: return PaleGreen;
                 case 104: return PaleTurquoise;
-                case 105: return PaleVioletred;
+                case 105: return PaleVioletRed;
                 case 106: return PapayaWhip;
                 case 107: return PeachPuff;
                 case 108: return Peru;
@@ -387,7 +387,7 @@ namespace NFramework
                     {
                         Color.RGBToHSV(originalColor, out _, out _, out var s_v);
                         Color.RGBToHSV(targetColor, out var t_h, out var t_s, out var t_v);
-                        resultColor = UnityEngine.Color.HSVToRGB(t_h, t_s, s_v * t_v);
+                        resultColor = Color.HSVToRGB(t_h, t_s, s_v * t_v);
                         resultColor.a = originalColor.a * targetColor.a;
                     }
                     break;

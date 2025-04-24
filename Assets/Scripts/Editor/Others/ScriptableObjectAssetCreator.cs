@@ -17,7 +17,7 @@ namespace NFramework.Editor
             AssetDatabase.CreateAsset(scriptableObject, $"{path}/{Selection.activeObject.name}.asset");
         }
 
-        [MenuItem("NFramework/Create ScriptableObject", true)]
+        [MenuItem("Assets/Create ScriptableObject", true)]
         public static bool ValidateCreate()
         {
             var script = Selection.activeObject as MonoScript;

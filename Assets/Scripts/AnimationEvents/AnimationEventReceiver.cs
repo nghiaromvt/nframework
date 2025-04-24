@@ -5,11 +5,11 @@ namespace NFramework
 {
     public class AnimationEventReceiver : MonoBehaviour
     {
-        [SerializeField] List<AnimationEvent> animationEvents = new();
+        [SerializeField] private List<AnimationEvent> _animationEvents = new();
 
         public void OnAnimationEventTriggered(string eventName)
         {
-            AnimationEvent matchingEvent = animationEvents.Find(se => se.eventName == eventName);
+            AnimationEvent matchingEvent = _animationEvents.Find(se => se.eventName == eventName);
             matchingEvent?.OnAnimationEvent?.Invoke();
         }
     }

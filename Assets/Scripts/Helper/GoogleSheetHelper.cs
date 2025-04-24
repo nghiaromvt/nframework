@@ -15,16 +15,16 @@ namespace NFramework
     {
         public static void GetConfig<T>(string sheetId, string gridId, Action<List<T>> callback, string tsvCachePath = null, string jsonCachePath = null)
         {
-            GetSheetTSVText(sheetId, gridId, tsvText =>
+            GetSheetTsvText(sheetId, gridId, tsvText =>
             {
                 TryWriteTextToFile(tsvCachePath, tsvText);
-                var json = ConvertTSVTextToJsonListObject(tsvText);
+                var json = ConvertTsvTextToJsonListObject(tsvText);
                 TryWriteTextToFile(jsonCachePath, json);
                 callback?.Invoke(JsonConvert.DeserializeObject<List<T>>(json));
             });
         }
 
-        public static void GetSheetTSVText(string sheetId, string gridId, Action<string> callback)
+        public static void GetSheetTsvText(string sheetId, string gridId, Action<string> callback)
         {
             string url = $@"https://docs.google.com/spreadsheets/d/{sheetId}/export?gid={gridId}&format=tsv";
             LoadTextFromWeb(url, callback);
@@ -53,7 +53,7 @@ namespace NFramework
             uwr.Dispose();
         }
 
-        public static string ConvertTSVTextToJsonListObject(string tsvText)
+        public static string ConvertTsvTextToJsonListObject(string tsvText)
         {
             var tsv = new List<string[]>();
             var lines = tsvText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);

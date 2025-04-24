@@ -16,16 +16,16 @@ namespace NFramework
 
         public override async UniTask Load()
         {
-            if (Status != EAddressableOperationStatus.None) return;
+            if (Status != AddressableOperationStatus.None) return;
 
             try
             {
-                Status = EAddressableOperationStatus.Operating;
+                Status = AddressableOperationStatus.Operating;
                 _handle = Addressables.LoadAssetAsync<T>(Key);
                 
                 var progressPercent = 0f;
 
-                while (Status == EAddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
+                while (Status == AddressableOperationStatus.Operating && _handle.Status == AsyncOperationStatus.None)
                 {
                     var downloadStatus = _handle.GetDownloadStatus();
                     if (downloadStatus.Percent > progressPercent * 1.1) // Report at most every 10% or so
@@ -40,30 +40,30 @@ namespace NFramework
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
                 {
                     AddressablesManager.Log($"Succeed to load asset with key: {Key}");
-                    Status = EAddressableOperationStatus.Success;
+                    Status = AddressableOperationStatus.Success;
                 }
                 else
                 {
                     AddressablesManager.LogError($"Failed to load asset with key: {Key}");
-                    Status = EAddressableOperationStatus.Failed;
+                    Status = AddressableOperationStatus.Failed;
                     Release();
                 }
             }
             catch (Exception e)
             {
                 AddressablesManager.LogError(e.Message);
-                Status = EAddressableOperationStatus.Error;
+                Status = AddressableOperationStatus.Error;
                 Release();
             }
         }
 
         public override void Release()
         {
-            if (Status == EAddressableOperationStatus.Released) return;
-            Status = EAddressableOperationStatus.Released;
+            if (Status == AddressableOperationStatus.Released) return;
+            Status = AddressableOperationStatus.Released;
             if (_handle.IsValid()) Addressables.Release(_handle);
         }
 
-        public T GetResult() => Status != EAddressableOperationStatus.Success ? null : _handle.Result;
+        public T GetResult() => Status != AddressableOperationStatus.Success ? null : _handle.Result;
     }
 }
