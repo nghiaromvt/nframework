@@ -5,12 +5,12 @@ using UnityEngine;
 
 namespace NFramework.Editor
 {
-    public class SoundEditorWindow : OdinMenuEditorWindow
+    public class UIEditorWindow : OdinMenuEditorWindow
     {
-        [MenuItem("NFramework/Sound/Window")]
+        [MenuItem("NFramework/UI/Window")]
         private static void ShowWindow()
         {
-            var window = GetWindow<SoundEditorWindow>();
+            var window = GetWindow<UIEditorWindow>();
             window.Show();
         }
 
@@ -20,28 +20,35 @@ namespace NFramework.Editor
             {
                 DrawSearchToolbar = true
             });
-            tree.Add("Create New Sound Group", new SoundGroupCreator());
-            tree.Add("Script Define", new SoundScriptDefineMenu());
-            tree.AddAllAssetsAtPath("Sound Groups", "Assets/", typeof(SoundGroupSO), true, true);
+            
+            tree.Add("Script Define", new UIScriptDefineMenu());
+            
+            var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab");
+            prefabs.ForEach(pf =>
+            {
+                if (pf.TryGetComponent<BaseUIView>(out var view))
+                    tree.AddObjectAtPath($"Layer {view.UILayer}/{pf.name}", view, true);
+            });
+            
             return tree;
         }
         
         protected override void OnBeginDrawEditors()
         {
             base.OnBeginDrawEditors();
-            SoundGroupSO soundGroup = MenuTree.Selection.SelectedValue as SoundGroupSO;
-            if(!soundGroup) return;
+            BaseUIView view = MenuTree.Selection.SelectedValue as BaseUIView;
+            if(!view) return;
             SirenixEditorGUI.BeginHorizontalToolbar();
             {
                 GUILayout.FlexibleSpace();
                 GUILayout.FlexibleSpace();
                 if (SirenixEditorGUI.ToolbarButton("Locate"))
                 {
-                    EditorGUIUtility.PingObject(soundGroup);
+                    EditorGUIUtility.PingObject(view);
                 }
                 if (SirenixEditorGUI.ToolbarButton("Delete"))
                 {
-                    var path = AssetDatabase.GetAssetPath(soundGroup.GetInstanceID());
+                    var path = AssetDatabase.GetAssetPath(view.GetInstanceID());
                     if (EditorUtility.DisplayDialog("Delete this?", path + "\n\nYou cannot undo this action", "Delete", "Cancel"))
                     {
                         AssetDatabase.DeleteAsset(path);

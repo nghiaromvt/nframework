@@ -1,0 +1,103 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using Sirenix.OdinInspector;
+using UnityEditor;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
+namespace NFramework.Editor
+{
+    [Serializable]
+    public class UIScriptDefineMenu
+    {
+        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenu");
+        public static string NameSpacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenu");
+
+        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
+        private string _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+
+        [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
+        private string _nameSpace = EditorPrefs.GetString(NameSpacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+
+        private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
+
+        private void OnNameSpaceChanged() => EditorPrefs.SetString(NameSpacePrefsKey, _nameSpace);
+
+        [Button(ButtonSizes.Gigantic)]
+        private void LocateScriptDefine() => LocateScriptDefineStatic();
+
+        [Button(ButtonSizes.Gigantic)]
+        private void GenerateScriptDefine() => GenerateScriptDefineStatic();
+
+        [MenuItem("NFramework/UI/Generate Script Define")]
+        public static void GenerateScriptDefineStatic()
+        {
+            var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab");
+            var uiLayerToViewsDict = new Dictionary<UILayer, List<BaseUIView>>();
+            prefabs.ForEach(x =>
+            {
+                if (x.TryGetComponent<BaseUIView>(out var view))
+                {
+                    if (!uiLayerToViewsDict.ContainsKey(view.UILayer))
+                        uiLayerToViewsDict[view.UILayer] = new List<BaseUIView>();
+                    
+                    uiLayerToViewsDict[view.UILayer].Add(view);
+                }
+            });
+            
+            var stringBuilder = new StringBuilder();
+            var nameSpace = EditorPrefs.GetString(NameSpacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+            var savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+
+            // Header
+            stringBuilder.AppendLine("// This file is auto-generated.");
+            stringBuilder.AppendLine("// Do not modify this file manually.\n");
+
+            // Namespace open
+            if (!string.IsNullOrWhiteSpace(nameSpace))
+            {
+                stringBuilder.AppendLine($"namespace {nameSpace}");
+                stringBuilder.AppendLine("{");
+            }
+
+            // UIDefine class open
+            stringBuilder.AppendLine("\tpublic static class UIDefine");
+            stringBuilder.AppendLine("\t{");
+
+            foreach (var kv in uiLayerToViewsDict)
+            {
+                stringBuilder.AppendLine($"\t\t// {kv.Key}");
+                foreach (var view in kv.Value)
+                {
+                    stringBuilder.AppendLine($"\t\tpublic static string {view.defineKeyConstName} = \"{view.key}\";");
+                }
+            }
+
+            // Close UIDefine class
+            stringBuilder.AppendLine("\t}");
+
+            // Namespace close
+            if (!string.IsNullOrWhiteSpace(nameSpace))
+            {
+                stringBuilder.AppendLine("}");
+            }
+
+            // Write to file
+            var fullPath = System.IO.Path.Combine(Application.dataPath, savePath, "UIDefine.cs");
+            System.IO.File.WriteAllText(fullPath, stringBuilder.ToString());
+
+            AssetDatabase.Refresh();
+            NLogger.Log($"UIDefine.cs generated at: {fullPath}");
+            LocateScriptDefineStatic();
+        }
+
+        [MenuItem("NFramework/Sound/Locate Script Define")]
+        public static void LocateScriptDefineStatic()
+        {
+            var script = FileHelper.LoadFirstAssetWithName<Object>("UIDefine", "UIDefine");
+            if (script)
+                EditorGUIUtility.PingObject(script);
+        }
+    }
+}
