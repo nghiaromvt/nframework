@@ -45,8 +45,7 @@ namespace NFramework
 
         [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupResourcesDict = new();
         [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupAddressablesDict = new();
-        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, AudioClip> _cacheAudioClips = new();
-        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundInfoSO> _cacheSoundInfos = new();
+        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundData> _cacheSoundDatas = new();
 
         #region Status
         
@@ -210,26 +209,14 @@ namespace NFramework
         
         private static void CacheSoundGroup(SoundGroupSO soundGroupSO)
         {
-            foreach (var kv in soundGroupSO.audioClipDatas)
+            foreach (var soundEntry in soundGroupSO.soundEntries)
             {
-                if (_cacheSoundInfos.ContainsKey(kv.key))
+                if (_cacheSoundDatas.ContainsKey(soundEntry.key))
                 {
-                    LogWarning($"Already have key in cacheAudioClips: {kv.key}");
+                    LogWarning($"Already have key in cache: {soundEntry.key}");
                     continue;
                 }
-                
-                _cacheAudioClips.Add(kv.key, kv.value);
-            }
-
-            foreach (var kv in soundGroupSO.soundInfoDatas)
-            {
-                if (_cacheSoundInfos.ContainsKey(kv.key))
-                {
-                    LogWarning($"Already have key in cacheSoundInfos: {kv.key}");
-                    continue;
-                }
-                
-                _cacheSoundInfos.Add(kv.key, kv.value);
+                _cacheSoundDatas.Add(soundEntry.key, soundEntry.value);
             }
         }
         
@@ -269,34 +256,17 @@ namespace NFramework
         
         private static void ClearSoundGroup(SoundGroupSO soundGroupSO)
         {
-            foreach (var kv in soundGroupSO.audioClipDatas)
+            foreach (var soundEntry in soundGroupSO.soundEntries)
             {
-                if (_bgmEmitter.AudioClip == kv.value)
-                {
+                if (_bgmEmitter.AudioClip == soundEntry.value.clip)
                     _bgmEmitter.Stop();
-                }
                 
-                if (_playingAudioClipDict.TryGetValue(kv.value, out var soundEmitters))
+                if (_playingAudioClipDict.TryGetValue(soundEntry.value.clip, out var soundEmitters))
                 {
                     var temp = new List<SoundEmitter>(soundEmitters);
                     temp.ForEach(x => x.Stop());
                 }
-                _cacheAudioClips.Remove(kv.key);
-            }
-
-            foreach (var kv in soundGroupSO.soundInfoDatas)
-            {
-                if (_bgmEmitter.AudioClip == kv.value.clip)
-                {
-                    _bgmEmitter.Stop();
-                }
-                
-                if (_playingAudioClipDict.TryGetValue(kv.value.clip, out var soundEmitters))
-                {
-                    var temp = new List<SoundEmitter>(soundEmitters);
-                    temp.ForEach(x => x.Stop());
-                }
-                _cacheSoundInfos.Remove(kv.key);
+                _cacheSoundDatas.Remove(soundEntry.key);
             }
         }
         
@@ -304,47 +274,21 @@ namespace NFramework
 
         #region Play
 
-        /// <summary>
-        /// Play sound through SoundSO
-        /// </summary>
-        /// <returns>guid use to stop sound if needed</returns>
-        public static string PlaySfx(SoundInfoSO soundInfo, Action onStop = null)
-        {
-            var pitch = soundInfo.randomPitch ? Random.Range(soundInfo.minRandomPitch, soundInfo.maxRandomPitch) : soundInfo.pitch;
-            return PlaySfx(soundInfo.clip, soundInfo.volume, soundInfo.loop, pitch, soundInfo.ignorePause, soundInfo.overlapType, soundInfo.fadeTime, onStop);
-        }
-        
-        public static string PlaySfxInCacheSoundSO(string key, Action onStop = null)
-        {
-            if (_cacheSoundInfos.TryGetValue(key, out var soundSO))
-            {
-                return PlaySfx(soundSO, onStop);
-            }
-            else
-            {
-                LogError($"Cannot find SoundSO [{key}] in cache");
-                return null;
-            }
-        }
-        
-        public static string PlaySfxInCacheAudioClip(string key, float volume = 1f, bool loop = false, float pitch = 1f,
+        /// <returns> Guid use to stop sound if needed </returns>
+        public static string PlaySfx(string key, float volume = 1f, bool loop = false, float pitch = 1f,
             bool ignorePause = false, EAudioOverlapType audioOverlapType = default, float fadeTime = 0f, Action onStop = null)
         {
-            if (_cacheAudioClips.TryGetValue(key, out var clip))
+            if (_cacheSoundDatas.TryGetValue(key, out var soundData))
             {
-                return PlaySfx(clip, volume, loop, pitch, ignorePause, audioOverlapType, fadeTime, onStop);
+                return PlaySfx(soundData.clip, volume * soundData.volumeScale, loop, pitch, ignorePause, audioOverlapType, fadeTime, onStop);
             }
             else
             {
-                LogError($"Cannot find AudioClip [{key}] in cache");
+                LogError($"Cannot find SoundData [{key}] in cache");
                 return null;
             }
         }
 
-        /// <summary>
-        /// Play sound directly by an audio clip
-        /// </summary>
-        /// <returns> Guid use to stop sound if needed </returns>
         public static string PlaySfx(AudioClip clip, float volume = 1f, bool loop = false, float pitch = 1f,
             bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
         {
@@ -392,6 +336,15 @@ namespace NFramework
             return null;
         }
         
+        public static void PlayBgm(string key, float volume = 1f, bool loop = false, float pitch = 1f,
+            bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
+        {
+            if (_cacheSoundDatas.TryGetValue(key, out var soundData))
+                PlayBgm(soundData.clip, volume * soundData.volumeScale, loop, pitch, ignorePause, overlapType, fadeTime, onStop);
+            else
+                LogError($"Cannot find AudioClip [{key}] in cache");
+        }
+        
         public static void PlayBgm(AudioClip clip, float volume = 1f, bool loop = false, float pitch = 1f,
             bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
         {
@@ -414,29 +367,6 @@ namespace NFramework
             }
             
             _bgmEmitter.Play("BGM", clip, volume, loop, pitch, ignorePause, fadeTime, onStop);
-        }
-
-        public static void PlayBgm(SoundInfoSO soundInfo, Action onStop = null)
-        {
-            var pitch = soundInfo.randomPitch ? Random.Range(soundInfo.minRandomPitch, soundInfo.maxRandomPitch) : soundInfo.pitch;
-            PlayBgm(soundInfo.clip, soundInfo.volume, soundInfo.loop, pitch, soundInfo.ignorePause, soundInfo.overlapType, soundInfo.fadeTime, onStop);
-        }
-
-        public static void PlayBgmInCacheSoundSO(string key, Action onStop = null)
-        {
-            if (_cacheSoundInfos.TryGetValue(key, out var soundSO))
-                PlayBgm(soundSO, onStop);
-            else
-                LogError($"Cannot find SoundSO [{key}] in cache");
-        }
-
-        public static void PlayBgmInCacheAudioClip(string key, float volume = 1f, bool loop = false, float pitch = 1f,
-            bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
-        {
-            if (_cacheAudioClips.TryGetValue(key, out var audioClip))
-                PlayBgm(audioClip, volume, loop, pitch, ignorePause, overlapType, fadeTime, onStop);
-            else
-                LogError($"Cannot find AudioClip [{key}] in cache");
         }
         
         #endregion

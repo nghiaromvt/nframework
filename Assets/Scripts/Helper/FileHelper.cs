@@ -68,7 +68,7 @@ namespace NFramework
 
 #if UNITY_EDITOR
         public static T LoadFirstAssetWithName<T>(string assetName, string overrideFilter = null,
-            string[] searchInFolder = null) where T : Object
+            params string[] searchInFolder) where T : Object
         {
             if (string.IsNullOrEmpty(assetName))
                 return null;
@@ -87,7 +87,7 @@ namespace NFramework
         }
         
         public static List<T> LoadAssetsWithType<T>(string overrideFilter = null,
-            string[] searchInFolder = null) where T : Object
+            params string[] searchInFolder) where T : Object
         {
             var filter = overrideFilter ?? $"t:{typeof(T).Name}";
             var paths = GetAssetPaths(filter, searchInFolder);
@@ -101,13 +101,13 @@ namespace NFramework
             return assets;
         }
 
-        public static List<string> GetAssetPaths(string filter, string[] searchInFolder = null)
+        public static List<string> GetAssetPaths(string filter, params string[] searchInFolder)
         {
             var guids = UnityEditor.AssetDatabase.FindAssets(filter, searchInFolder);
             return guids.Select(UnityEditor.AssetDatabase.GUIDToAssetPath).ToList();
         }
         
-        public static Dictionary<string, List<string>> GetAssetFileNameToPaths(string filter, string[] searchInFolder = null)
+        public static Dictionary<string, List<string>> GetAssetFileNameToPaths(string filter, params string[] searchInFolder)
         {
             var guids = UnityEditor.AssetDatabase.FindAssets(filter, searchInFolder);
             var pathDic = new Dictionary<string, List<string>>();

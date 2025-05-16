@@ -92,7 +92,7 @@ namespace NFramework.Editor
             LocateScriptDefineStatic();
         }
 
-        [MenuItem("NFramework/Sound/Locate Script Define")]
+        [MenuItem("NFramework/UI/Locate Script Define")]
         public static void LocateScriptDefineStatic()
         {
             var script = FileHelper.LoadFirstAssetWithName<Object>("UIDefine", "UIDefine");

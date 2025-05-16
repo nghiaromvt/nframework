@@ -64,34 +64,20 @@ namespace NFramework.Editor
             stringBuilder.AppendLine("\t\t}");
             stringBuilder.AppendLine();
 
-            // AudioClipKey class
-            stringBuilder.AppendLine("\t\tpublic static class AudioClipKey");
+            // SoundEntryKey class
+            stringBuilder.AppendLine("\t\tpublic static class SoundEntryKey");
             stringBuilder.AppendLine("\t\t{");
             foreach (var group in soundGroups)
             {
-                foreach (var clipData in group.audioClipDatas)
+                foreach (var soundEntry in group.soundEntries)
                 {
-                    if (clipData.defineKeyConstName.IsNullOrEmpty()) continue;
-                    stringBuilder.AppendLine($"\t\t\tpublic const string {clipData.defineKeyConstName} = \"{clipData.key}\";");
+                    if (soundEntry.defineKeyConstName.IsNullOrEmpty()) continue;
+                    stringBuilder.AppendLine($"\t\t\tpublic const string {soundEntry.defineKeyConstName} = \"{soundEntry.key}\";");
                 }
             }
 
             stringBuilder.AppendLine("\t\t}");
             stringBuilder.AppendLine();
-
-            // SoundInfoKey class
-            stringBuilder.AppendLine("\t\tpublic static class SoundInfoKey");
-            stringBuilder.AppendLine("\t\t{");
-            foreach (var group in soundGroups)
-            {
-                foreach (var infoData in group.soundInfoDatas)
-                {
-                    if (infoData.defineKeyConstName.IsNullOrEmpty()) continue;
-                    stringBuilder.AppendLine($"\t\t\tpublic const string {infoData.defineKeyConstName} = \"{infoData.key}\";");
-                }
-            }
-
-            stringBuilder.AppendLine("\t\t}");
 
             // Close SoundDefine class
             stringBuilder.AppendLine("\t}");

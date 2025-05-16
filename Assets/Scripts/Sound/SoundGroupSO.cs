@@ -4,18 +4,38 @@ using Sirenix.OdinInspector;
 #if UNITY_EDITOR
 #endif
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace NFramework
 {
+    [Serializable]
+    public class SoundData
+    {
+        public AudioClip clip;
+        [Range(0f, 1f)] public float volumeScale = 1f;
+
+        public string PlaySfx(float volume = 1f, bool loop = false, float pitch = 1f,
+            bool ignorePause = false, EAudioOverlapType audioOverlapType = default, float fadeTime = 0f, Action onStop = null)
+        {
+            return SoundManager.PlaySfx(clip, volume * volumeScale, loop, pitch, ignorePause, audioOverlapType, fadeTime, onStop);
+        }
+
+        public void PlayBgm(float volume = 1f, bool loop = false, float pitch = 1f,
+            bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
+        {
+            SoundManager.PlayBgm(clip, volume * volumeScale, loop, pitch, ignorePause, overlapType, fadeTime, onStop);
+        }
+    }
+    
     [CreateAssetMenu(menuName = "NFramework/Sound/SoundGroup", fileName = "New Sound Group")]
     public class SoundGroupSO : SerializedScriptableObject
     {
         [Serializable]
-        public class KeyValueData<T>
+        public class SoundEntry
         {
             [ReadOnly] public string defineKeyConstName;
-            [HideLabel, HorizontalGroup, OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
-            [HideLabel, HorizontalGroup] public T value;
+            [OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
+            [HideLabel] public SoundData value;
             
             [HideLabel, ReadOnly, ShowInInspector, ShowIf(nameof(_showError)), GUIColor(1, 0.3f, 0.3f)] 
             private string _errorMessage;
@@ -36,28 +56,15 @@ namespace NFramework
                 var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
                 foreach (var soundGroup in soundGroups)
                 {
-                    foreach (var audioClipData in soundGroup.audioClipDatas)
+                    foreach (var soundEntry in soundGroup.soundEntries)
                     {
-                        if ((object)audioClipData == this)
+                        if (soundEntry == this)
                             continue;
 
-                        if (audioClipData.key == key)
+                        if (soundEntry.key == key)
                         {
                             _showError = true;
-                            _errorMessage = $"\u26a0 Duplicate key with other audioClipData from SoundGroup: {soundGroup.name}!";
-                            return;
-                        }
-                    }
-                    
-                    foreach (var soundInfoData in soundGroup.soundInfoDatas)
-                    {
-                        if ((object)soundInfoData == this)
-                            continue;
-
-                        if (soundInfoData.key == key)
-                        {
-                            _showError = true;
-                            _errorMessage = $"\u26a0 Duplicate key with other soundInfoData from SoundGroup: {soundGroup.name}!";
+                            _errorMessage = $"\u26a0 Duplicate key with other SoundEntry from SoundGroup: {soundGroup.name}!";
                             return;
                         }
                     }
@@ -68,11 +75,6 @@ namespace NFramework
             }
         }
         
-        [Serializable]
-        public class AudioClipData : KeyValueData<AudioClip> { }
-        
-        [Serializable]
-        public class SoundInfoData : KeyValueData<SoundInfoSO> { }
         
         [ReadOnly] public string defineKeyConstName;
         [OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
@@ -81,9 +83,9 @@ namespace NFramework
         private string _errorMessage;
         private bool _showError;
         
+        [FormerlySerializedAs("soundEntry")]
         [Space]
-        [TabGroup("Audio Clip"), Searchable] public List<AudioClipData> audioClipDatas = new();
-        [TabGroup("Sound Info"), Searchable] public List<SoundInfoData> soundInfoDatas = new();
+        [TabGroup("Audio Clip"), Searchable] public List<SoundEntry> soundEntries = new();
 
         private void OnKeyChanged()
         {

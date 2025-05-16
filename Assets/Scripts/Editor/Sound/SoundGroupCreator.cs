@@ -24,8 +24,7 @@ namespace NFramework.Editor
         [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))] 
         private string _savePath = EditorPrefs.GetString(EditorHelper.GetUniqueProjectPrefsKey(SavePathPrefsKey), "");
 
-        [TabGroup("Audio Clip"), SerializeField, Searchable] private List<SoundGroupSO.AudioClipData> _audioClipDatas = new();
-        [TabGroup("Sound Info"), SerializeField, Searchable] private List<SoundGroupSO.SoundInfoData> _soundInfoDatas = new();
+        [SerializeField, Searchable] private List<SoundGroupSO.SoundEntry> _soundEntries = new();
         [Header("Script Define")] 
         [SerializeField] private bool _generateScriptDefine = true;
         
@@ -60,8 +59,7 @@ namespace NFramework.Editor
         private void Create()
         {
             var soundGroup = ScriptableObject.CreateInstance<SoundGroupSO>();
-            soundGroup.audioClipDatas = _audioClipDatas;
-            soundGroup.soundInfoDatas = _soundInfoDatas;
+            soundGroup.soundEntries = _soundEntries;
             soundGroup.defineKeyConstName = _defineKeyConstName;
             soundGroup.key = _key;
             
