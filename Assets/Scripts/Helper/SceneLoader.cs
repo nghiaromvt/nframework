@@ -16,7 +16,7 @@ namespace NFramework
 
             NLogger.Log($"[SceneLoader] Start load scene: {sceneName}");
             var asyncOperation = SceneManager.LoadSceneAsync(sceneName, isAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
-            await asyncOperation;
+            await asyncOperation.ToUniTask();
 
             if (setActive)
                 SetActive(sceneName);
@@ -34,7 +34,7 @@ namespace NFramework
 
             NLogger.Log($"[SceneLoader] Start unload scene {sceneName}");
             var asyncOperation = SceneManager.UnloadSceneAsync(scene);
-            await asyncOperation;
+            await asyncOperation.ToUniTask();
 
             if (!string.IsNullOrEmpty(nextActiveSceneName))
                 SetActive(nextActiveSceneName);
