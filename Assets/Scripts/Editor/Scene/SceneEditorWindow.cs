@@ -21,8 +21,8 @@ namespace NFramework.Editor
         [Serializable]
         public class SceneData
         {
-            [ReadOnly, HorizontalGroup, HideLabel] public string name;
-            [HideInInspector] public string path;
+            [ReadOnly, HorizontalGroup(0.2f), HideLabel] public string name;
+            [ReadOnly, HorizontalGroup, HideLabel] public string path;
             
             [Button, HorizontalGroup(0.15f)]
             public void Open()
