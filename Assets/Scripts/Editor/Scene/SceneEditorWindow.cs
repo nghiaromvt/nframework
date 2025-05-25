@@ -4,7 +4,6 @@ using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using UnityEngine;
 
 namespace NFramework.Editor
 {
@@ -25,17 +24,11 @@ namespace NFramework.Editor
             [ReadOnly, HorizontalGroup, HideLabel] public string path;
             
             [Button, HorizontalGroup(0.15f)]
-            public void Open()
-            {
-                SceneSwitcherControl.OpenSceneWithSaveConfirm(path);
-            }
-            
+            public void Open() => SceneSwitcherControl.OpenSceneWithSaveConfirm(path);
+
             [Button, HorizontalGroup(0.15f)]
-            public void Add()
-            {
-                EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
-            }
-            
+            public void Add() => EditorSceneManager.OpenScene(path, OpenSceneMode.Additive);
+
             [Button, HorizontalGroup(0.15f)]
             public void Locate()
             {
@@ -44,8 +37,8 @@ namespace NFramework.Editor
             }
         }
         
-        public List<SceneData> activeInBuildSettingSceneDatas = new();
-        public List<SceneData> allSceneDatas = new();
+        [Searchable] public List<SceneData> activeInBuildSettingSceneDatas = new();
+        [Searchable] public List<SceneData> allSceneDatas = new();
 
         [OnInspectorInit]
         public void Init() => Refresh();
