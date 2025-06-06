@@ -1,11 +1,11 @@
-using System;
+using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
 namespace NFramework.Editor
 {
-    [CustomEditor(typeof(PrimeTweenAnimation))]
-    public class PrimeTweenAnimationEditor : UnityEditor.Editor
+    [CustomEditor(typeof(PrimeTweenAnimation), true)]
+    public class PrimeTweenAnimationEditor : OdinEditor
     {
         public enum TargetType
         {
@@ -17,14 +17,17 @@ namespace NFramework.Editor
         private PrimeTweenAnimation _anim;
         private bool _isPlaying;
         private TargetType _playTargetType;
-        
-        private void OnEnable() 
+
+        protected override void OnEnable()
         {
+            base.OnEnable();
             _anim = (PrimeTweenAnimation)target;
         }
 
-        private void OnDisable() 
+        protected override void OnDisable() 
         {
+            if (!_anim || Application.isPlaying) return;
+            
             switch (_playTargetType)
             {
                 default:
@@ -42,6 +45,8 @@ namespace NFramework.Editor
         
         public override void OnInspectorGUI() 
         {
+            if (!_anim) return;
+            
             if (!Application.isPlaying) 
             {
                 GUILayout.BeginHorizontal();
@@ -80,7 +85,7 @@ namespace NFramework.Editor
         {
             _isPlaying = true;
             _playTargetType = TargetType.Self;
-            _anim.Play();
+            _anim.StartTween();
         }
         
         private void PlayAllOnGameObject()
@@ -89,7 +94,7 @@ namespace NFramework.Editor
             _playTargetType = TargetType.AllOnGameObject;
             foreach (var anim in _anim.GetComponents<PrimeTweenAnimation>()) 
             {
-                anim.Play();
+                anim.StartTween();
             }
         }
 
@@ -99,14 +104,14 @@ namespace NFramework.Editor
             _playTargetType = TargetType.AllInScene;
             foreach (var anim in FindObjectsOfType<PrimeTweenAnimation>()) 
             {
-                anim.Play();
+                anim.StartTween();
             }
         }
 
         private void Stop()
         {
             _isPlaying = false;
-            _anim.Stop();
+            _anim.StopTweenAndResetValue();
         }
         
         private void StopAllOnGameObject()
@@ -114,7 +119,7 @@ namespace NFramework.Editor
             _isPlaying = false;
             foreach (var anim in _anim.GetComponents<PrimeTweenAnimation>()) 
             {
-                anim.Stop();
+                anim.StopTweenAndResetValue();
             }
         }
 
@@ -123,7 +128,7 @@ namespace NFramework.Editor
             _isPlaying = false;
             foreach (var anim in FindObjectsOfType<PrimeTweenAnimation>()) 
             {
-                anim.Stop();
+                anim.StopTweenAndResetValue();
             }
         }
     }
