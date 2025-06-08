@@ -22,17 +22,15 @@ namespace NFramework
 
             if (!_hasTriggered && currentTime >= triggerTime)
             {
-                NotifyReceiver(animator);
+                NotifyReceiver();
                 _hasTriggered = true;
             }
         }
 
-        void NotifyReceiver(Animator animator)
+        private void NotifyReceiver()
         {
-            if (_receiver != null)
-            {
+            if (_receiver)
                 _receiver.OnAnimationEventTriggered(eventName);
-            }
         }
     }
 }
