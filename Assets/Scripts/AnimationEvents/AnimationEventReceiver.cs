@@ -15,5 +15,13 @@ namespace NFramework
             if (_animationEvents.TryGetValue(eventName, out UnityEvent unityEvent))
                 unityEvent?.Invoke();
         }
+
+        public void RemoveAllListeners()
+        {
+            foreach (var unityEvent in _animationEvents.Values)
+            {
+                unityEvent.RemoveAllListeners();
+            }
+        }
     }
 }
