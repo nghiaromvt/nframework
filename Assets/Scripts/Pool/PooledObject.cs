@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace NFramework
@@ -28,19 +29,38 @@ namespace NFramework
                 _pool.HandlePooledObjectOnDestroy(this);
         }
 
-        public virtual void OnSpawnedFromPool() => EventOnSpawnedFromPool?.Invoke();
+        public virtual void OnSpawnedFromPool(PooledObjectInputData inputData) => EventOnSpawnedFromPool?.Invoke();
 
-        public virtual void OnBeforeReturnToPool() => EventOnBeforeReturnPool?.Invoke();
+        public virtual PooledObjectOutputData OnBeforeReturnToPool()
+        {
+            EventOnBeforeReturnPool?.Invoke();
+            return null;
+        }
 
-        public void ReturnToPool()
+        public PooledObjectOutputData ReturnToPool()
         {
             if (_pool)
-                _pool.ReturnToPool(this);
+            {
+                return _pool.ReturnToPool(this);
+            }
             else
             {
                 NLogger.LogError($"Pool is null. Destroying {name} instead.");
                 Destroy(gameObject);
+                return null;
             }
         }
+    }
+    
+    [Serializable]
+    public class PooledObjectInputData
+    {
+
+    }
+
+    [Serializable]
+    public class PooledObjectOutputData
+    {
+
     }
 }

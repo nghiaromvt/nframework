@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace NFramework
 {
-    public class BaseUIView : MonoBehaviour
+    public class UIView : MonoBehaviour
     {
         [ReadOnly] public string defineKeyConstName;
         [OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
@@ -49,7 +49,7 @@ namespace NFramework
             var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab");
             foreach (var pf in prefabs)
             {
-                if (pf.TryGetComponent<BaseUIView>(out var view))
+                if (pf.TryGetComponent<UIView>(out var view))
                 {
                     if (view == this) continue;
                     
@@ -66,13 +66,13 @@ namespace NFramework
 #endif
         }
 
-        public virtual void OnOpen(BaseUIInputData inputData)
+        public virtual void OnOpen(UIInputData inputData)
         {
             PauseGameStatus = inputData.pauseStatus switch
             {
-                BaseUIInputData.EPauseGameStatus.UseDefault => _pauseGameStatus,
-                BaseUIInputData.EPauseGameStatus.Pause => true,
-                BaseUIInputData.EPauseGameStatus.NoPause => false,
+                UIInputData.EPauseGameStatus.UseDefault => _pauseGameStatus,
+                UIInputData.EPauseGameStatus.Pause => true,
+                UIInputData.EPauseGameStatus.NoPause => false,
                 _ => PauseGameStatus
             };
 
@@ -80,20 +80,20 @@ namespace NFramework
                 PauseGameHandler.Pause(this);
         }
 
-        public virtual BaseUIOutputData OnClose()
+        public virtual UIOutputData OnClose()
         {
             if (PauseGameStatus) 
                 PauseGameHandler.Unpause(this);
             
-            return BaseUIOutputData.Empty;
+            return UIOutputData.Empty;
         }
         
-        public BaseUIOutputData CloseSelf(bool destroy = false) => UIManager.Close(this, destroy);
+        public UIOutputData CloseSelf(bool destroy = false) => UIManager.Close(this, destroy);
     }
     
 
     [Serializable]
-    public class BaseUIInputData
+    public class UIInputData
     {
         public enum EPauseGameStatus { UseDefault, Pause, NoPause }
         
@@ -101,8 +101,8 @@ namespace NFramework
     }
 
     [Serializable]
-    public class BaseUIOutputData
+    public class UIOutputData
     {
-        public static readonly BaseUIOutputData Empty = new();
+        public static readonly UIOutputData Empty = new();
     }
 }

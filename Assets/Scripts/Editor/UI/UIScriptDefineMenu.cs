@@ -34,13 +34,13 @@ namespace NFramework.Editor
         public static void GenerateScriptDefineStatic()
         {
             var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab");
-            var uiLayerToViewsDict = new Dictionary<UILayer, List<BaseUIView>>();
+            var uiLayerToViewsDict = new Dictionary<UILayer, List<UIView>>();
             prefabs.ForEach(x =>
             {
-                if (x.TryGetComponent<BaseUIView>(out var view))
+                if (x.TryGetComponent<UIView>(out var view))
                 {
                     if (!uiLayerToViewsDict.ContainsKey(view.UILayer))
-                        uiLayerToViewsDict[view.UILayer] = new List<BaseUIView>();
+                        uiLayerToViewsDict[view.UILayer] = new List<UIView>();
                     
                     uiLayerToViewsDict[view.UILayer].Add(view);
                 }

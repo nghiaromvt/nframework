@@ -62,14 +62,14 @@ namespace NFramework
             }
         }
 
-        public PooledObject GetPooledObject()
+        public PooledObject SpawnPooledObject(PooledObjectInputData inputData = null)
         {
             if (_poolQueue.Count > 0)
             {
                 var instance = _poolQueue.Dequeue();
                 instance.gameObject.SetActive(true);
                 _activeObjects.Add(instance);
-                instance.OnSpawnedFromPool();
+                instance.OnSpawnedFromPool(inputData);
                 return instance;
             }
 
@@ -81,7 +81,7 @@ namespace NFramework
                 instance.name += $"_{totalInstances}";
                 instance.gameObject.SetActive(true);
                 _activeObjects.Add(instance);
-                instance.OnSpawnedFromPool();
+                instance.OnSpawnedFromPool(inputData);
                 return instance;
             }
 
@@ -89,20 +89,21 @@ namespace NFramework
             return null;
         }
 
-        public void ReturnToPool(PooledObject pooledObject)
+        public PooledObjectOutputData ReturnToPool(PooledObject pooledObject)
         {
             if (pooledObject.Pool != this)
             {
                 NLogger.LogError($"Cannot return {pooledObject.name} to pool – not from this pool.", this);
-                return;
+                return null;
             }
 
             if (!_activeObjects.Remove(pooledObject))
             {
                 NLogger.LogError($"Attempted to return {pooledObject.name}, but it was not in the active list.", this);
+                return null;
             }
 
-            pooledObject.OnBeforeReturnToPool();
+            var outputData = pooledObject.OnBeforeReturnToPool();
 
             int totalInstances = _poolQueue.Count + _activeObjects.Count;
             if (_autoExpandPool && _maxPoolSize > 0 && totalInstances >= _maxPoolSize)
@@ -115,6 +116,8 @@ namespace NFramework
                 pooledObject.transform.SetParent(transform);
                 _poolQueue.Enqueue(pooledObject);
             }
+            
+            return outputData;
         }
 
         public void ReturnAllToPool()

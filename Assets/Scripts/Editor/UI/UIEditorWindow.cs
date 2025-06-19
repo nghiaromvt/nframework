@@ -26,7 +26,7 @@ namespace NFramework.Editor
             var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab");
             prefabs.ForEach(pf =>
             {
-                if (pf.TryGetComponent<BaseUIView>(out var view))
+                if (pf.TryGetComponent<UIView>(out var view))
                     tree.AddObjectAtPath($"Layer {view.UILayer}/{pf.name}", view, true);
             });
             
@@ -36,7 +36,7 @@ namespace NFramework.Editor
         protected override void OnBeginDrawEditors()
         {
             base.OnBeginDrawEditors();
-            BaseUIView view = MenuTree.Selection.SelectedValue as BaseUIView;
+            UIView view = MenuTree.Selection.SelectedValue as UIView;
             if(!view) return;
             SirenixEditorGUI.BeginHorizontalToolbar();
             {

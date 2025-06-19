@@ -33,15 +33,15 @@ namespace NFramework
             private static IEnumerable SortingLayers() => SortingLayer.layers.Select(layer => layer.name).ToArray();
         }
         
-        public static event Action<BaseUIView, BaseUIInputData> OnOpenedView;
-        public static event Action<BaseUIView, BaseUIOutputData> OnClosedView;
+        public static event Action<UIView, UIInputData> OnOpenedView;
+        public static event Action<UIView, UIOutputData> OnClosedView;
         public static event Action<bool> OnInteractableChanged;
 
         [SerializeField] private List<UILayerInfo> _uiLayerOrders = new();
         [SerializeField] private bool _isLog = true;
         
-        private static readonly Dictionary<string, Stack<BaseUIView>> _cachedView = new();
-        private static readonly Dictionary<UILayer, List<BaseUIView>> _openedView = new();
+        private static readonly Dictionary<string, Stack<UIView>> _cachedView = new();
+        private static readonly Dictionary<UILayer, List<UIView>> _openedView = new();
         private static readonly Dictionary<UILayer, RectTransform> _layerRectTfDict = new();
         private static readonly List<object> _disableInteractRegisters = new();
         private static readonly List<CanvasGroup> _layerCanvasGroups = new();
@@ -91,20 +91,20 @@ namespace NFramework
                 }
 
                 _layerRectTfDict[uiLayerInfo.layer] = rectTf;
-                _openedView.Add(uiLayerInfo.layer, new List<BaseUIView>());
+                _openedView.Add(uiLayerInfo.layer, new List<UIView>());
                 _layerCanvasGroups.Add(rectTf.GetComponent<CanvasGroup>());
             }
             
             gameObject.SetLayerRecursively(gameObject.layer);
         }
 
-        public static async UniTask<BaseUIView> OpenAddressables(string id, BaseUIInputData inputData = null, bool controlInteract = true)
+        public static async UniTask<UIView> OpenAddressables(string id, UIInputData inputData = null, bool controlInteract = true)
         {
-            return await OpenAddressables<BaseUIView>(id, inputData, controlInteract);
+            return await OpenAddressables<UIView>(id, inputData, controlInteract);
         }
 
-        public static async UniTask<T> OpenAddressables<T>(string id, BaseUIInputData inputData = null,
-            bool controlInteract = true) where T : BaseUIView
+        public static async UniTask<T> OpenAddressables<T>(string id, UIInputData inputData = null,
+            bool controlInteract = true) where T : UIView
         {
             T view = null;
             
@@ -146,7 +146,7 @@ namespace NFramework
                 return false;
             }
 
-            var prefab = loadAsset.GetComponent<BaseUIView>();
+            var prefab = loadAsset.GetComponent<UIView>();
             var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
             cached.ID = id;
             cached.gameObject.SetActive(false);
@@ -157,12 +157,12 @@ namespace NFramework
         public static int GetCachedViewCount(string id)
         {
             if (!_cachedView.TryGetValue(id, out _))
-                _cachedView[id] = new Stack<BaseUIView>();
+                _cachedView[id] = new Stack<UIView>();
             
             return _cachedView[id].Count;
         }
 
-        private static T OpenViewFromCached<T>(string id) where T : BaseUIView
+        private static T OpenViewFromCached<T>(string id) where T : UIView
         {
             if (_cachedView[id].Count == 0)
             {
@@ -175,7 +175,7 @@ namespace NFramework
             return view;
         }
         
-        private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : BaseUIView
+        private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : UIView
         {
             await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id));
             
@@ -199,7 +199,7 @@ namespace NFramework
                 Close(views[^1], destroy);
         }
 
-        public static void CloseAll(string id = null, bool destroy = false, List<BaseUIView> ignoreList = null)
+        public static void CloseAll(string id = null, bool destroy = false, List<UIView> ignoreList = null)
         {
             var views = GetOpenedViews(id);
             foreach (var view in views)
@@ -211,9 +211,9 @@ namespace NFramework
             }
         }
 
-        public static void CloseAllInLayer(UILayer layer, bool destroy = false, List<BaseUIView> ignoreList = null)
+        public static void CloseAllInLayer(UILayer layer, bool destroy = false, List<UIView> ignoreList = null)
         {
-            var views = new List<BaseUIView>(_openedView[layer]);
+            var views = new List<UIView>(_openedView[layer]);
             foreach (var view in views)
             {
                 if (!ignoreList.IsNullOrEmpty() && ignoreList.Contains(view))
@@ -223,7 +223,7 @@ namespace NFramework
             }
         }
 
-        public static BaseUIOutputData Close(string id, bool destroy = false)
+        public static UIOutputData Close(string id, bool destroy = false)
         {
             if (IsSpecificViewShown(id, out var view))
                 return Close(view, destroy);
@@ -231,7 +231,7 @@ namespace NFramework
             return null;
         }
 
-        public static BaseUIOutputData Close(BaseUIView view, bool destroy = false)
+        public static UIOutputData Close(UIView view, bool destroy = false)
         {
             var views = _openedView[view.UILayer];
             if (views.Count <= 0)
@@ -269,7 +269,7 @@ namespace NFramework
         
         public static void DestroyCachedViews(string id)
         {
-            var views = new List<BaseUIView>();
+            var views = new List<UIView>();
             foreach (var cachedStack in _cachedView.Values)
             {
                 if (cachedStack.Count > 0)
@@ -321,7 +321,7 @@ namespace NFramework
 
         public static bool IsAnyOpenedViewInLayer(UILayer layer) => _openedView[layer].Count > 0;
         
-        public static bool IsSpecificViewShown(string id, out BaseUIView view)
+        public static bool IsSpecificViewShown(string id, out UIView view)
         {
             view = null;
             foreach (var views in _openedView.Values)
@@ -338,7 +338,7 @@ namespace NFramework
             return false;
         }
 
-        public static BaseUIView GetOpenedView(string id)
+        public static UIView GetOpenedView(string id)
         {
             foreach (var views in _openedView.Values)
             {
@@ -351,15 +351,15 @@ namespace NFramework
             return null;
         }
 
-        public static T GetOpenedView<T>(string id) where T : BaseUIView
+        public static T GetOpenedView<T>(string id) where T : UIView
         {
             var view = GetOpenedView(id);
             return view == null ? null : view as T;
         }
 
-        public static List<BaseUIView> GetOpenedViews(string id)
+        public static List<UIView> GetOpenedViews(string id)
         {
-            var openedViews = new List<BaseUIView>();
+            var openedViews = new List<UIView>();
             foreach (var views in _openedView.Values)
             {
                 foreach (var view in views)
@@ -371,9 +371,9 @@ namespace NFramework
             return openedViews;
         }
 
-        public static List<BaseUIView> GetOpenedViewsInLayer(UILayer layer)
+        public static List<UIView> GetOpenedViewsInLayer(UILayer layer)
         {
-            var openedViews = new List<BaseUIView>();
+            var openedViews = new List<UIView>();
             foreach (var view in _openedView[layer])
             {
                 openedViews.Add(view);
@@ -381,7 +381,7 @@ namespace NFramework
             return openedViews;
         }
 
-        public static BaseUIView GetTopmostOpenedView(UILayer topLayer = UILayer.AlwaysOnTop)
+        public static UIView GetTopmostOpenedView(UILayer topLayer = UILayer.AlwaysOnTop)
         {
             for (int i = (int)topLayer; i >= 0; --i)
             {
@@ -392,7 +392,7 @@ namespace NFramework
             return null;
         }
 
-        public static BaseUIView GetTopmostOpenedViewInLayer(UILayer layer)
+        public static UIView GetTopmostOpenedViewInLayer(UILayer layer)
         {
             var views = _openedView[layer];
             return views.Count > 0 ? views[^1] : null;
@@ -461,12 +461,12 @@ namespace NFramework
 
         #region Resources
         
-        public static async UniTask<BaseUIView> OpenResources(string id, BaseUIInputData inputData = null)
+        public static async UniTask<UIView> OpenResources(string id, UIInputData inputData = null)
         {
-            return await OpenResources<BaseUIView>(id, inputData);
+            return await OpenResources<UIView>(id, inputData);
         }
 
-        public static async UniTask<T> OpenResources<T>(string id, BaseUIInputData inputData = null) where T : BaseUIView
+        public static async UniTask<T> OpenResources<T>(string id, UIInputData inputData = null) where T : UIView
         {
             T view = null;
             
@@ -487,9 +487,9 @@ namespace NFramework
             return view;
         }
         
-        private static async UniTask<T> LoadAndInstantiateViewResources<T>(string id) where T : BaseUIView
+        private static async UniTask<T> LoadAndInstantiateViewResources<T>(string id) where T : UIView
         {
-            var temp = await Resources.LoadAsync<BaseUIView>(id);
+            var temp = await Resources.LoadAsync<UIView>(id);
             if (temp is not T prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
@@ -508,8 +508,8 @@ namespace NFramework
             if (curCachedViewCount > 0 && !forceCacheMultiple)
                 return false;
 
-            var temp = await Resources.LoadAsync<BaseUIView>(id);
-            if (temp is not BaseUIView prefab)
+            var temp = await Resources.LoadAsync<UIView>(id);
+            if (temp is not UIView prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
                 return false;
