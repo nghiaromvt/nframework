@@ -1,3 +1,4 @@
+#if ADDRESSABLES
 using System;
 
 namespace NFramework
@@ -10,3 +11,4 @@ namespace NFramework
         public AddressableOperationStatus Status { get; protected set; }
     }
 }
+#endif

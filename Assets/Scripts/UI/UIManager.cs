@@ -98,6 +98,7 @@ namespace NFramework
             gameObject.SetLayerRecursively(gameObject.layer);
         }
 
+#if ADDRESSABLES
         public static async UniTask<UIView> OpenAddressables(string id, UIInputData inputData = null, bool controlInteract = true)
         {
             return await OpenAddressables<UIView>(id, inputData, controlInteract);
@@ -153,6 +154,7 @@ namespace NFramework
             _cachedView[id].Push(cached);
             return true;
         }
+#endif
         
         public static int GetCachedViewCount(string id)
         {
@@ -174,7 +176,8 @@ namespace NFramework
             view.gameObject.SetActive(true);
             return view;
         }
-        
+
+#if ADDRESSABLES
         private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : UIView
         {
             await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id));
@@ -191,6 +194,7 @@ namespace NFramework
             view.ID = id;
             return view;
         }
+#endif
 
         public static void CloseCurrentInLayer(UILayer layer, bool destroy = false)
         {
@@ -251,8 +255,10 @@ namespace NFramework
 
                     if (GetCachedViewCount(id) == 0 && GetOpenedView(id) == null)
                     {
+#if ADDRESSABLES
                         if (!isFromResources)
                             UnloadAddressableUI(id).Forget();
+#endif
                     }
                 }
                 else
@@ -270,6 +276,7 @@ namespace NFramework
         public static void DestroyCachedViews(string id)
         {
             var views = new List<UIView>();
+            
             foreach (var cachedStack in _cachedView.Values)
             {
                 if (cachedStack.Count > 0)
@@ -291,10 +298,13 @@ namespace NFramework
                     Destroy(needDestroyViews.gameObject);
             }
 
+#if ADDRESSABLES
             if (GetOpenedView(id) == null)
                 UnloadAddressableUI(id).Forget();
+#endif
         }
 
+#if ADDRESSABLES
         public static async UniTask UnloadAddressableUI(string id, bool force = false)
         {
             if (_unloadingAddressableViewIds.Contains(id)) 
@@ -318,6 +328,7 @@ namespace NFramework
             AddressablesManager.ReleaseAsset(id);
             _unloadingAddressableViewIds.Remove(id);
         }
+#endif
 
         public static bool IsAnyOpenedViewInLayer(UILayer layer) => _openedView[layer].Count > 0;
         

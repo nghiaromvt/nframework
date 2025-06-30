@@ -170,7 +170,7 @@ namespace NFramework
         #endregion
 
         #region Cache/Clear
-
+#if ADDRESSABLES
         public static async UniTask CacheSoundGroupAddressables(string loadKey)
         {
             if (!IsInitialized) return;
@@ -186,6 +186,7 @@ namespace NFramework
             CacheSoundGroup(soundGroupSO);
             _cacheSoundGroupAddressablesDict.Add(loadKey, soundGroupSO);
         }
+#endif
 
         public static async UniTask CacheSoundGroupResources(string loadKey)
         {
@@ -222,19 +223,23 @@ namespace NFramework
         
         public static bool ClearSoundGroup(string loadKey)
         {
-            if (_cacheSoundGroupAddressablesDict.TryGetValue(loadKey, out SoundGroupSO soundGroupSO))
+            SoundGroupSO soundGroupSO = null;
+#if ADDRESSABLES
+            if (_cacheSoundGroupAddressablesDict.TryGetValue(loadKey, out soundGroupSO))
             {
                 ClearSoundGroup(soundGroupSO);
                 AddressablesManager.ReleaseAsset(loadKey);
                 _cacheSoundGroupAddressablesDict.Remove(loadKey);
                 return true;
             }
-            else if (_cacheSoundGroupResourcesDict.TryGetValue(loadKey, out soundGroupSO))
+#endif
+            if (_cacheSoundGroupResourcesDict.TryGetValue(loadKey, out soundGroupSO))
             {
                 ClearSoundGroup(soundGroupSO);
                 _cacheSoundGroupResourcesDict.Remove(loadKey);
                 return true;
             }
+            
             return false;
         }
 

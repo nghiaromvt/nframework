@@ -39,7 +39,8 @@ namespace NFramework
             if (!string.IsNullOrEmpty(nextActiveSceneName))
                 SetActive(nextActiveSceneName);
         }
-
+        
+#if ADDRESSABLES
         public static async UniTask LoadAddressables(string sceneName, bool isAdditive = false, bool setActive = false)
         {
             if (string.IsNullOrEmpty(sceneName))
@@ -68,6 +69,7 @@ namespace NFramework
             if (!string.IsNullOrEmpty(nextActiveSceneName))
                 SetActive(nextActiveSceneName);
         }
+#endif
 
         public static Scene[] GetAllLoaded()
         {
@@ -88,9 +90,11 @@ namespace NFramework
             {
                 if (!exceptSceneNames.Contains(scene.name))
                 {
+#if ADDRESSABLES
                     if (AddressablesManager.IsSceneLoadByAddressables(scene.name))
                         await UnloadAddressables(scene.name);
                     else
+#endif
                         await Unload(scene.name);
                 }
             }

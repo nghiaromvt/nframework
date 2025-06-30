@@ -1,3 +1,4 @@
+#if ADDRESSABLES
 using Cysharp.Threading.Tasks;
 
 namespace NFramework
@@ -13,3 +14,4 @@ namespace NFramework
         public abstract void Release();
     }
 }
+#endif

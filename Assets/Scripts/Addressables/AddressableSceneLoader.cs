@@ -1,3 +1,4 @@
+#if ADDRESSABLES
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
@@ -86,3 +87,4 @@ namespace NFramework
         }
     }
 }
+#endif

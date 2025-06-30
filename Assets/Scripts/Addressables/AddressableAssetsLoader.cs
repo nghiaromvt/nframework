@@ -1,6 +1,6 @@
+#if ADDRESSABLES
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -69,3 +69,4 @@ namespace NFramework
         public List<T> GetResult() => Status != AddressableOperationStatus.Success ? null : _handle.Result.ToList();
     }
 }
+#endif

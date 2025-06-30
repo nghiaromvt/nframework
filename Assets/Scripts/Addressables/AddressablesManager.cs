@@ -1,3 +1,4 @@
+#if ADDRESSABLES
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
@@ -383,3 +384,4 @@ namespace NFramework
         #endregion
     }
 }
+#endif

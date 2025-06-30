@@ -1,3 +1,4 @@
+#if ADDRESSABLES
 using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
@@ -67,3 +68,4 @@ namespace NFramework
         public T GetResult() => Status != AddressableOperationStatus.Success ? null : _handle.Result;
     }
 }
+#endif
