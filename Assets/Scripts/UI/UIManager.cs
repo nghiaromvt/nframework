@@ -472,12 +472,12 @@ namespace NFramework
 
         #region Resources
         
-        public static async UniTask<UIView> OpenResources(string id, UIInputData inputData = null)
+        public static UIView OpenResources(string id, UIInputData inputData = null)
         {
-            return await OpenResources<UIView>(id, inputData);
+            return OpenResources<UIView>(id, inputData);
         }
 
-        public static async UniTask<T> OpenResources<T>(string id, UIInputData inputData = null) where T : UIView
+        public static T OpenResources<T>(string id, UIInputData inputData = null) where T : UIView
         {
             T view = null;
             
@@ -485,7 +485,7 @@ namespace NFramework
             if (hasCachedView)
                 view = OpenViewFromCached<T>(id);
             else
-                view = await LoadAndInstantiateViewResources<T>(id);
+                view = LoadAndInstantiateViewResources<T>(id);
 
             if (view is not null)
             {
@@ -498,7 +498,48 @@ namespace NFramework
             return view;
         }
         
-        private static async UniTask<T> LoadAndInstantiateViewResources<T>(string id) where T : UIView
+        private static T LoadAndInstantiateViewResources<T>(string id) where T : UIView
+        {
+            var temp = Resources.Load<UIView>(id);
+            if (temp is not T prefab)
+            {
+                LogError($"Cannot load UI [{id}] from Resources");
+                return null;
+            }
+            
+            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            view.ID = id;
+            view.IsFromResources = true;
+            return view;
+        }
+        
+        public static async UniTask<UIView> OpenResourcesAsync(string id, UIInputData inputData = null)
+        {
+            return await OpenResourcesAsync<UIView>(id, inputData);
+        }
+
+        public static async UniTask<T> OpenResourcesAsync<T>(string id, UIInputData inputData = null) where T : UIView
+        {
+            T view = null;
+            
+            var hasCachedView = GetCachedViewCount(id) > 0;
+            if (hasCachedView)
+                view = OpenViewFromCached<T>(id);
+            else
+                view = await LoadAndInstantiateViewResourcesAsync<T>(id);
+
+            if (view is not null)
+            {
+                view.transform.SetAsLastSibling();
+                view.OnOpen(inputData);
+                _openedView[view.UILayer].Add(view);
+            }
+            
+            OnOpenedView?.Invoke(view, inputData);
+            return view;
+        }
+        
+        private static async UniTask<T> LoadAndInstantiateViewResourcesAsync<T>(string id) where T : UIView
         {
             var temp = await Resources.LoadAsync<UIView>(id);
             if (temp is not T prefab)

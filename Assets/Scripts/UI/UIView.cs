@@ -68,6 +68,8 @@ namespace NFramework
 
         public virtual void OnOpen(UIInputData inputData)
         {
+            inputData ??= new UIInputData();
+            
             PauseGameStatus = inputData.pauseStatus switch
             {
                 UIInputData.EPauseGameStatus.UseDefault => _pauseGameStatus,

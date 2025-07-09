@@ -4,6 +4,7 @@ using System.Text;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace NFramework.Editor
@@ -11,18 +12,18 @@ namespace NFramework.Editor
     [Serializable]
     public class UIScriptDefineMenu
     {
-        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenu");
-        public static string NameSpacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenu");
+        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenuSavePath");
+        public static string NamespacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenuNamespace");
 
         [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
         private string _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
 
         [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
-        private string _nameSpace = EditorPrefs.GetString(NameSpacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+        private string _namespace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
 
         private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
 
-        private void OnNameSpaceChanged() => EditorPrefs.SetString(NameSpacePrefsKey, _nameSpace);
+        private void OnNameSpaceChanged() => EditorPrefs.SetString(NamespacePrefsKey, _namespace);
 
         [Button(ButtonSizes.Gigantic)]
         private void LocateScriptDefine() => LocateScriptDefineStatic();
@@ -47,7 +48,7 @@ namespace NFramework.Editor
             });
             
             var stringBuilder = new StringBuilder();
-            var nameSpace = EditorPrefs.GetString(NameSpacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+            var nameSpace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
             var savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
 
             // Header
