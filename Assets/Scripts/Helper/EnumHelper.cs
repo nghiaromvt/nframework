@@ -50,5 +50,16 @@ namespace NFramework
             }
             return result;
         }
+
+        public static List<T> GetListValueEnum<T>() where T : struct
+        {
+            var result = new List<T>();
+            var values = Enum.GetValues(typeof(T));
+            foreach (var value in values)
+            {
+                result.Add((T)value);
+            }
+            return result;
+        }
     }
 }

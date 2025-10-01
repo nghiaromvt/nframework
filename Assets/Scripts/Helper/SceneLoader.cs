@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
@@ -6,7 +7,7 @@ namespace NFramework
 {
     public static class SceneLoader
     {
-        public static async UniTask Load(string sceneName, bool isAdditive = false, bool setActive = false)
+        public static async UniTask Load(string sceneName, bool isAdditive = false, bool setActive = false, Action<float> onProgress = null)
         {
             if (string.IsNullOrEmpty(sceneName))
             {
@@ -16,13 +17,18 @@ namespace NFramework
 
             NLogger.Log($"[SceneLoader] Start load scene: {sceneName}");
             var asyncOperation = SceneManager.LoadSceneAsync(sceneName, isAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
-            await asyncOperation.ToUniTask();
 
+            while (!asyncOperation.isDone)
+            {
+                onProgress?.Invoke(asyncOperation.progress);
+                await UniTask.Yield();
+            }
+            
             if (setActive)
                 SetActive(sceneName);
         }
 
-        public static async UniTask Unload(string sceneName, bool showLoading = false, string nextActiveSceneName = null)
+        public static async UniTask Unload(string sceneName, string nextActiveSceneName = null, Action<float> onProgress = null)
         {
             var scene = SceneManager.GetSceneByName(sceneName);
 
@@ -34,8 +40,13 @@ namespace NFramework
 
             NLogger.Log($"[SceneLoader] Start unload scene {sceneName}");
             var asyncOperation = SceneManager.UnloadSceneAsync(scene);
-            await asyncOperation.ToUniTask();
 
+            while (!asyncOperation.isDone)
+            {
+                onProgress?.Invoke(asyncOperation.progress);
+                await UniTask.Yield();
+            }
+            
             if (!string.IsNullOrEmpty(nextActiveSceneName))
                 SetActive(nextActiveSceneName);
         }
