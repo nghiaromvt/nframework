@@ -1,14 +1,14 @@
 using UnityEngine;
 using System;
-#if MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
-using Lofelt.NiceVibrations;
+#if MOREMOUNTAINS_NICEVIBRATIONS
+using MoreMountains.NiceVibrations;
 #endif
 
 namespace NFramework
 {
     public class VibrationManager : SingletonMono<VibrationManager>, ISaveable
     {
-        public enum HapticType 
+        public enum EHapticType 
         { 
             Selection = 0, 
             Success = 1, 
@@ -26,33 +26,32 @@ namespace NFramework
 
         [SerializeField] private SaveData _saveData;
 
-        public static bool Status
+        public bool Status
         {
-            get => I._saveData.status;
+            get => _saveData.status;
             set
             {
-                if (I._saveData.status != value)
+                if (_saveData.status != value)
                 {
-                    I._saveData.status = value;
-                    I.DataChanged = true;
+                    _saveData.status = value;
+                    DataChanged = true;
                     OnStatusChanged?.Invoke(value);
-                    NLogger.Log("Status changed to: " + value, I);
                 }
             }
         }
 
-        public static void Haptic(HapticType type)
+        public void Haptic(EHapticType type)
         {
-            if (!Status) return;
+            if (!Status)
+                return;
 
-#if MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
-            HapticPatterns.PlayPreset((HapticPatterns.PresetType)type);
+#if MOREMOUNTAINS_NICEVIBRATIONS
+            MMVibrationManager.Haptic((HapticTypes)type);
 #endif
         }
 
         #region ISaveable
-        
-        [Serializable]
+        [System.Serializable]
         public class SaveData
         {
             public bool status = true;
@@ -66,12 +65,15 @@ namespace NFramework
 
         public void SetData(string data)
         {
-            _saveData = string.IsNullOrEmpty(data) ? new SaveData() : JsonUtility.FromJson<SaveData>(data);
+            if (string.IsNullOrEmpty(data))
+                _saveData = new SaveData();
+            else
+                _saveData = JsonUtility.FromJson<SaveData>(data);
+
             OnStatusChanged?.Invoke(Status);
         }
 
         public void OnAllDataLoaded() { }
-        
         #endregion
     }
 }
