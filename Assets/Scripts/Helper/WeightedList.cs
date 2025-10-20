@@ -25,10 +25,10 @@ namespace NFramework
         /// <summary>
         /// Create a WeightedList with the provided items and an optional System.Random.
         /// </summary>
-        public WeightedList(ICollection<WeightedListItem<T>> listItems, Random rand = null)
+        public WeightedList(IEnumerable<WeightedListItem<T>> items, Random rand = null)
         {
             _rand = rand ?? new Random();
-            foreach (WeightedListItem<T> item in listItems)
+            foreach (WeightedListItem<T> item in items)
             {
                 _list.Add(item._item);
                 _weights.Add(item._weight);
