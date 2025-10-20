@@ -1,15 +1,20 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace NFramework
 {
     public static class GameObjectExtension
     {
-        public static void SetLayerRecursively(this GameObject obj, int newLayer)
+        public static void SetLayerRecursively(this GameObject obj, int newLayer, List<GameObject> exclude = null, bool ignoreExcludeChild = false)
         {
-            obj.layer = newLayer;
+            if (exclude == null || !exclude.Contains(obj))
+                obj.layer = newLayer;
+            else if (exclude.Contains(obj) && ignoreExcludeChild)
+                return;
+            
             for (int i = 0; i < obj.transform.childCount; ++i)
             {
-                obj.transform.GetChild(i).gameObject.SetLayerRecursively(newLayer);
+                obj.transform.GetChild(i).gameObject.SetLayerRecursively(newLayer, exclude, ignoreExcludeChild);
             }
         }
 

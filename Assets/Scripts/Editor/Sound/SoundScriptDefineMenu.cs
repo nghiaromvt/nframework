@@ -1,9 +1,9 @@
 using System;
+using System.IO;
 using System.Text;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace NFramework.Editor
@@ -15,11 +15,20 @@ namespace NFramework.Editor
         public static string NamespacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("SoundScriptDefineNamespace");
 
         [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
-        private string _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+        private string _savePath;
 
         [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
         private string _namespace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
 
+        public SoundScriptDefineMenu()
+        {
+            var (script, path) = GetScriptDefineInProject();
+            if (script)
+                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
+            
+            _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+        }
+        
         private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
 
         private void OnNameSpaceChanged() => EditorPrefs.SetString(NamespacePrefsKey, _namespace);
@@ -36,6 +45,11 @@ namespace NFramework.Editor
             var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
             var stringBuilder = new StringBuilder();
             var nameSpace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+            
+            var (script, path) = GetScriptDefineInProject();
+            if (script)
+                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
+            
             var savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
 
             // Header
@@ -90,8 +104,8 @@ namespace NFramework.Editor
             }
 
             // Write to file
-            var fullPath = System.IO.Path.Combine(Application.dataPath, savePath, "SoundDefine.cs");
-            System.IO.File.WriteAllText(fullPath, stringBuilder.ToString());
+            var fullPath = Path.Combine(Application.dataPath, savePath, "SoundDefine.cs");
+            File.WriteAllText(fullPath, stringBuilder.ToString());
 
             AssetDatabase.Refresh();
             NLogger.Log($"SoundDefine.cs generated at: {fullPath}");
@@ -101,9 +115,23 @@ namespace NFramework.Editor
         [MenuItem("NFramework/Sound/Locate Script Define")]
         public static void LocateScriptDefineStatic()
         {
-            var script = FileHelper.LoadFirstAssetWithName<Object>("SoundDefine", "SoundDefine");
+            var (script, path) = GetScriptDefineInProject();
+            
             if (script)
                 EditorGUIUtility.PingObject(script);
+            else
+                NLogger.Log("Script not found.");
+        }
+        
+        private static (Object, string) GetScriptDefineInProject()
+        {
+            var script = FileHelper.LoadFirstAssetWithName<Object>("SoundDefine", "t:Script");
+            
+            if (!script)
+                return (null, null);
+            
+            var path = AssetDatabase.GetAssetPath(script);
+            return (script, path);
         }
     }
 }

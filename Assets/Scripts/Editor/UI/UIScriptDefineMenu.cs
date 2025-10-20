@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
 
 namespace NFramework.Editor
@@ -16,7 +16,7 @@ namespace NFramework.Editor
         public static string NamespacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenuNamespace");
 
         [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
-        private string _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+        private string _savePath;
 
         [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
         private string _namespace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
@@ -24,6 +24,15 @@ namespace NFramework.Editor
         private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
 
         private void OnNameSpaceChanged() => EditorPrefs.SetString(NamespacePrefsKey, _namespace);
+        
+        public UIScriptDefineMenu()
+        {
+            var (script, path) = GetScriptDefineInProject();
+            if (script)
+                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
+            
+            _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+        }
 
         [Button(ButtonSizes.Gigantic)]
         private void LocateScriptDefine() => LocateScriptDefineStatic();
@@ -49,6 +58,11 @@ namespace NFramework.Editor
             
             var stringBuilder = new StringBuilder();
             var nameSpace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+            
+            var (script, path) = GetScriptDefineInProject();
+            if (script)
+                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
+            
             var savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
 
             // Header
@@ -85,8 +99,8 @@ namespace NFramework.Editor
             }
 
             // Write to file
-            var fullPath = System.IO.Path.Combine(Application.dataPath, savePath, "UIDefine.cs");
-            System.IO.File.WriteAllText(fullPath, stringBuilder.ToString());
+            var fullPath = Path.Combine(Application.dataPath, savePath, "UIDefine.cs");
+            File.WriteAllText(fullPath, stringBuilder.ToString());
 
             AssetDatabase.Refresh();
             NLogger.Log($"UIDefine.cs generated at: {fullPath}");
@@ -96,9 +110,23 @@ namespace NFramework.Editor
         [MenuItem("NFramework/UI/Locate Script Define")]
         public static void LocateScriptDefineStatic()
         {
-            var script = FileHelper.LoadFirstAssetWithName<Object>("UIDefine", "UIDefine");
+            var (script, path) = GetScriptDefineInProject();
+            
             if (script)
                 EditorGUIUtility.PingObject(script);
+            else
+                NLogger.Log("Script not found.");
+        }
+
+        private static (Object, string) GetScriptDefineInProject()
+        {
+            var script = FileHelper.LoadFirstAssetWithName<Object>("UIDefine", "t:Script");
+            
+            if (!script)
+                return (null, null);
+            
+            var path = AssetDatabase.GetAssetPath(script);
+            return (script, path);
         }
     }
 }

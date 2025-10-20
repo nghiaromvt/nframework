@@ -51,7 +51,8 @@ namespace NFramework
         }
 
         #region ISaveable
-        [System.Serializable]
+        
+        [Serializable]
         public class SaveData
         {
             public bool status = true;
@@ -74,6 +75,7 @@ namespace NFramework
         }
 
         public void OnAllDataLoaded() { }
+        
         #endregion
     }
 }
