@@ -39,6 +39,7 @@ namespace NFramework
 
         [SerializeField] private List<UILayerInfo> _uiLayerOrders = new();
         [SerializeField] private bool _isLog = true;
+        [SerializeField] private string _resourcesRootFolder;
         
         private static readonly Dictionary<string, Stack<UIView>> _cachedView = new();
         private static readonly Dictionary<UILayer, List<UIView>> _openedView = new();
@@ -500,7 +501,7 @@ namespace NFramework
         
         private static T LoadAndInstantiateViewResources<T>(string id) where T : UIView
         {
-            var temp = Resources.Load<UIView>(id);
+            var temp = Resources.Load<UIView>($"{I._resourcesRootFolder}{id}");
             if (temp is not T prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
@@ -541,7 +542,7 @@ namespace NFramework
         
         private static async UniTask<T> LoadAndInstantiateViewResourcesAsync<T>(string id) where T : UIView
         {
-            var temp = await Resources.LoadAsync<UIView>(id);
+            var temp = await Resources.LoadAsync<UIView>($"{I._resourcesRootFolder}{id}");
             if (temp is not T prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
