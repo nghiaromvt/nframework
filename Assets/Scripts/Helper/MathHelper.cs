@@ -59,7 +59,7 @@ namespace NFramework
             direction.x = Mathf.Sin(angle * Mathf.Deg2Rad);
             direction.y = 0f;
             direction.z = Mathf.Cos(angle * Mathf.Deg2Rad);
-            return direction;
+            return direction.normalized;
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace NFramework
             direction.x = Mathf.Cos(angle * Mathf.Deg2Rad);
             direction.y = Mathf.Sin(angle * Mathf.Deg2Rad);
             direction.z = 0f;
-            return direction;
+            return direction.normalized;
         }
 
         /// <summary>
@@ -109,12 +109,14 @@ namespace NFramework
 
         public static float GetAngle(Vector3 start, Vector3 end)
         {
-            return Mathf.Atan2(start.z - end.z, start.x - end.x) * Mathf.Rad2Deg;
+            var dir = (start - end).normalized;
+            return Mathf.Atan2(dir.z, dir.x) * Mathf.Rad2Deg;
         }
 
         public static float GetAngle(Vector2 start, Vector2 end)
         {
-            return Mathf.Atan2(start.y - end.y, start.x - end.x) * Mathf.Rad2Deg;
+            var dir = (start - end).normalized;
+            return Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
         }
     }
 }
