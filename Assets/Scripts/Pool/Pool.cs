@@ -1,5 +1,6 @@
 ﻿using Sirenix.OdinInspector;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UnityEngine;
 
 namespace NFramework
@@ -32,6 +33,7 @@ namespace NFramework
         private readonly List<PooledObject> _activeObjects = new();
 
         public PooledObject ObjectToPool => _objectToPool;
+        public ReadOnlyCollection<PooledObject> ActiveObjects => _activeObjects.AsReadOnly();
         public bool IsInitialized { get; private set; }
 
         private void Awake()
