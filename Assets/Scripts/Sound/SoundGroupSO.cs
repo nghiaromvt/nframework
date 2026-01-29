@@ -21,9 +21,9 @@ namespace NFramework
         }
 
         public void PlayBgm(float volume = 1f, bool loop = false, float pitch = 1f,
-            bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
+            bool ignorePause = false, float fadeTime = 0f, Action onStop = null)
         {
-            SoundManager.PlayBgm(clip, volume * volumeScale, loop, pitch, ignorePause, overlapType, fadeTime, onStop);
+            SoundManager.PlayBgm(clip, volume * volumeScale, loop, pitch, ignorePause, fadeTime, onStop);
         }
     }
     

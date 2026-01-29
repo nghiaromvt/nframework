@@ -342,35 +342,18 @@ namespace NFramework
         }
         
         public static void PlayBgm(string key, float volume = 1f, bool loop = false, float pitch = 1f,
-            bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
+            bool ignorePause = false, float fadeTime = 0f, Action onStop = null)
         {
             if (_cacheSoundDatas.TryGetValue(key, out var soundData))
-                PlayBgm(soundData.clip, volume * soundData.volumeScale, loop, pitch, ignorePause, overlapType, fadeTime, onStop);
+                PlayBgm(soundData.clip, volume * soundData.volumeScale, loop, pitch, ignorePause, fadeTime, onStop);
             else
                 LogError($"Cannot find AudioClip [{key}] in cache");
         }
         
         public static void PlayBgm(AudioClip clip, float volume = 1f, bool loop = false, float pitch = 1f,
-            bool ignorePause = false, EAudioOverlapType overlapType = default, float fadeTime = 0f, Action onStop = null)
+            bool ignorePause = false, float fadeTime = 0f, Action onStop = null)
         {
-            switch (overlapType)
-            {
-                case EAudioOverlapType.StopPrevious:
-                {
-                    if (_bgmEmitter.AudioClip == clip)
-                        _bgmEmitter.Stop();
-
-                    break;
-                }
-                case EAudioOverlapType.Skip:
-                {
-                    if (_bgmEmitter.AudioClip == clip)
-                        return;
-
-                    break;
-                }
-            }
-            
+            _bgmEmitter.Stop();
             _bgmEmitter.Play("BGM", clip, volume, loop, pitch, ignorePause, fadeTime, onStop);
         }
         
