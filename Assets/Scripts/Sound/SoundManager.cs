@@ -33,7 +33,8 @@ namespace NFramework
         [SerializeField] private AudioMixerGroup _sfxMixerGroup;
         [SerializeField] private bool _isLog = true;
         [SerializeField] private bool _initializeOnAwake = true;
-        
+        [SerializeField] private string _resourcesRootFolder;
+
         private static SoundEmitter _bgmEmitter;
         private static readonly List<SoundEmitter> _allSoundEmitterPool = new();
         private static readonly Queue<SoundEmitter> _soundEmitterPool = new();
@@ -197,7 +198,7 @@ namespace NFramework
                 return;
             }
             
-            var temp = await Resources.LoadAsync<SoundGroupSO>(loadKey);
+            var temp = await Resources.LoadAsync<SoundGroupSO>($"{I._resourcesRootFolder}{loadKey}");
             if (temp is not SoundGroupSO soundGroupSO)
             {
                 LogError($"CacheSoundResources failed! {loadKey}");
