@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -8,6 +9,8 @@ namespace NFramework
     {
         [SerializeField, Searchable] protected List<T> _datas = new();
 
+        public ReadOnlyCollection<T> Datas => _datas.AsReadOnly();
+        
 #if UNITY_EDITOR
         [Header("Info")]
         [SerializeField] protected string _sheetId;
