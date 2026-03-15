@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace NFramework
@@ -21,7 +22,7 @@ namespace NFramework
             while (!asyncOperation.isDone)
             {
                 onProgress?.Invoke(asyncOperation.progress);
-                await UniTask.Yield();
+                await UniTask.Yield(Application.exitCancellationToken);
             }
             
             if (setActive)
@@ -44,7 +45,7 @@ namespace NFramework
             while (!asyncOperation.isDone)
             {
                 onProgress?.Invoke(asyncOperation.progress);
-                await UniTask.Yield();
+                await UniTask.Yield(Application.exitCancellationToken);
             }
             
             if (!string.IsNullOrEmpty(nextActiveSceneName))

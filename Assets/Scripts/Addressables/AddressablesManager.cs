@@ -104,7 +104,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress += onProgress;
                 
-                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating);
+                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating, cancellationToken: I.destroyCancellationToken);
                 
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
@@ -135,7 +135,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress += onProgress;
                 
-                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating);
+                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating, cancellationToken: I.destroyCancellationToken);
                 
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;
@@ -167,7 +167,7 @@ namespace NFramework
                 if (onProgress != null)
                     cachedLoader.OnProgress += onProgress;
                 
-                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating);
+                await UniTask.WaitUntil(() => cachedLoader.Status != AddressableOperationStatus.Operating, cancellationToken: I.destroyCancellationToken);
                 
                 if (onProgress != null)
                     cachedLoader.OnProgress -= onProgress;

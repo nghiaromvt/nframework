@@ -139,7 +139,7 @@ namespace NFramework
             if (curCachedViewCount > 0 && !forceCacheMultiple)
                 return false;
 
-            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id));
+            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
 
             var loadAsset = await AddressablesManager.LoadAsset<GameObject>(id);
             if (loadAsset == null)
@@ -181,7 +181,7 @@ namespace NFramework
 #if ADDRESSABLES
         private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : UIView
         {
-            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id));
+            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
             
             var loadHandle = await AddressablesManager.LoadAsset<GameObject>(id);
             if (loadHandle == null)
@@ -325,7 +325,7 @@ namespace NFramework
             
             _unloadingAddressableViewIds.Add(id);
             Log($"UnloadAddressableUI: {id}");
-            await UniTask.DelayFrame(1);
+            await UniTask.DelayFrame(1, cancellationToken: I.destroyCancellationToken);
             AddressablesManager.ReleaseAsset(id);
             _unloadingAddressableViewIds.Remove(id);
         }

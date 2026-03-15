@@ -1,6 +1,7 @@
 #if ADDRESSABLES
 using System;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using Object = UnityEngine.Object;
@@ -35,7 +36,7 @@ namespace NFramework
                         OnProgress?.Invoke(downloadStatus.DownloadedBytes, downloadStatus.TotalBytes, progressPercent);
                     }
 
-                    await UniTask.Yield();
+                    await UniTask.Yield(cancellationToken: Application.exitCancellationToken);
                 }
                 
                 if (_handle.Status == AsyncOperationStatus.Succeeded)

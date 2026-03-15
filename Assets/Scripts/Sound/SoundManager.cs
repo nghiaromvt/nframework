@@ -5,7 +5,6 @@ using PrimeTween;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Audio;
-using Random = UnityEngine.Random;
 
 namespace NFramework
 {
@@ -100,7 +99,7 @@ namespace NFramework
         {
             if (IsInitialized) return;
             I.InitEmitterPool();
-            await UniTask.NextFrame();
+            await UniTask.NextFrame(cancellationToken: I.destroyCancellationToken);
             SetBgmMixerVolume(1f);
             SetSFXMixerVolume(1f);
             IsInitialized = true;

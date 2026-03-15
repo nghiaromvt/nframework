@@ -1,6 +1,7 @@
 #if ADDRESSABLES
 using System;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
@@ -43,7 +44,7 @@ namespace NFramework
                         OnProgress?.Invoke(downloadStatus.DownloadedBytes, downloadStatus.TotalBytes, progressPercent);
                     }
 
-                    await UniTask.NextFrame();
+                    await UniTask.NextFrame(cancellationToken: Application.exitCancellationToken);
                 }
                 
                 if (_handle.Status == AsyncOperationStatus.Succeeded)
@@ -80,7 +81,7 @@ namespace NFramework
         {
             if (_handle.IsValid() && _handle.Result.Scene.IsValid() && _handle.Result.Scene.isLoaded)
             {
-                var unloadHandle =  Addressables.UnloadSceneAsync(_handle, false);
+                var unloadHandle = Addressables.UnloadSceneAsync(_handle, false);
                 await unloadHandle;
                 Addressables.Release(unloadHandle);
             }
