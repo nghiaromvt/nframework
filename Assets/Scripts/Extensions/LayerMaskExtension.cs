@@ -78,5 +78,7 @@ namespace NFramework
         {
             return string.Join(delimiter, MaskToNames(original));
         }
+        
+        public static int LayerMaskToLayer(this LayerMask mask) => Mathf.RoundToInt(Mathf.Log(mask.value, 2));
     }
 }

@@ -5,6 +5,11 @@ namespace NFramework
 {
     public static class GameObjectExtension
     {
+        public static void SetLayerRecursively(this GameObject obj, LayerMask newLayer, List<GameObject> exclude = null, bool ignoreExcludeChild = false)
+        {
+            SetLayerRecursively(obj, newLayer.LayerMaskToLayer(), exclude, ignoreExcludeChild);
+        }
+
         public static void SetLayerRecursively(this GameObject obj, int newLayer, List<GameObject> exclude = null, bool ignoreExcludeChild = false)
         {
             if (exclude == null || !exclude.Contains(obj))

@@ -12,26 +12,31 @@ namespace NFramework.Editor
     [Serializable]
     public class UIScriptDefineMenu
     {
-        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenuSavePath");
-        public static string NamespacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenuNamespace");
-
         [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
         private string _savePath;
+        
+        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnViewsFolderPathChanged))]
+        private string _viewsFolderPath;
 
         [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
-        private string _namespace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+        private string _namespace = EditorPrefs.GetString(UIView.NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
 
-        private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
 
-        private void OnNameSpaceChanged() => EditorPrefs.SetString(NamespacePrefsKey, _namespace);
+        
+        private void OnSavePathChanged() => UIView.SavePath = _savePath;
+        
+        private void OnViewsFolderPathChanged() => UIView.ViewsFolderPath = _viewsFolderPath;
+
+        private void OnNameSpaceChanged() => EditorPrefs.SetString(UIView.NamespacePrefsKey, _namespace);
         
         public UIScriptDefineMenu()
         {
             var (script, path) = GetScriptDefineInProject();
             if (script)
-                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
+                EditorPrefs.SetString(UIView.SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", "").Replace("Assets/", ""));
             
-            _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+            _savePath = UIView.SavePath;
+            _viewsFolderPath = UIView.ViewsFolderPath;
         }
 
         [Button(ButtonSizes.Gigantic)]
@@ -43,7 +48,14 @@ namespace NFramework.Editor
         [MenuItem("NFramework/UI/Generate Script Define")]
         public static void GenerateScriptDefineStatic()
         {
-            var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab");
+            if (string.IsNullOrEmpty(UIView.ViewsFolderPath))
+            {
+                NLogger.LogError("No views folder path provided.");
+                return;
+            }
+            
+            var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab", 
+                $"Assets/{UIView.ViewsFolderPath}");
             var uiLayerToViewsDict = new Dictionary<UILayer, List<UIView>>();
             prefabs.ForEach(x =>
             {
@@ -57,14 +69,12 @@ namespace NFramework.Editor
             });
             
             var stringBuilder = new StringBuilder();
-            var nameSpace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+            var nameSpace = EditorPrefs.GetString(UIView.NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
             
             var (script, path) = GetScriptDefineInProject();
             if (script)
-                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
+                EditorPrefs.SetString(UIView.SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", "").Replace("Assets/", ""));
             
-            var savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
-
             // Header
             stringBuilder.AppendLine("// This file is auto-generated.");
             stringBuilder.AppendLine("// Do not modify this file manually.\n");
@@ -99,7 +109,7 @@ namespace NFramework.Editor
             }
 
             // Write to file
-            var fullPath = Path.Combine(Application.dataPath, savePath, "UIDefine.cs");
+            var fullPath = Path.Combine(Application.dataPath, UIView.SavePath, "UIDefine.cs");
             File.WriteAllText(fullPath, stringBuilder.ToString());
 
             AssetDatabase.Refresh();

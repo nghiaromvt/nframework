@@ -40,6 +40,9 @@ namespace NFramework
         [SerializeField] private List<UILayerInfo> _uiLayerOrders = new();
         [SerializeField] private bool _isLog = true;
         [SerializeField] private string _resourcesRootFolder;
+#if ADDRESSABLES
+        [SerializeField] private string _refPathAddressable;
+#endif
         
         private static readonly Dictionary<string, Stack<UIView>> _cachedView = new();
         private static readonly Dictionary<UILayer, List<UIView>> _openedView = new();
@@ -183,7 +186,7 @@ namespace NFramework
         {
             await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
             
-            var loadHandle = await AddressablesManager.LoadAsset<GameObject>(id);
+            var loadHandle = await AddressablesManager.LoadAsset<GameObject>($"{I._refPathAddressable}/{id}.prefab");
             if (loadHandle == null)
             {
                 LogError($"Cannot load UI [{id}] from Addressables");

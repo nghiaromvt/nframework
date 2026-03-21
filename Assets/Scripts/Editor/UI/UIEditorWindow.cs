@@ -23,12 +23,17 @@ namespace NFramework.Editor
             
             tree.Add("Script Define", new UIScriptDefineMenu());
             
-            var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab");
-            prefabs.ForEach(pf =>
+            if (!string.IsNullOrEmpty(UIView.ViewsFolderPath))
             {
-                if (pf.TryGetComponent<UIView>(out var view))
-                    tree.AddObjectAtPath($"Layer {view.UILayer}/{pf.name}", view, true);
-            });
+                var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab", 
+                    $"Assets/{UIView.ViewsFolderPath}");
+                
+                prefabs.ForEach(pf =>
+                {
+                    if (pf.TryGetComponent<UIView>(out var view))
+                        tree.AddObjectAtPath($"Layer {view.UILayer}/{pf.name}", view, true);
+                });
+            }
             
             return tree;
         }

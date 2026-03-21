@@ -4,7 +4,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-
 using UnityEngine;
 
 namespace NFramework
@@ -13,7 +12,9 @@ namespace NFramework
     // Set DataChanged to true if data is changed
     public interface ISaveable
     {
+        [JsonIgnore]
         string SaveKey { get; }
+        [JsonIgnore]
         bool DataChanged { get; set; }
         object GetData();
         void SetData(string data);

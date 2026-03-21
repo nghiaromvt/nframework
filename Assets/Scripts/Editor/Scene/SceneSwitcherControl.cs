@@ -22,6 +22,9 @@ namespace NFramework.Editor
 
         public static void PlayGame()
         {
+            if (EditorApplication.isPlaying)
+                return;
+            
             SaveOpenedScenes();
             EditorBuildSettingsScene firstScene = EditorBuildSettings.scenes.FirstOrDefault(scene => scene.enabled);
             var isAccept = OpenSceneWithSaveConfirm(firstScene.path);

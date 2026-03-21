@@ -4,7 +4,7 @@ using UnityEngine.Events;
 
 namespace NFramework
 {
-    public class PooledObject : MonoBehaviour
+    public class PooledObject : BaseCancellableBehaviour
     {
         public UnityEvent EventOnSpawnedFromPool;
         public UnityEvent EventOnBeforeReturnPool;
@@ -25,6 +25,8 @@ namespace NFramework
 
         protected virtual void OnDestroy()
         {
+            base.OnDestroy();
+            
             if (_pool)
                 _pool.HandlePooledObjectOnDestroy(this);
         }
