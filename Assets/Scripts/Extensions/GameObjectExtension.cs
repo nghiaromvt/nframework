@@ -37,5 +37,13 @@ namespace NFramework
                 ? component
                 : gameObject.AddComponent<T>();
         }
+
+        public static void SetActive(this IList<GameObject> objs, bool value)
+        {
+            for(int i = objs.Count - 1;  i >= 0; --i)
+            {
+                objs[i].SetActive(value);
+            }
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 using UnityEngine.Events;
 
 namespace NFramework
@@ -52,6 +51,8 @@ namespace NFramework
                 return null;
             }
         }
+
+        public void ReturnToPoolVoid() => ReturnToPool();
     }
     
     [Serializable]

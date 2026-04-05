@@ -101,64 +101,6 @@ namespace NFramework
             
             gameObject.SetLayerRecursively(gameObject.layer);
         }
-
-#if ADDRESSABLES
-        public static async UniTask<UIView> OpenAddressables(string id, UIInputData inputData = null, bool controlInteract = true)
-        {
-            return await OpenAddressables<UIView>(id, inputData, controlInteract);
-        }
-
-        public static async UniTask<T> OpenAddressables<T>(string id, UIInputData inputData = null,
-            bool controlInteract = true) where T : UIView
-        {
-            T view = null;
-            
-            if (controlInteract) 
-                DisableInteract(I);
-
-            var hasCachedView = GetCachedViewCount(id) > 0;
-            if (hasCachedView)
-                view = OpenViewFromCached<T>(id);
-            else
-                view = await LoadAndInstantiateViewAddressables<T>(id);
-
-            if (view is not null)
-            {
-                view.transform.SetAsLastSibling();
-                view.OnOpen(inputData);
-                _openedView[view.UILayer].Add(view);
-            }
-
-            if (controlInteract) 
-                EnableInteract(I);
-
-            OnOpenedView?.Invoke(view, inputData);
-            return view;
-        }
-
-        public static async UniTask<bool> TryCacheViewAddressables(string id, bool forceCacheMultiple = false)
-        {
-            var curCachedViewCount = GetCachedViewCount(id);
-            if (curCachedViewCount > 0 && !forceCacheMultiple)
-                return false;
-
-            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
-
-            var loadAsset = await AddressablesManager.LoadAsset<GameObject>(id);
-            if (loadAsset == null)
-            {
-                LogError($"Cannot load UI [{id}] from Addressables");
-                return false;
-            }
-
-            var prefab = loadAsset.GetComponent<UIView>();
-            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
-            cached.ID = id;
-            cached.gameObject.SetActive(false);
-            _cachedView[id].Push(cached);
-            return true;
-        }
-#endif
         
         public static int GetCachedViewCount(string id)
         {
@@ -180,25 +122,6 @@ namespace NFramework
             view.gameObject.SetActive(true);
             return view;
         }
-
-#if ADDRESSABLES
-        private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : UIView
-        {
-            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
-            
-            var loadHandle = await AddressablesManager.LoadAsset<GameObject>($"{I._refPathAddressable}/{id}.prefab");
-            if (loadHandle == null)
-            {
-                LogError($"Cannot load UI [{id}] from Addressables");
-                return null;
-            }
-
-            var prefab = loadHandle.GetComponent<T>();
-            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
-            view.ID = id;
-            return view;
-        }
-#endif
 
         public static void CloseCurrentInLayer(UILayer layer, bool destroy = false)
         {
@@ -267,8 +190,11 @@ namespace NFramework
                 }
                 else
                 {
-                    view.gameObject.SetActive(false);
-                    _cachedView[view.ID].Push(view);
+                    if (view != null)
+                    {
+                        view.gameObject.SetActive(false);
+                        _cachedView[view.ID].Push(view);
+                    }
                 }
 
                 OnClosedView?.Invoke(view, outputData);
@@ -307,32 +233,6 @@ namespace NFramework
                 UnloadAddressableUI(id).Forget();
 #endif
         }
-
-#if ADDRESSABLES
-        public static async UniTask UnloadAddressableUI(string id, bool force = false)
-        {
-            if (_unloadingAddressableViewIds.Contains(id)) 
-                return;
-            
-            if (GetCachedViewCount(id) > 0)
-            {
-                if (force) DestroyCachedViews(id);
-                return;
-            }
-
-            if (GetOpenedView(id) != null)
-            {
-                if (force) CloseAll(id, true);
-                return;
-            }
-            
-            _unloadingAddressableViewIds.Add(id);
-            Log($"UnloadAddressableUI: {id}");
-            await UniTask.DelayFrame(1, cancellationToken: I.destroyCancellationToken);
-            AddressablesManager.ReleaseAsset(id);
-            _unloadingAddressableViewIds.Remove(id);
-        }
-#endif
 
         public static bool IsAnyOpenedViewInLayer(UILayer layer) => _openedView[layer].Count > 0;
         
@@ -473,6 +373,107 @@ namespace NFramework
             EventSystem.current.RaycastAll(_pointerEventData, _raycastResults);
             return _raycastResults.Count > 0;
         }
+        
+#if ADDRESSABLES
+        public static async UniTask<UIView> OpenAddressables(string id, UIInputData inputData = null, bool controlInteract = true)
+        {
+            return await OpenAddressables<UIView>(id, inputData, controlInteract);
+        }
+        
+        public static async UniTask<T> OpenAddressables<T>(string id, UIInputData inputData = null,
+            bool controlInteract = true) where T : UIView
+        {
+            T view = null;
+            
+            if (controlInteract) 
+                DisableInteract(I);
+        
+            var hasCachedView = GetCachedViewCount(id) > 0;
+            if (hasCachedView)
+                view = OpenViewFromCached<T>(id);
+            else
+                view = await LoadAndInstantiateViewAddressables<T>(id);
+        
+            if (view is not null)
+            {
+                view.transform.SetAsLastSibling();
+                view.OnOpen(inputData);
+                _openedView[view.UILayer].Add(view);
+            }
+        
+            if (controlInteract) 
+                EnableInteract(I);
+        
+            OnOpenedView?.Invoke(view, inputData);
+            return view;
+        }
+        
+        public static async UniTask<bool> TryCacheViewAddressables(string id, bool forceCacheMultiple = false)
+        {
+            var curCachedViewCount = GetCachedViewCount(id);
+            if (curCachedViewCount > 0 && !forceCacheMultiple)
+                return false;
+        
+            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
+        
+            var loadAsset = await AddressablesManager.LoadAsset<GameObject>(GetViewPfAddressablesPath(id));
+            if (loadAsset == null)
+            {
+                LogError($"Cannot load UI [{id}] from Addressables");
+                return false;
+            }
+        
+            var prefab = loadAsset.GetComponent<UIView>();
+            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            cached.ID = id;
+            cached.gameObject.SetActive(false);
+            _cachedView[id].Push(cached);
+            return true;
+        }
+        
+        private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : UIView
+        {
+            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
+            
+            var loadHandle = await AddressablesManager.LoadAsset<GameObject>(GetViewPfAddressablesPath(id));
+            if (loadHandle == null)
+            {
+                LogError($"Cannot load UI [{id}] from Addressables");
+                return null;
+            }
+        
+            var prefab = loadHandle.GetComponent<T>();
+            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            view.ID = id;
+            return view;
+        }
+        
+        public static async UniTask UnloadAddressableUI(string id, bool force = false)
+        {
+            if (_unloadingAddressableViewIds.Contains(id)) 
+                return;
+            
+            if (GetCachedViewCount(id) > 0)
+            {
+                if (force) DestroyCachedViews(id);
+                return;
+            }
+        
+            if (GetOpenedView(id) != null)
+            {
+                if (force) CloseAll(id, true);
+                return;
+            }
+            
+            _unloadingAddressableViewIds.Add(id);
+            Log($"UnloadAddressableUI: {id}");
+            await UniTask.DelayFrame(1, cancellationToken: I.destroyCancellationToken);
+            AddressablesManager.ReleaseAsset(GetViewPfAddressablesPath(id));
+            _unloadingAddressableViewIds.Remove(id);
+        }
+
+        private static string GetViewPfAddressablesPath(string id) => $"{I._refPathAddressable}/{id}.prefab";
+#endif
 
         #region Resources
         
@@ -504,7 +505,7 @@ namespace NFramework
         
         private static T LoadAndInstantiateViewResources<T>(string id) where T : UIView
         {
-            var temp = Resources.Load<UIView>($"{I._resourcesRootFolder}{id}");
+            var temp = Resources.Load<UIView>(GetViewPfResourcesPath(id));
             if (temp is not T prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
@@ -545,7 +546,7 @@ namespace NFramework
         
         private static async UniTask<T> LoadAndInstantiateViewResourcesAsync<T>(string id) where T : UIView
         {
-            var temp = await Resources.LoadAsync<UIView>($"{I._resourcesRootFolder}{id}");
+            var temp = await Resources.LoadAsync<UIView>(GetViewPfResourcesPath(id));
             if (temp is not T prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
@@ -564,7 +565,7 @@ namespace NFramework
             if (curCachedViewCount > 0 && !forceCacheMultiple)
                 return false;
 
-            var temp = await Resources.LoadAsync<UIView>(id);
+            var temp = await Resources.LoadAsync<UIView>(GetViewPfResourcesPath(id));
             if (temp is not UIView prefab)
             {
                 LogError($"Cannot load UI [{id}] from Resources");
@@ -578,6 +579,8 @@ namespace NFramework
             _cachedView[id].Push(cached);
             return true;
         }
+
+        private static string GetViewPfResourcesPath(string id) => $"{I._resourcesRootFolder}{id}";
         
         #endregion
 

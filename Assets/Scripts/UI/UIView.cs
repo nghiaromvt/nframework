@@ -43,7 +43,8 @@ namespace NFramework
         public bool PauseGameStatus { get; protected set; }
         public string ID { get; set; }
         public bool IsFromResources { get; set; }
-
+        public bool IsOpen => UIManager.IsSpecificViewShown(ID, out _);
+        
         public CanvasGroup CanvasGroup
         {
             get
@@ -122,7 +123,6 @@ namespace NFramework
         
         public UIOutputData CloseSelf(bool destroy = false) => UIManager.Close(this, destroy);
     }
-    
 
     [Serializable]
     public class UIInputData

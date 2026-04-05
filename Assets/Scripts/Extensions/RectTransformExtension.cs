@@ -108,5 +108,42 @@ namespace NFramework
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
         }
+        
+        /// <summary>
+        /// If canvas is overlay, set uiCamera = null
+        /// </summary>
+        public static Vector2 WorldToAnchoredPosition(this RectTransform targetRect,
+            Vector3 worldPos, Camera worldCamera, Camera uiCamera = null)
+        {
+            // 1. World → Screen
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(worldCamera, worldPos);
+
+            // 2. Screen → Local (UI)
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                targetRect,
+                screenPoint,
+                uiCamera,
+                out Vector2 localPoint
+            );
+
+            return localPoint;
+        }
+        
+        public static Vector2 ConvertAnchoredPosition(this RectTransform fromRect, 
+            RectTransform toRect, Camera uiCamera = null)
+        {
+            // 1. Lấy world position
+            Vector3 worldPos = fromRect.position;
+
+            // 2. Convert sang local của popup 2
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                toRect,
+                RectTransformUtility.WorldToScreenPoint(uiCamera, worldPos),
+                uiCamera,
+                out Vector2 localPoint
+            );
+
+            return localPoint;
+        }
     }
 }

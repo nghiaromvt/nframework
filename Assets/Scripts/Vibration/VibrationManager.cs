@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 #if MOREMOUNTAINS_NICEVIBRATIONS
 using MoreMountains.NiceVibrations;
 #endif
@@ -8,7 +9,7 @@ namespace NFramework
 {
     public class VibrationManager : SingletonMono<VibrationManager>, ISaveable
     {
-        public enum EHapticType 
+        public enum HapticType 
         { 
             Selection = 0, 
             Success = 1, 
@@ -22,10 +23,19 @@ namespace NFramework
             None = -1,
         }
 
+        [Serializable]
+        public class HapticSettings
+        {
+            public float restTime;
+        }
+
         public static event Action<bool> OnStatusChanged;
 
         [SerializeField] private SaveData _saveData;
+        [SerializeField] private UnitySerializedDictionary<HapticType, HapticSettings> _hapticSettingsDict = new();
 
+        private Dictionary<HapticType, float> _lastHapticTimeDict = new();
+        
         public bool Status
         {
             get => _saveData.status;
@@ -40,10 +50,19 @@ namespace NFramework
             }
         }
 
-        public void Haptic(EHapticType type)
+        public void Haptic(HapticType type)
         {
             if (!Status)
                 return;
+
+            if (_hapticSettingsDict.TryGetValue(type, out var settings))
+            {
+                var lastHapticTime = _lastHapticTimeDict.GetOrAdd(type, Time.time);
+                if (Time.time < lastHapticTime + settings.restTime)
+                    return;
+                
+                _lastHapticTimeDict[type] = Time.time;
+            }
 
 #if MOREMOUNTAINS_NICEVIBRATIONS
             MMVibrationManager.Haptic((HapticTypes)type);

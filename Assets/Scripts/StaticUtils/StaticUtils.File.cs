@@ -53,34 +53,6 @@ namespace NFramework
 
         #endregion
 
-        #region read from streaming assets
-
-        public static async UniTask<string> GetStreamingFileText(string path)
-        {
-            var fullPath = GetStreamingFullPath(path);
-#if UNITY_ANDROID && !UNITY_EDITOR
-		var result = await GetHttpRequest(fullPath, returnText: true);
-		return result.resultAsText;
-#else
-            await UniTask.CompletedTask;
-            return ReadTextFile(fullPath, isAbsolutePath: true);
-#endif
-        }
-
-        public static async UniTask<byte[]> GetStreamingFileBinary(string path)
-        {
-            var fullPath = GetStreamingFullPath(path);
-#if UNITY_ANDROID && !UNITY_EDITOR
-		var result = await GetHttpRequest(fullPath, returnText: false);
-		return result.resultAsBinary;
-#else
-            await UniTask.CompletedTask;
-            return ReadBinaryFile(fullPath, isAbsolutePath: true);
-#endif
-        }
-
-        #endregion
-
         #region open for read
 
         public static void OpenFileForRead(string path, UnityAction<Stream> callback, bool isAbsolutePath = false)
