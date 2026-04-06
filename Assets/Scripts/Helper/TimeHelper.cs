@@ -4,7 +4,8 @@ namespace NFramework
 {
     public static class TimeHelper
     {
-        public static DateTime ConvertUnixTimeToDateTime(long unixTime) => DateTime.UnixEpoch.AddSeconds(unixTime);
+        public static DateTime ConvertUnixTimeToDateTime(long unixTime) => 
+            DateTimeOffset.FromUnixTimeSeconds(unixTime).LocalDateTime;
 
         public static long ConvertDateTimeToUnixTime(DateTime dateTime) =>
             ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
