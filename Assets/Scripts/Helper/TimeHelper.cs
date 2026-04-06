@@ -5,7 +5,7 @@ namespace NFramework
     public static class TimeHelper
     {
         public static DateTime ConvertUnixTimeToDateTime(long unixTime) => 
-            DateTimeOffset.FromUnixTimeSeconds(unixTime).LocalDateTime;
+            DateTimeOffset.FromUnixTimeSeconds(unixTime).UtcDateTime;
 
         public static long ConvertDateTimeToUnixTime(DateTime dateTime) =>
             ((DateTimeOffset)dateTime).ToUnixTimeSeconds();
