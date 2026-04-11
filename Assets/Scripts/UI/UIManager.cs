@@ -40,9 +40,7 @@ namespace NFramework
         [SerializeField] private List<UILayerInfo> _uiLayerOrders = new();
         [SerializeField] private bool _isLog = true;
         [SerializeField] private string _resourcesRootFolder;
-#if ADDRESSABLES
         [SerializeField] private string _refPathAddressable;
-#endif
         
         private static readonly Dictionary<string, Stack<UIView>> _cachedView = new();
         private static readonly Dictionary<UILayer, List<UIView>> _openedView = new();

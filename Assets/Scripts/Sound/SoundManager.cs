@@ -33,7 +33,8 @@ namespace NFramework
         [SerializeField] private bool _isLog = true;
         [SerializeField] private bool _initializeOnAwake = true;
         [SerializeField] private string _resourcesRootFolder;
-
+        [SerializeField] private string _refPathAddressable;
+        
         private static SoundEmitter _bgmEmitter;
         private static readonly List<SoundEmitter> _allSoundEmitterPool = new();
         private static readonly Queue<SoundEmitter> _soundEmitterPool = new();
@@ -180,12 +181,14 @@ namespace NFramework
                 return;
             }
 
-            var soundGroupSO = await AddressablesManager.LoadAsset<SoundGroupSO>(loadKey);
+            var soundGroupSO = await AddressablesManager.LoadAsset<SoundGroupSO>(GetSoundGroupAddressablesPath(loadKey));
             if (!soundGroupSO) return;
 
             CacheSoundGroup(soundGroupSO);
             _cacheSoundGroupAddressablesDict.Add(loadKey, soundGroupSO);
         }
+        
+        private static string GetSoundGroupAddressablesPath(string id) => $"{I._refPathAddressable}/{id}.asset";
 #endif
 
         public static async UniTask CacheSoundGroupResources(string loadKey)
@@ -228,7 +231,7 @@ namespace NFramework
             if (_cacheSoundGroupAddressablesDict.TryGetValue(loadKey, out soundGroupSO))
             {
                 ClearSoundGroup(soundGroupSO);
-                AddressablesManager.ReleaseAsset(loadKey);
+                AddressablesManager.ReleaseAsset(GetSoundGroupAddressablesPath(loadKey));
                 _cacheSoundGroupAddressablesDict.Remove(loadKey);
                 return true;
             }

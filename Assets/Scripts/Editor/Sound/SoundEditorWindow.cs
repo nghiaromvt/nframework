@@ -20,9 +20,14 @@ namespace NFramework.Editor
             {
                 DrawSearchToolbar = true
             });
+            
+            var config = NFrameworkConfigSO.GetConfig();
+            if (config == null)
+                return tree;
+            
+            tree.Add("NFrameworkConfigSO", config);
             tree.Add("Create New Sound Group", new SoundGroupCreator());
-            tree.Add("Script Define", new SoundScriptDefineMenu());
-            tree.AddAllAssetsAtPath("Sound Groups", "Assets/", typeof(SoundGroupSO), true, true);
+            tree.AddAllAssetsAtPath("Sound Groups", $"Assets/{config.soundGroupFolderPath}", typeof(SoundGroupSO), false, true);
             return tree;
         }
         

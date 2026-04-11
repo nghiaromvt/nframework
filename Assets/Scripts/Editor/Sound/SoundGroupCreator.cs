@@ -10,8 +10,6 @@ namespace NFramework.Editor
     [Serializable]
     public class SoundGroupCreator
     {
-        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("SoundGroupCreatorSavePath");
-        
         [SerializeField, Required] private string _assetName = "New Sound Group";
         [SerializeField, ReadOnly] private string _defineKeyConstName;
         [SerializeField, OnInspectorInit(nameof(OnKeyChanged)), OnValueChanged(nameof(OnKeyChanged))] 
@@ -21,27 +19,24 @@ namespace NFramework.Editor
         private string _errorMessage;
         private bool _showError;
         
-        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))] 
-        private string _savePath = EditorPrefs.GetString(EditorHelper.GetUniqueProjectPrefsKey(SavePathPrefsKey), "");
-
         [SerializeField, Searchable] private List<SoundGroupSO.SoundEntry> _soundEntries = new();
         [Header("Script Define")] 
         [SerializeField] private bool _generateScriptDefine = true;
         
-        private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
-
         private void OnKeyChanged()
         {
             _defineKeyConstName = _key.ToValidConstKey();
             
-            if (string.IsNullOrEmpty(_key))
+            var config = NFrameworkConfigSO.GetConfig();
+                
+            if (string.IsNullOrEmpty(config.soundGroupFolderPath))
             {
                 _showError = true;
-                _errorMessage = $"\u26a0 Key must not be empty!";
+                _errorMessage = $"\u26a0 No sound group path provided!";
                 return;
             }
                 
-            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
+            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>(searchInFolder: $"Assets/{config.soundGroupFolderPath}");
             foreach (var soundGroup in soundGroups)
             {
                 if (soundGroup.key == _key)
@@ -63,7 +58,11 @@ namespace NFramework.Editor
             soundGroup.defineKeyConstName = _defineKeyConstName;
             soundGroup.key = _key;
             
-            var fullPath = Path.Combine($"Assets/{_savePath}", _assetName);
+            var config = NFrameworkConfigSO.GetConfig();
+            if (config == null)
+                return;
+            
+            var fullPath = Path.Combine($"Assets/{config.soundGroupFolderPath}", _assetName);
             var uniqueFileName = AssetDatabase.GenerateUniqueAssetPath(fullPath + ".asset");
             AssetDatabase.CreateAsset(soundGroup, uniqueFileName);
             AssetDatabase.SaveAssets();
@@ -71,7 +70,7 @@ namespace NFramework.Editor
             Selection.activeObject = soundGroup;
 
             if (_generateScriptDefine)
-                SoundScriptDefineMenu.GenerateScriptDefineStatic();
+                SoundScriptDefineEditor.GenerateScriptDefineStatic();
         }
     }
 }

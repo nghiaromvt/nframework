@@ -9,48 +9,39 @@ using Object = UnityEngine.Object;
 namespace NFramework.Editor
 {
     [Serializable]
-    public class SoundScriptDefineMenu
+    public class SoundScriptDefineEditor
     {
-        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("SoundScriptDefineSavePath");
-        public static string NamespacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("SoundScriptDefineNamespace");
-
-        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
-        private string _savePath;
-
-        [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
-        private string _namespace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
-
-        public SoundScriptDefineMenu()
-        {
-            var (script, path) = GetScriptDefineInProject();
-            if (script)
-                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
-            
-            _savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
-        }
-        
-        private void OnSavePathChanged() => EditorPrefs.SetString(SavePathPrefsKey, _savePath);
-
-        private void OnNameSpaceChanged() => EditorPrefs.SetString(NamespacePrefsKey, _namespace);
-
-        [Button(ButtonSizes.Gigantic)]
-        private void LocateScriptDefine() => LocateScriptDefineStatic();
-
-        [Button(ButtonSizes.Gigantic)]
-        private void GenerateScriptDefine() => GenerateScriptDefineStatic();
-
         [MenuItem("NFramework/Sound/Generate Script Define")]
         public static void GenerateScriptDefineStatic()
         {
-            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
+            var config = NFrameworkConfigSO.GetConfig();
+            
+            if (string.IsNullOrEmpty(config.soundGroupFolderPath))
+            {
+                NLogger.LogError("No sound group folder path provided.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(config.soundScriptDefineSavePath))
+            {
+                NLogger.LogError("No save path provided.");
+                return;
+            }
+            
+            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>(searchInFolder: $"Assets/{config.soundGroupFolderPath}");
             var stringBuilder = new StringBuilder();
-            var nameSpace = EditorPrefs.GetString(NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
+            var nameSpace = config.scriptDefineNamespace;
             
             var (script, path) = GetScriptDefineInProject();
             if (script)
-                EditorPrefs.SetString(SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", ""));
-            
-            var savePath = EditorPrefs.GetString(SavePathPrefsKey, "");
+            {
+                path = Path.GetDirectoryName(path).Replace(@"Assets\", "").Replace("Assets/", "");
+                if (!string.Equals(config.soundScriptDefineSavePath, path))
+                {
+                    config.soundScriptDefineSavePath = path;
+                    Debug.Log("Update soundScriptDefineSavePath");
+                }
+            }
 
             // Header
             stringBuilder.AppendLine("// This file is auto-generated.");
@@ -104,7 +95,7 @@ namespace NFramework.Editor
             }
 
             // Write to file
-            var fullPath = Path.Combine(Application.dataPath, savePath, "SoundDefine.cs");
+            var fullPath = Path.Combine(Application.dataPath, config.soundScriptDefineSavePath, "SoundDefine.cs");
             File.WriteAllText(fullPath, stringBuilder.ToString());
 
             AssetDatabase.Refresh();

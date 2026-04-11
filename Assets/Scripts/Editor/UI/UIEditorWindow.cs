@@ -20,13 +20,17 @@ namespace NFramework.Editor
             {
                 DrawSearchToolbar = true
             });
+
+            var config = NFrameworkConfigSO.GetConfig();
+            if (config == null)
+                return tree;
             
-            tree.Add("Script Define", new UIScriptDefineMenu());
+            tree.Add("NFrameworkConfigSO", config);
             
-            if (!string.IsNullOrEmpty(UIView.ViewsFolderPath))
+            if (!string.IsNullOrEmpty(config.uiViewsFolderPath))
             {
                 var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab", 
-                    $"Assets/{UIView.ViewsFolderPath}");
+                    $"Assets/{config.uiViewsFolderPath}");
                 
                 prefabs.ForEach(pf =>
                 {

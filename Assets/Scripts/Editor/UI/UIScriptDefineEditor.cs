@@ -1,80 +1,61 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace NFramework.Editor
 {
-    [Serializable]
-    public class UIScriptDefineMenu
+    public static class UIScriptDefineEditor
     {
-        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnSavePathChanged))]
-        private string _savePath;
-        
-        [FolderPath(RequireExistingPath = true, ParentFolder = "Assets"), SerializeField, OnValueChanged(nameof(OnViewsFolderPathChanged))]
-        private string _viewsFolderPath;
-
-        [SerializeField, OnValueChanged(nameof(OnNameSpaceChanged))]
-        private string _namespace = EditorPrefs.GetString(UIView.NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
-
-
-        
-        private void OnSavePathChanged() => UIView.SavePath = _savePath;
-        
-        private void OnViewsFolderPathChanged() => UIView.ViewsFolderPath = _viewsFolderPath;
-
-        private void OnNameSpaceChanged() => EditorPrefs.SetString(UIView.NamespacePrefsKey, _namespace);
-        
-        public UIScriptDefineMenu()
-        {
-            var (script, path) = GetScriptDefineInProject();
-            if (script)
-                EditorPrefs.SetString(UIView.SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", "").Replace("Assets/", ""));
-            
-            _savePath = UIView.SavePath;
-            _viewsFolderPath = UIView.ViewsFolderPath;
-        }
-
-        [Button(ButtonSizes.Gigantic)]
-        private void LocateScriptDefine() => LocateScriptDefineStatic();
-
-        [Button(ButtonSizes.Gigantic)]
-        private void GenerateScriptDefine() => GenerateScriptDefineStatic();
-
         [MenuItem("NFramework/UI/Generate Script Define")]
         public static void GenerateScriptDefineStatic()
         {
-            if (string.IsNullOrEmpty(UIView.ViewsFolderPath))
+            var config = NFrameworkConfigSO.GetConfig();
+            
+            if (string.IsNullOrEmpty(config.uiViewsFolderPath))
             {
                 NLogger.LogError("No views folder path provided.");
                 return;
             }
+
+            if (string.IsNullOrEmpty(config.uiScriptDefineSavePath))
+            {
+                NLogger.LogError("No save path provided.");
+                return;
+            }
+                
+            var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab",
+                $"Assets/{config.uiViewsFolderPath}");
             
-            var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab", 
-                $"Assets/{UIView.ViewsFolderPath}");
             var uiLayerToViewsDict = new Dictionary<UILayer, List<UIView>>();
+            
             prefabs.ForEach(x =>
             {
                 if (x.TryGetComponent<UIView>(out var view))
                 {
                     if (!uiLayerToViewsDict.ContainsKey(view.UILayer))
                         uiLayerToViewsDict[view.UILayer] = new List<UIView>();
-                    
+
                     uiLayerToViewsDict[view.UILayer].Add(view);
                 }
             });
-            
+
             var stringBuilder = new StringBuilder();
-            var nameSpace = EditorPrefs.GetString(UIView.NamespacePrefsKey, EditorSettings.projectGenerationRootNamespace);
-            
+            var nameSpace = NFrameworkConfigSO.GetConfig().scriptDefineNamespace;
+
             var (script, path) = GetScriptDefineInProject();
             if (script)
-                EditorPrefs.SetString(UIView.SavePathPrefsKey, Path.GetDirectoryName(path).Replace(@"Assets\", "").Replace("Assets/", ""));
-            
+            {
+                path = Path.GetDirectoryName(path).Replace(@"Assets\", "").Replace("Assets/", "");
+                if (!string.Equals(config.uiScriptDefineSavePath, path))
+                {
+                    config.uiScriptDefineSavePath = path;
+                    Debug.Log("Update uiScriptDefineSavePath");
+                }
+            }
+
             // Header
             stringBuilder.AppendLine("// This file is auto-generated.");
             stringBuilder.AppendLine("// Do not modify this file manually.\n");
@@ -109,7 +90,7 @@ namespace NFramework.Editor
             }
 
             // Write to file
-            var fullPath = Path.Combine(Application.dataPath, UIView.SavePath, "UIDefine.cs");
+            var fullPath = Path.Combine(Application.dataPath, config.uiScriptDefineSavePath, "UIDefine.cs");
             File.WriteAllText(fullPath, stringBuilder.ToString());
 
             AssetDatabase.Refresh();
@@ -121,7 +102,7 @@ namespace NFramework.Editor
         public static void LocateScriptDefineStatic()
         {
             var (script, path) = GetScriptDefineInProject();
-            
+
             if (script)
                 EditorGUIUtility.PingObject(script);
             else
@@ -131,10 +112,10 @@ namespace NFramework.Editor
         private static (Object, string) GetScriptDefineInProject()
         {
             var script = FileHelper.LoadFirstAssetWithName<Object>("UIDefine", "t:Script");
-            
+
             if (!script)
                 return (null, null);
-            
+
             var path = AssetDatabase.GetAssetPath(script);
             return (script, path);
         }

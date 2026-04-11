@@ -1,32 +1,11 @@
 using System;
 using Sirenix.OdinInspector;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 using UnityEngine;
 
 namespace NFramework
 {
     public class UIView : MonoBehaviour
     {
-#if UNITY_EDITOR
-        public static string SavePathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenuSavePath");
-        public static string ViewsFolderPathPrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineViewsFolderPath");
-        public static string NamespacePrefsKey => EditorHelper.GetUniqueProjectPrefsKey("UIScriptDefineMenuNamespace");
-        
-        public static string SavePath
-        {
-            get => EditorPrefs.GetString(SavePathPrefsKey, "");
-            set => EditorPrefs.SetString(SavePathPrefsKey, value);
-        }
-        
-        public static string ViewsFolderPath
-        {
-            get => EditorPrefs.GetString(ViewsFolderPathPrefsKey, "");
-            set => EditorPrefs.SetString(ViewsFolderPathPrefsKey, value);
-        }
-#endif
-        
         [ReadOnly] public string defineKeyConstName;
         [OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
         
@@ -67,8 +46,10 @@ namespace NFramework
                 _errorMessage = $"\u26a0 Key must not be empty!";
                 return;
             }
+
+            var config = NFrameworkConfigSO.GetConfig();
             
-            if (string.IsNullOrEmpty(ViewsFolderPath))
+            if (string.IsNullOrEmpty(config.uiViewsFolderPath))
             {
                 _showError = true;
                 _errorMessage = $"\u26a0 No views folder path provided!";
@@ -76,7 +57,7 @@ namespace NFramework
             }
                 
             var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab", 
-                $"Assets/{ViewsFolderPath}");
+                $"Assets/{config.uiViewsFolderPath}");
             
             foreach (var pf in prefabs)
             {

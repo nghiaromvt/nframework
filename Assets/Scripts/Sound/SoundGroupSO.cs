@@ -11,7 +11,9 @@ namespace NFramework
     [Serializable]
     public class SoundData
     {
-        public AudioClip clip;
+        public Action<AudioClip> onClipChanged;
+        
+        [OnInspectorInit(nameof(OnClipChanged)), OnValueChanged(nameof(OnClipChanged))] public AudioClip clip;
         [Range(0f, 1f)] public float volumeScale = 1f;
 
         public string PlaySfx(float volume = 1f, bool loop = false, float pitch = 1f,
@@ -25,6 +27,8 @@ namespace NFramework
         {
             SoundManager.PlayBgm(clip, volume * volumeScale, loop, pitch, ignorePause, fadeTime, onStop);
         }
+
+        private void OnClipChanged() => onClipChanged?.Invoke(clip);
     }
     
     [CreateAssetMenu(menuName = "NFramework/Sound/SoundGroup", fileName = "New Sound Group")]
@@ -34,13 +38,28 @@ namespace NFramework
         public class SoundEntry
         {
             [ReadOnly] public string defineKeyConstName;
-            [OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
+            [OnValueChanged(nameof(OnKeyChanged))] public string key;
             [HideLabel] public SoundData value;
             
             [HideLabel, ReadOnly, ShowInInspector, ShowIf(nameof(_showError)), GUIColor(1, 0.3f, 0.3f)] 
             private string _errorMessage;
             private bool _showError;
-            
+
+            public SoundEntry()
+            {
+                value = new();
+                value.onClipChanged = OnClipChanged;
+            }
+
+            private void OnClipChanged(AudioClip clip)
+            {
+                if (string.IsNullOrEmpty(key) && clip != null)
+                {
+                    key = clip.name;
+                    OnKeyChanged();
+                }
+            }
+
             private void OnKeyChanged()
             {
                 defineKeyConstName = key.ToValidConstKey();
@@ -53,7 +72,17 @@ namespace NFramework
                     return;
                 }
                 
-                var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
+                var config = NFrameworkConfigSO.GetConfig();
+                
+                if (string.IsNullOrEmpty(config.soundGroupFolderPath))
+                {
+                    _showError = true;
+                    _errorMessage = $"\u26a0 No sound group path provided!";
+                    return;
+                }
+                
+
+                var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>(searchInFolder: $"Assets/{config.soundGroupFolderPath}");
                 foreach (var soundGroup in soundGroups)
                 {
                     foreach (var soundEntry in soundGroup.soundEntries)
@@ -74,7 +103,6 @@ namespace NFramework
 #endif
             }
         }
-        
         
         [ReadOnly] public string defineKeyConstName;
         [OnInspectorInit(nameof(OnKeyChanged)) ,OnValueChanged(nameof(OnKeyChanged))] public string key;
@@ -98,8 +126,17 @@ namespace NFramework
                 _errorMessage = $"\u26a0 Key must not be empty!";
                 return;
             }
+            
+            var config = NFrameworkConfigSO.GetConfig();
                 
-            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>();
+            if (string.IsNullOrEmpty(config.soundGroupFolderPath))
+            {
+                _showError = true;
+                _errorMessage = $"\u26a0 No sound group path provided!";
+                return;
+            }
+                
+            var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>(searchInFolder: $"Assets/{config.soundGroupFolderPath}");
             foreach (var soundGroup in soundGroups)
             {
                 if ((object)soundGroup == this)
