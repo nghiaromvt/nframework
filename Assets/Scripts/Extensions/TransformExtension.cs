@@ -26,6 +26,20 @@ namespace NFramework
             }
         }
 
+        public static List<Transform> GetDeepChildren(this Transform parent, bool includeInactive = false)
+        {
+            var result = new List<Transform>();
+            foreach (Transform child in parent)
+            {
+                if (includeInactive || child.gameObject.activeInHierarchy)
+                {
+                    result.Add(child);
+                    result.AddRange(child.GetDeepChildren(includeInactive));
+                }
+            }
+            return result;
+        }
+
         #region Find Deep
         
         /// <summary>
