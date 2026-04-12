@@ -70,7 +70,7 @@ namespace NFramework.Editor
             Selection.activeObject = soundGroup;
 
             if (_generateScriptDefine)
-                SoundScriptDefineEditor.GenerateScriptDefineStatic();
+                SoundScriptDefineEditor.GenerateScriptDefine();
         }
     }
 }

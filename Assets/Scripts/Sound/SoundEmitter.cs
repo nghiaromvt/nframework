@@ -33,7 +33,7 @@ namespace NFramework
         /// <summary>
         /// Only call from SoundManager
         /// </summary>
-        public void Play(string guid, AudioClip clip, float volume = 1f, bool loop = false, float pitch = 1f, bool ignoreListenerPause = false, float fadeTime = 0f, Action onStop = null)
+        public void Play(string guid, AudioClip clip, SoundPlaySettings playSettings, Action onStop = null)
         {
             if (enabled)
             {
@@ -43,21 +43,21 @@ namespace NFramework
 
             Guid = guid;
             _audioSource.clip = clip;
-            _audioSource.volume = volume;
-            _audioSource.loop = loop;
-            _audioSource.ignoreListenerPause = ignoreListenerPause;
-            _audioSource.pitch = pitch;
+            _audioSource.volume = playSettings.volume;
+            _audioSource.loop = playSettings.loop;
+            _audioSource.ignoreListenerPause = playSettings.ignorePause;
+            _audioSource.pitch = playSettings.pitch;
             enabled = true;
 
-            if (fadeTime <= 0f)
+            if (playSettings.fadeTime <= 0f)
             {
-                _audioSource.volume = volume;
+                _audioSource.volume = playSettings.volume;
             }
             else
             {
                 _audioSource.volume = 0f;
-                var fadeTimeTemp = Mathf.Min(fadeTime, clip.length);
-                _fadeTween = Tween.Custom(0f, volume, fadeTimeTemp, value =>
+                var fadeTimeTemp = Mathf.Min(playSettings.fadeTime, clip.length);
+                _fadeTween = Tween.Custom(0f, playSettings.volume, fadeTimeTemp, value =>
                 {
                     _audioSource.volume = value;
                 }, Ease.Linear, useUnscaledTime: _audioSource.ignoreListenerPause);

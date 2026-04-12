@@ -10,7 +10,7 @@ namespace NFramework.Editor
     public static class UIScriptDefineEditor
     {
         [MenuItem("NFramework/UI/Generate Script Define")]
-        public static void GenerateScriptDefineStatic()
+        public static void GenerateScriptDefine()
         {
             var config = NFrameworkConfigSO.GetConfig();
             
@@ -95,11 +95,11 @@ namespace NFramework.Editor
 
             AssetDatabase.Refresh();
             NLogger.Log($"UIDefine.cs generated at: {fullPath}");
-            LocateScriptDefineStatic();
+            LocateScriptDefine();
         }
 
         [MenuItem("NFramework/UI/Locate Script Define")]
-        public static void LocateScriptDefineStatic()
+        public static void LocateScriptDefine()
         {
             var (script, path) = GetScriptDefineInProject();
 

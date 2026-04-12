@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Text;
-using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -12,7 +11,7 @@ namespace NFramework.Editor
     public class SoundScriptDefineEditor
     {
         [MenuItem("NFramework/Sound/Generate Script Define")]
-        public static void GenerateScriptDefineStatic()
+        public static void GenerateScriptDefine()
         {
             var config = NFrameworkConfigSO.GetConfig();
             
@@ -100,11 +99,11 @@ namespace NFramework.Editor
 
             AssetDatabase.Refresh();
             NLogger.Log($"SoundDefine.cs generated at: {fullPath}");
-            LocateScriptDefineStatic();
+            LocateScriptDefine();
         }
 
         [MenuItem("NFramework/Sound/Locate Script Define")]
-        public static void LocateScriptDefineStatic()
+        public static void LocateScriptDefine()
         {
             var (script, path) = GetScriptDefineInProject();
             

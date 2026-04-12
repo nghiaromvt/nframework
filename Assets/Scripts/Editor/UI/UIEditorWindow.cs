@@ -25,8 +25,6 @@ namespace NFramework.Editor
             if (config == null)
                 return tree;
             
-            tree.Add("NFrameworkConfigSO", config);
-            
             if (!string.IsNullOrEmpty(config.uiViewsFolderPath))
             {
                 var prefabs = FileHelper.LoadAssetsWithType<GameObject>("t:Prefab", 
@@ -46,22 +44,34 @@ namespace NFramework.Editor
         {
             base.OnBeginDrawEditors();
             UIView view = MenuTree.Selection.SelectedValue as UIView;
-            if(!view) return;
+            
             SirenixEditorGUI.BeginHorizontalToolbar();
             {
-                GUILayout.FlexibleSpace();
-                GUILayout.FlexibleSpace();
-                if (SirenixEditorGUI.ToolbarButton("Locate"))
+                if (SirenixEditorGUI.ToolbarButton("Generate Script Define"))
                 {
-                    EditorGUIUtility.PingObject(view);
+                    UIScriptDefineEditor.GenerateScriptDefine();
                 }
-                if (SirenixEditorGUI.ToolbarButton("Delete"))
+                if (SirenixEditorGUI.ToolbarButton("Locate Script Define"))
                 {
-                    var path = AssetDatabase.GetAssetPath(view.GetInstanceID());
-                    if (EditorUtility.DisplayDialog("Delete this?", path + "\n\nYou cannot undo this action", "Delete", "Cancel"))
+                    UIScriptDefineEditor.LocateScriptDefine();
+                }
+
+                if (view)
+                {
+                    GUILayout.FlexibleSpace();
+                    
+                    if (SirenixEditorGUI.ToolbarButton("Locate"))
                     {
-                        AssetDatabase.DeleteAsset(path);
-                        AssetDatabase.Refresh();
+                        EditorGUIUtility.PingObject(view);
+                    }
+                    if (SirenixEditorGUI.ToolbarButton("Delete"))
+                    {
+                        var path = AssetDatabase.GetAssetPath(view.GetInstanceID());
+                        if (EditorUtility.DisplayDialog("Delete this?", path + "\n\nYou cannot undo this action", "Delete", "Cancel"))
+                        {
+                            AssetDatabase.DeleteAsset(path);
+                            AssetDatabase.Refresh();
+                        }
                     }
                 }
             }
