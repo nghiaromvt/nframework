@@ -22,6 +22,26 @@ namespace NFramework
             var screenPoint = camera.WorldToScreenPoint(source, eye);
             return camera.ScreenToWorldPoint(screenPoint.WithZ(distanceFromCamera), eye);
         }
+        
+        public static Bounds GetOrthoCameraBounds(this Camera cam)
+        {
+            float halfHeight = cam.orthographicSize;
+            float halfWidth = halfHeight * cam.aspect;
+
+            Vector3 center = cam.transform.position;
+            Vector3 size = new Vector3(halfWidth * 2f, halfHeight * 2f, 0f);
+
+            return new Bounds(center, size);
+        }
+        
+        public static Vector3 RemapWorldPositionBetweenCameras(this Camera sourceCam,
+            Vector3 sourceWorldPos, Camera targetCam, float targetDepth)
+        {
+            Vector3 viewportPos = sourceCam.WorldToViewportPoint(sourceWorldPos);
+            return targetCam.ViewportToWorldPoint(
+                new Vector3(viewportPos.x, viewportPos.y, targetDepth)
+            );
+        }
     }
 }
 

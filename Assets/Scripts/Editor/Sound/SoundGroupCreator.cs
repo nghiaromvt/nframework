@@ -10,10 +10,9 @@ namespace NFramework.Editor
     [Serializable]
     public class SoundGroupCreator
     {
-        [SerializeField, Required] private string _assetName = "New Sound Group";
+        [SerializeField, Required, OnInspectorInit(nameof(OnKeyChanged)), OnValueChanged(nameof(OnKeyChanged))] 
+        private string _assetName = "New Sound Group";
         [SerializeField, ReadOnly] private string _defineKeyConstName;
-        [SerializeField, OnInspectorInit(nameof(OnKeyChanged)), OnValueChanged(nameof(OnKeyChanged))] 
-        private string _key;
         
         [HideLabel, ReadOnly, ShowInInspector, ShowIf(nameof(_showError)), GUIColor(1, 0.3f, 0.3f)] 
         private string _errorMessage;
@@ -25,7 +24,7 @@ namespace NFramework.Editor
         
         private void OnKeyChanged()
         {
-            _defineKeyConstName = _key.ToValidConstKey();
+            _defineKeyConstName = _assetName.ToValidConstKey();
             
             var config = NFrameworkConfigSO.GetConfig();
                 
@@ -39,7 +38,14 @@ namespace NFramework.Editor
             var soundGroups = FileHelper.LoadAssetsWithType<SoundGroupSO>(searchInFolder: $"Assets/{config.soundGroupFolderPath}");
             foreach (var soundGroup in soundGroups)
             {
-                if (soundGroup.key == _key)
+                if (soundGroup.defineKeyConstName == _assetName)
+                {
+                    _showError = true;
+                    _errorMessage = $"\u26a0 Duplicate define key const with other SoundGroup: {soundGroup.name}!";
+                    return;
+                }
+                
+                if (soundGroup.key == _assetName)
                 {
                     _showError = true;
                     _errorMessage = $"\u26a0 Duplicate key with other SoundGroup: {soundGroup.name}!";
@@ -56,7 +62,7 @@ namespace NFramework.Editor
             var soundGroup = ScriptableObject.CreateInstance<SoundGroupSO>();
             soundGroup.soundEntries = _soundEntries;
             soundGroup.defineKeyConstName = _defineKeyConstName;
-            soundGroup.key = _key;
+            soundGroup.key = _assetName;
             
             var config = NFrameworkConfigSO.GetConfig();
             if (config == null)

@@ -7,15 +7,19 @@ namespace NFramework
 {
     public class Pool : MonoBehaviour
     {
-        public static Pool CreatePool(bool initializeAtAwake, bool autoExpandPool, int initPoolSize, PooledObject objectToPool, int maxPoolSize = -1)
+        public static Pool CreatePool(bool initializeAtAwake, bool autoExpandPool, int initPoolSize, PooledObject objectToPool, 
+            int maxPoolSize = -1, Transform parentTf = null)
         {
-            var go = new GameObject($"Pool_{objectToPool.name}_{objectToPool.GetInstanceID()}", typeof(Pool));
+            var go = new GameObject($"Pool_{objectToPool.name}", typeof(Pool));
             var pool = go.GetComponent<Pool>();
             pool._autoExpandPool = autoExpandPool;
             pool._initPoolSize = initPoolSize;
             pool._objectToPool = objectToPool;
             pool._maxPoolSize = maxPoolSize;
             pool._initializeAtAwake = initializeAtAwake;
+            
+            if (parentTf)
+                pool.transform.SetParent(parentTf);
 
             if (initializeAtAwake)
                 pool.InitializePool();

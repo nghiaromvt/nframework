@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using UnityEngine;
@@ -40,7 +41,7 @@ namespace NFramework
                 LogError(message, context, color);
         }
 
-        private static string FormatMessage(object message, Object context, Color? color)
+        public static string FormatMessage(object message, Object context, Color? color)
         {
             if (message == null)
                 return string.Empty;
@@ -57,6 +58,28 @@ namespace NFramework
             }
 
             return sb.ToString();
+        }
+        
+        public static string FormatList(List<int> list)
+        {
+            if (list == null || list.Count == 0)
+                return "[]";
+
+            return "[" + string.Join(", ", list) + "]";
+        }
+
+        public static string FormatDictionary(Dictionary<int, int> dict)
+        {
+            if (dict == null || dict.Count == 0)
+                return "{}";
+
+            List<string> entries = new();
+            foreach (var kv in dict)
+            {
+                entries.Add($"{kv.Key}:{kv.Value}");
+            }
+
+            return "{ " + string.Join(", ", entries) + " }";
         }
     }
 }

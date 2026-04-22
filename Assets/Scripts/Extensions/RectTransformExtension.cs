@@ -145,5 +145,16 @@ namespace NFramework
 
             return localPoint;
         }
+        
+        /// <summary>
+        /// If canvas is overlay, set uiCamera = null
+        /// </summary>
+        public static Vector3 RectToWorld(this RectTransform rectTransform, Camera worldCamera, float zDistanceFromCamera, Camera uiCamera = null)
+        {
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(uiCamera, rectTransform.position);
+
+            Vector3 screenPos = new Vector3(screenPoint.x, screenPoint.y, zDistanceFromCamera);
+            return worldCamera.ScreenToWorldPoint(screenPos);
+        }
     }
 }

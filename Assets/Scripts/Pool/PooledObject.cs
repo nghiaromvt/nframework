@@ -22,7 +22,7 @@ namespace NFramework
             }
         }
 
-        protected virtual void OnDestroy()
+        protected override void OnDestroy()
         {
             base.OnDestroy();
             
