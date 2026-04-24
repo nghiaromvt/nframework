@@ -69,7 +69,7 @@ namespace NFramework
         public static Camera UICamera
         {
             get => RootCanvas.worldCamera;
-            private set => RootCanvas.worldCamera = value;
+            set => RootCanvas.worldCamera = value;
         }
 
         protected override void Awake()
