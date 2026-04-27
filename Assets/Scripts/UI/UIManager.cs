@@ -42,40 +42,41 @@ namespace NFramework
         [SerializeField] private string _resourcesRootFolder;
         [SerializeField] private string _refPathAddressable;
         
-        private static readonly Dictionary<string, Stack<UIView>> _cachedView = new();
-        private static readonly Dictionary<UILayer, List<UIView>> _openedView = new();
-        private static readonly Dictionary<UILayer, RectTransform> _layerRectTfDict = new();
-        private static readonly List<object> _disableInteractRegisters = new();
-        private static readonly List<CanvasGroup> _layerCanvasGroups = new();
-        private static readonly List<string> _unloadingAddressableViewIds = new();
-        private static bool _interactable = true;
-        private static readonly PointerEventData _pointerEventData = new PointerEventData(EventSystem.current);
-        private static readonly List<RaycastResult> _raycastResults = new();
+        private readonly Dictionary<string, Stack<UIView>> _cachedView = new();
+        private readonly Dictionary<UILayer, List<UIView>> _openedView = new();
+        private readonly Dictionary<UILayer, RectTransform> _layerRectTfDict = new();
+        private readonly List<object> _disableInteractRegisters = new();
+        private readonly List<CanvasGroup> _layerCanvasGroups = new();
+        private readonly List<string> _unloadingAddressableViewIds = new();
+        private bool _interactable = true;
+        private PointerEventData _pointerEventData;
+        private readonly List<RaycastResult> _raycastResults = new();
         
-        public static Canvas RootCanvas { get; private set; }
+        public Canvas RootCanvas { get; private set; }
 
         public static bool Interactable
         {
-            get => _interactable;
+            get => I._interactable;
             private set
             {
-                if (_interactable == value) return;
-                _interactable = value;
-                _layerCanvasGroups.ForEach(group => group.blocksRaycasts = value);
+                if (I._interactable == value) return;
+                I._interactable = value;
+                I._layerCanvasGroups.ForEach(group => group.blocksRaycasts = value);
                 OnInteractableChanged?.Invoke(value);
             }
         }
         
         public static Camera UICamera
         {
-            get => RootCanvas.worldCamera;
-            set => RootCanvas.worldCamera = value;
+            get => I.RootCanvas.worldCamera;
+            set => I.RootCanvas.worldCamera = value;
         }
 
         protected override void Awake()
         {
             base.Awake();
             RootCanvas = GetComponent<Canvas>();
+            _pointerEventData = new PointerEventData(EventSystem.current);
 
             foreach (var uiLayerInfo in _uiLayerOrders)
             {
@@ -92,9 +93,9 @@ namespace NFramework
                     canvas.sortingOrder = uiLayerInfo.orderInLayer;
                 }
 
-                _layerRectTfDict[uiLayerInfo.layer] = rectTf;
-                _openedView.Add(uiLayerInfo.layer, new List<UIView>());
-                _layerCanvasGroups.Add(rectTf.GetComponent<CanvasGroup>());
+                I._layerRectTfDict[uiLayerInfo.layer] = rectTf;
+                I._openedView.Add(uiLayerInfo.layer, new List<UIView>());
+                I._layerCanvasGroups.Add(rectTf.GetComponent<CanvasGroup>());
             }
             
             gameObject.SetLayerRecursively(gameObject.layer);
@@ -102,28 +103,28 @@ namespace NFramework
         
         public static int GetCachedViewCount(string id)
         {
-            if (!_cachedView.TryGetValue(id, out _))
-                _cachedView[id] = new Stack<UIView>();
+            if (!I._cachedView.TryGetValue(id, out _))
+                I._cachedView[id] = new Stack<UIView>();
             
-            return _cachedView[id].Count;
+            return I._cachedView[id].Count;
         }
 
         private static T OpenViewFromCached<T>(string id) where T : UIView
         {
-            if (_cachedView[id].Count == 0)
+            if (I._cachedView[id].Count == 0)
             {
                 LogError($"Cannot push view [{id}] because no cached found");
                 return null;
             }
 
-            var view = _cachedView[id].Pop() as T;
+            var view = I._cachedView[id].Pop() as T;
             view.gameObject.SetActive(true);
             return view;
         }
 
         public static void CloseCurrentInLayer(UILayer layer, bool destroy = false)
         {
-            var views = _openedView[layer];
+            var views = I._openedView[layer];
             if (views.Count > 0)
                 Close(views[^1], destroy);
         }
@@ -142,7 +143,7 @@ namespace NFramework
 
         public static void CloseAllInLayer(UILayer layer, bool destroy = false, List<UIView> ignoreList = null)
         {
-            var views = new List<UIView>(_openedView[layer]);
+            var views = new List<UIView>(I._openedView[layer]);
             foreach (var view in views)
             {
                 if (!ignoreList.IsNullOrEmpty() && ignoreList.Contains(view))
@@ -162,7 +163,7 @@ namespace NFramework
 
         public static UIOutputData Close(UIView view, bool destroy = false)
         {
-            var views = _openedView[view.UILayer];
+            var views = I._openedView[view.UILayer];
             if (views.Count <= 0)
                 return null;
 
@@ -191,7 +192,7 @@ namespace NFramework
                     if (view != null)
                     {
                         view.gameObject.SetActive(false);
-                        _cachedView[view.ID].Push(view);
+                        I._cachedView[view.ID].Push(view);
                     }
                 }
 
@@ -205,7 +206,7 @@ namespace NFramework
         {
             var views = new List<UIView>();
             
-            foreach (var cachedStack in _cachedView.Values)
+            foreach (var cachedStack in I._cachedView.Values)
             {
                 if (cachedStack.Count > 0)
                 {
@@ -232,12 +233,12 @@ namespace NFramework
 #endif
         }
 
-        public static bool IsAnyOpenedViewInLayer(UILayer layer) => _openedView[layer].Count > 0;
+        public static bool IsAnyOpenedViewInLayer(UILayer layer) => I._openedView[layer].Count > 0;
         
         public static bool IsSpecificViewShown(string id, out UIView view)
         {
             view = null;
-            foreach (var views in _openedView.Values)
+            foreach (var views in I._openedView.Values)
             {
                 for (int i = views.Count - 1; i >= 0; i--)
                 {
@@ -253,7 +254,7 @@ namespace NFramework
 
         public static UIView GetOpenedView(string id)
         {
-            foreach (var views in _openedView.Values)
+            foreach (var views in I._openedView.Values)
             {
                 foreach (var view in views)
                 {
@@ -273,7 +274,7 @@ namespace NFramework
         public static List<UIView> GetOpenedViews(string id)
         {
             var openedViews = new List<UIView>();
-            foreach (var views in _openedView.Values)
+            foreach (var views in I._openedView.Values)
             {
                 foreach (var view in views)
                 {
@@ -287,7 +288,7 @@ namespace NFramework
         public static List<UIView> GetOpenedViewsInLayer(UILayer layer)
         {
             var openedViews = new List<UIView>();
-            foreach (var view in _openedView[layer])
+            foreach (var view in I._openedView[layer])
             {
                 openedViews.Add(view);
             }
@@ -307,7 +308,7 @@ namespace NFramework
 
         public static UIView GetTopmostOpenedViewInLayer(UILayer layer)
         {
-            var views = _openedView[layer];
+            var views = I._openedView[layer];
             return views.Count > 0 ? views[^1] : null;
         }
 
@@ -317,7 +318,7 @@ namespace NFramework
             if (register != null)
             {
                 Log($"DisableInteract by: {register}");
-                _disableInteractRegisters.Add(register);
+                I._disableInteractRegisters.Add(register);
             }
 
             Interactable = false;
@@ -329,13 +330,13 @@ namespace NFramework
             if (force)
             {
                 Log($"Force EnableInteract by: {register}");
-                _disableInteractRegisters.Clear();
+                I._disableInteractRegisters.Clear();
             }
             else if (register != null)
             {
-                if (_disableInteractRegisters.Contains(register))
+                if (I._disableInteractRegisters.Contains(register))
                 {
-                    _disableInteractRegisters.Remove(register);
+                    I._disableInteractRegisters.Remove(register);
                     Log($"EnableInteract by: {register}");
                 }
                 else
@@ -344,7 +345,7 @@ namespace NFramework
                 }
             }
 
-            if (_disableInteractRegisters.Count == 0)
+            if (I._disableInteractRegisters.Count == 0)
                 Interactable = true;
         }
 
@@ -365,11 +366,11 @@ namespace NFramework
 #endif
 
             // Reuse event data and result list to reduce GC alloc
-            _pointerEventData.position = Input.mousePosition;
-            _raycastResults.Clear();
+            I._pointerEventData.position = Input.mousePosition;
+            I._raycastResults.Clear();
 
-            EventSystem.current.RaycastAll(_pointerEventData, _raycastResults);
-            return _raycastResults.Count > 0;
+            EventSystem.current.RaycastAll(I._pointerEventData, I._raycastResults);
+            return I._raycastResults.Count > 0;
         }
         
 #if ADDRESSABLES
@@ -396,7 +397,7 @@ namespace NFramework
             {
                 view.transform.SetAsLastSibling();
                 view.OnOpen(inputData);
-                _openedView[view.UILayer].Add(view);
+                I._openedView[view.UILayer].Add(view);
             }
         
             if (controlInteract) 
@@ -412,7 +413,7 @@ namespace NFramework
             if (curCachedViewCount > 0 && !forceCacheMultiple)
                 return false;
         
-            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
+            await UniTask.WaitUntil(() => !I._unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
         
             var loadAsset = await AddressablesManager.LoadAsset<GameObject>(GetViewPfAddressablesPath(id));
             if (loadAsset == null)
@@ -422,10 +423,10 @@ namespace NFramework
             }
         
             var prefab = loadAsset.GetComponent<UIView>();
-            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var cached = Instantiate(prefab, I._layerRectTfDict[prefab.UILayer]);
             cached.ID = id;
             cached.gameObject.SetActive(false);
-            _cachedView[id].Push(cached);
+            I._cachedView[id].Push(cached);
             return true;
         }
         
@@ -441,14 +442,14 @@ namespace NFramework
             }
         
             var prefab = loadHandle.GetComponent<T>();
-            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var view = Instantiate(prefab, I._layerRectTfDict[prefab.UILayer]);
             view.ID = id;
             return view;
         }
         
         public static async UniTask UnloadAddressableUI(string id, bool force = false)
         {
-            if (_unloadingAddressableViewIds.Contains(id)) 
+            if (I._unloadingAddressableViewIds.Contains(id)) 
                 return;
             
             if (GetCachedViewCount(id) > 0)
@@ -463,11 +464,11 @@ namespace NFramework
                 return;
             }
             
-            _unloadingAddressableViewIds.Add(id);
+            I._unloadingAddressableViewIds.Add(id);
             Log($"UnloadAddressableUI: {id}");
             await UniTask.DelayFrame(1, cancellationToken: I.destroyCancellationToken);
             AddressablesManager.ReleaseAsset(GetViewPfAddressablesPath(id));
-            _unloadingAddressableViewIds.Remove(id);
+            I._unloadingAddressableViewIds.Remove(id);
         }
 
         private static string GetViewPfAddressablesPath(string id) => $"{I._refPathAddressable}/{id}.prefab";
@@ -494,7 +495,7 @@ namespace NFramework
             {
                 view.transform.SetAsLastSibling();
                 view.OnOpen(inputData);
-                _openedView[view.UILayer].Add(view);
+                I._openedView[view.UILayer].Add(view);
             }
             
             OnOpenedView?.Invoke(view, inputData);
@@ -510,7 +511,7 @@ namespace NFramework
                 return null;
             }
             
-            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var view = Instantiate(prefab, I._layerRectTfDict[prefab.UILayer]);
             view.ID = id;
             view.IsFromResources = true;
             return view;
@@ -535,7 +536,7 @@ namespace NFramework
             {
                 view.transform.SetAsLastSibling();
                 view.OnOpen(inputData);
-                _openedView[view.UILayer].Add(view);
+                I._openedView[view.UILayer].Add(view);
             }
             
             OnOpenedView?.Invoke(view, inputData);
@@ -551,7 +552,7 @@ namespace NFramework
                 return null;
             }
             
-            var view = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var view = Instantiate(prefab, I._layerRectTfDict[prefab.UILayer]);
             view.ID = id;
             view.IsFromResources = true;
             return view;
@@ -570,11 +571,11 @@ namespace NFramework
                 return false;
             }
             
-            var cached = Instantiate(prefab, _layerRectTfDict[prefab.UILayer]);
+            var cached = Instantiate(prefab, I._layerRectTfDict[prefab.UILayer]);
             cached.ID = id;
             cached.IsFromResources = true;
             cached.gameObject.SetActive(false);
-            _cachedView[id].Push(cached);
+            I._cachedView[id].Push(cached);
             return true;
         }
 

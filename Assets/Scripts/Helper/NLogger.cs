@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -31,7 +32,7 @@ namespace NFramework
         [Conditional("DEBUG_ENABLE"), Conditional("UNITY_EDITOR"), Conditional("ENABLE_ERROR_LOG")]
         public static void LogException(Exception exception, Object context = null, Color? color = null)
         {
-            Debug.Log(FormatMessage(exception.Message, context, color), context);
+            Debug.LogError(FormatMessage(exception, context, color), context);
         }
 
         [Conditional("DEBUG_ENABLE"), Conditional("UNITY_EDITOR")]
@@ -46,7 +47,14 @@ namespace NFramework
             if (message == null)
                 return string.Empty;
 
-            var sb = new StringBuilder(message.ToString());
+            var text = message switch
+            {
+                IDictionary dict => FormatDictionary(dict),
+                IList list => FormatList(list),
+                _ => message.ToString()
+            };
+
+            var sb = new StringBuilder(text);
 
             if (context != null)
                 sb.Insert(0, $"[{context.name}] ");
@@ -60,21 +68,25 @@ namespace NFramework
             return sb.ToString();
         }
         
-        public static string FormatList(List<int> list)
+        public static string FormatList(IList list)
         {
-            if (list == null || list.Count == 0)
-                return "[]";
-
-            return "[" + string.Join(", ", list) + "]";
+            var sb = new StringBuilder("[");
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (i > 0) sb.Append(", ");
+                sb.Append(list[i]);
+            }
+            sb.Append("]");
+            return sb.ToString();
         }
 
-        public static string FormatDictionary(Dictionary<int, int> dict)
+        public static string FormatDictionary(IDictionary dict)
         {
             if (dict == null || dict.Count == 0)
                 return "{}";
 
-            List<string> entries = new();
-            foreach (var kv in dict)
+            var entries = new List<string>();
+            foreach (DictionaryEntry kv in dict)
             {
                 entries.Add($"{kv.Key}:{kv.Value}");
             }

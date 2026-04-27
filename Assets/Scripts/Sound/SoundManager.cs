@@ -35,18 +35,18 @@ namespace NFramework
         [SerializeField] private string _resourcesRootFolder;
         [SerializeField] private string _refPathAddressable;
         
-        private static SoundEmitter _bgmEmitter;
-        private static readonly List<SoundEmitter> _allSoundEmitterPool = new();
-        private static readonly Queue<SoundEmitter> _soundEmitterPool = new();
-        private static readonly List<SoundEmitter> _activeSoundEmitters = new();
-        private static readonly Dictionary<string, SoundEmitter> _guidSoundEmitterDict = new();
-        private static readonly Dictionary<AudioClip, List<SoundEmitter>> _playingAudioClipDict = new();
-        private static Tween _updateBgmMixerTween;
-        private static Tween _updateSfxMixerTween;
+        private SoundEmitter _bgmEmitter;
+        private readonly List<SoundEmitter> _allSoundEmitterPool = new();
+        private readonly Queue<SoundEmitter> _soundEmitterPool = new();
+        private readonly List<SoundEmitter> _activeSoundEmitters = new();
+        private readonly Dictionary<string, SoundEmitter> _guidSoundEmitterDict = new();
+        private readonly Dictionary<AudioClip, List<SoundEmitter>> _playingAudioClipDict = new();
+        private Tween _updateBgmMixerTween;
+        private Tween _updateSfxMixerTween;
 
-        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupResourcesDict = new();
-        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupAddressablesDict = new();
-        [ShowInInspector, ReadOnly, HideInEditorMode] private static readonly Dictionary<string, SoundGroupSO.SoundEntry> _cacheSoundEntries = new();
+        [ShowInInspector, ReadOnly, HideInEditorMode] private readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupResourcesDict = new();
+        [ShowInInspector, ReadOnly, HideInEditorMode] private readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupAddressablesDict = new();
+        [ShowInInspector, ReadOnly, HideInEditorMode] private readonly Dictionary<string, SoundGroupSO.SoundEntry> I._cacheSoundEntries = new();
 
         #region Status
         
@@ -117,13 +117,13 @@ namespace NFramework
             if (!IsInitialized) return;
             
             vol = Mathf.Clamp(vol, 0.0001f, 1f);
-            _updateBgmMixerTween.Stop();
+            I._updateBgmMixerTween.Stop();
             var targetValue = Mathf.Log10(vol) * 20;
             
             if (fadeTime > 0f)
             {
                 I._audioMixer.GetFloat(BGM_CHILD_VOLUME_KEY, out var startValue);
-                _updateBgmMixerTween = Tween.Custom(startValue, targetValue, fadeTime, value =>
+                I._updateBgmMixerTween = Tween.Custom(startValue, targetValue, fadeTime, value =>
                 {
                     I._audioMixer.SetFloat(BGM_CHILD_VOLUME_KEY, value);
                 }, Ease.Linear, useUnscaledTime: true);
@@ -139,13 +139,13 @@ namespace NFramework
             if (!IsInitialized) return;
             
             vol = Mathf.Clamp(vol, 0.0001f, 1f);
-            _updateSfxMixerTween.Stop();
+            I._updateSfxMixerTween.Stop();
             var targetValue = Mathf.Log10(vol) * 20;
             
             if (fadeTime > 0f)
             {
                 I._audioMixer.GetFloat(SFX_CHILD_VOLUME_KEY, out var startValue);
-                _updateBgmMixerTween = Tween.Custom(startValue, targetValue, fadeTime, value =>
+                I._updateSfxMixerTween = Tween.Custom(startValue, targetValue, fadeTime, value =>
                 {
                     I._audioMixer.SetFloat(SFX_CHILD_VOLUME_KEY, value);
                 }, Ease.Linear, useUnscaledTime: true);
@@ -175,7 +175,7 @@ namespace NFramework
         public static async UniTask CacheSoundGroupAddressables(string loadKey)
         {
             if (!IsInitialized) return;
-            if (_cacheSoundGroupAddressablesDict.ContainsKey(loadKey))
+            if (I._cacheSoundGroupAddressablesDict.ContainsKey(loadKey))
             {
                 LogWarning($"Already cache SoundGroup loadKey: {loadKey}");
                 return;
@@ -185,7 +185,7 @@ namespace NFramework
             if (!soundGroupSO) return;
 
             CacheSoundGroup(soundGroupSO);
-            _cacheSoundGroupAddressablesDict.Add(loadKey, soundGroupSO);
+            I._cacheSoundGroupAddressablesDict.Add(loadKey, soundGroupSO);
         }
         
         private static string GetSoundGroupAddressablesPath(string id) => $"{I._refPathAddressable}/{id}.asset";
@@ -194,7 +194,7 @@ namespace NFramework
         public static async UniTask CacheSoundGroupResources(string loadKey)
         {
             if (!IsInitialized) return;
-            if (_cacheSoundGroupResourcesDict.ContainsKey(loadKey))
+            if (I._cacheSoundGroupResourcesDict.ContainsKey(loadKey))
             {
                 LogWarning($"Already cache SoundGroup loadKey: {loadKey}");
                 return;
@@ -208,19 +208,19 @@ namespace NFramework
             }
             
             CacheSoundGroup(soundGroupSO);
-            _cacheSoundGroupResourcesDict.Add(loadKey, soundGroupSO);
+            I._cacheSoundGroupResourcesDict.Add(loadKey, soundGroupSO);
         }
         
         private static void CacheSoundGroup(SoundGroupSO soundGroupSO)
         {
             foreach (var soundEntry in soundGroupSO.soundEntries)
             {
-                if (_cacheSoundEntries.ContainsKey(soundEntry.key))
+                if (I._cacheSoundEntries.ContainsKey(soundEntry.key))
                 {
                     LogWarning($"Already have key in cache: {soundEntry.key}");
                     continue;
                 }
-                _cacheSoundEntries.Add(soundEntry.key, soundEntry);
+                I._cacheSoundEntries.Add(soundEntry.key, soundEntry);
             }
         }
         
@@ -228,18 +228,18 @@ namespace NFramework
         {
             SoundGroupSO soundGroupSO = null;
 #if ADDRESSABLES
-            if (_cacheSoundGroupAddressablesDict.TryGetValue(loadKey, out soundGroupSO))
+            if (I._cacheSoundGroupAddressablesDict.TryGetValue(loadKey, out soundGroupSO))
             {
                 ClearSoundGroup(soundGroupSO);
                 AddressablesManager.ReleaseAsset(GetSoundGroupAddressablesPath(loadKey));
-                _cacheSoundGroupAddressablesDict.Remove(loadKey);
+                I._cacheSoundGroupAddressablesDict.Remove(loadKey);
                 return true;
             }
 #endif
-            if (_cacheSoundGroupResourcesDict.TryGetValue(loadKey, out soundGroupSO))
+            if (I._cacheSoundGroupResourcesDict.TryGetValue(loadKey, out soundGroupSO))
             {
                 ClearSoundGroup(soundGroupSO);
-                _cacheSoundGroupResourcesDict.Remove(loadKey);
+                I._cacheSoundGroupResourcesDict.Remove(loadKey);
                 return true;
             }
             
@@ -248,33 +248,33 @@ namespace NFramework
 
         public static void ClearAllSoundGroup()
         {
-            foreach (var kv in _cacheSoundGroupAddressablesDict)
+            foreach (var kv in I._cacheSoundGroupAddressablesDict)
             {
                 ClearSoundGroup(kv.Key);
             }
 
-            foreach (var kv in _cacheSoundGroupResourcesDict)
+            foreach (var kv in I._cacheSoundGroupResourcesDict)
             {
                 ClearSoundGroup(kv.Key);
             }
             
-            _cacheSoundGroupAddressablesDict.Clear();
-            _cacheSoundGroupResourcesDict.Clear();
+            I._cacheSoundGroupAddressablesDict.Clear();
+            I._cacheSoundGroupResourcesDict.Clear();
         }
         
         private static void ClearSoundGroup(SoundGroupSO soundGroupSO)
         {
             foreach (var soundEntry in soundGroupSO.soundEntries)
             {
-                if (_bgmEmitter.AudioClip == soundEntry.clip)
-                    _bgmEmitter.Stop();
+                if (I._bgmEmitter.AudioClip == soundEntry.clip)
+                    I._bgmEmitter.Stop();
                 
-                if (_playingAudioClipDict.TryGetValue(soundEntry.clip, out var soundEmitters))
+                if (I._playingAudioClipDict.TryGetValue(soundEntry.clip, out var soundEmitters))
                 {
                     var temp = new List<SoundEmitter>(soundEmitters);
                     temp.ForEach(x => x.Stop());
                 }
-                _cacheSoundEntries.Remove(soundEntry.key);
+                I._cacheSoundEntries.Remove(soundEntry.key);
             }
         }
         
@@ -285,7 +285,7 @@ namespace NFramework
         /// <returns> Guid use to stop sound if needed </returns>
         public static string PlaySfx(string key, Action onStop = null)
         {
-            if (_cacheSoundEntries.TryGetValue(key, out var soundEntry))
+            if (I._cacheSoundEntries.TryGetValue(key, out var soundEntry))
             {
                 return PlaySfx(soundEntry.clip, soundEntry.playSettings, onStop);
             }
@@ -299,7 +299,7 @@ namespace NFramework
         /// <returns> Guid use to stop sound if needed </returns>
         public static string PlaySfx(string key, SoundPlaySettings playSettings, Action onStop = null)
         {
-            if (_cacheSoundEntries.TryGetValue(key, out var soundEntry))
+            if (I._cacheSoundEntries.TryGetValue(key, out var soundEntry))
             {
                 return PlaySfx(soundEntry.clip, playSettings, onStop);
             }
@@ -319,7 +319,7 @@ namespace NFramework
             {
                 case EAudioOverlapType.StopPrevious:
                 {
-                    if (_playingAudioClipDict.TryGetValue(clip, out var soundEmitters))
+                    if (I._playingAudioClipDict.TryGetValue(clip, out var soundEmitters))
                     {
                         var tempSoundEmitters = new List<SoundEmitter>(soundEmitters);
                         tempSoundEmitters.ForEach(em => em.Stop());
@@ -329,7 +329,7 @@ namespace NFramework
                 }
                 case EAudioOverlapType.Skip:
                 {
-                    if (_playingAudioClipDict.TryGetValue(clip, out _))
+                    if (I._playingAudioClipDict.TryGetValue(clip, out _))
                         return null;
 
                     break;
@@ -342,13 +342,13 @@ namespace NFramework
                 var guid = Guid.NewGuid().ToString();
                 soundEmitter.Play(guid, clip, playSettings, onStop);
 
-                _activeSoundEmitters.Add(soundEmitter);
-                _guidSoundEmitterDict.Add(guid, soundEmitter);
+                I._activeSoundEmitters.Add(soundEmitter);
+                I._guidSoundEmitterDict.Add(guid, soundEmitter);
 
-                if (_playingAudioClipDict.TryGetValue(clip, out var soundEmitters))
+                if (I._playingAudioClipDict.TryGetValue(clip, out var soundEmitters))
                     soundEmitters.Add(soundEmitter);
                 else
-                    _playingAudioClipDict.Add(clip, new List<SoundEmitter> { soundEmitter });
+                    I._playingAudioClipDict.Add(clip, new List<SoundEmitter> { soundEmitter });
 
                 return guid;
             }
@@ -358,7 +358,7 @@ namespace NFramework
         
         public static void PlayBgm(string key, Action onStop = null)
         {
-            if (_cacheSoundEntries.TryGetValue(key, out var soundEntry))
+            if (I._cacheSoundEntries.TryGetValue(key, out var soundEntry))
                 PlayBgm(soundEntry.clip, soundEntry.playSettings, onStop);
             else
                 LogError($"Cannot find AudioClip [{key}] in cache");
@@ -366,7 +366,7 @@ namespace NFramework
         
         public static void PlayBgm(string key, SoundPlaySettings playSettings, Action onStop = null)
         {
-            if (_cacheSoundEntries.TryGetValue(key, out var soundEntry))
+            if (I._cacheSoundEntries.TryGetValue(key, out var soundEntry))
                 PlayBgm(soundEntry.clip, playSettings, onStop);
             else
                 LogError($"Cannot find AudioClip [{key}] in cache");
@@ -374,8 +374,8 @@ namespace NFramework
         
         public static void PlayBgm(AudioClip clip, SoundPlaySettings playSettings, Action onStop = null)
         {
-            _bgmEmitter.Stop();
-            _bgmEmitter.Play("BGM", clip, playSettings, onStop);
+            I._bgmEmitter.Stop();
+            I._bgmEmitter.Play("BGM", clip, playSettings, onStop);
         }
         
         #endregion
@@ -384,8 +384,8 @@ namespace NFramework
         
         public static void StopBGM(float fadeTime = 0f)
         {
-            if (!_bgmEmitter.enabled) return;
-            _bgmEmitter.Stop(fadeTime);
+            if (!I._bgmEmitter.enabled) return;
+            I._bgmEmitter.Stop(fadeTime);
         }
 
         /// <summary>
@@ -397,7 +397,7 @@ namespace NFramework
             if (string.IsNullOrEmpty(guid))
                 return false;
 
-            if (_guidSoundEmitterDict.TryGetValue(guid, out var emitter))
+            if (I._guidSoundEmitterDict.TryGetValue(guid, out var emitter))
             {
                 emitter.Stop();
                 return true;
@@ -411,7 +411,7 @@ namespace NFramework
             if (includeBgm)
                 StopBGM();
 
-            foreach (var se in _allSoundEmitterPool)
+            foreach (var se in I._allSoundEmitterPool)
             {
                 se.Stop();
             }
@@ -424,25 +424,25 @@ namespace NFramework
         /// </summary>
         public static void ReturnSoundEmitter(SoundEmitter soundEmitter, AudioClip audioClip)
         {
-            if (!_activeSoundEmitters.Contains(soundEmitter))
+            if (!I._activeSoundEmitters.Contains(soundEmitter))
                 return;
 
-            _soundEmitterPool.Enqueue(soundEmitter);
-            _activeSoundEmitters.Remove(soundEmitter);
-            _guidSoundEmitterDict.Remove(soundEmitter.Guid);
+            I._soundEmitterPool.Enqueue(soundEmitter);
+            I._activeSoundEmitters.Remove(soundEmitter);
+            I._guidSoundEmitterDict.Remove(soundEmitter.Guid);
 
-            if (audioClip != null && _playingAudioClipDict.TryGetValue(audioClip, out var soundEmitters))
+            if (audioClip != null && I._playingAudioClipDict.TryGetValue(audioClip, out var soundEmitters))
             {
                 soundEmitters.Remove(soundEmitter);
                 if (soundEmitters.Count == 0)
-                    _playingAudioClipDict.Remove(audioClip);
+                    I._playingAudioClipDict.Remove(audioClip);
             }
         }
 
         private static SoundEmitter GetSoundEmitter()
         {
-            if (_soundEmitterPool.Count > 0)
-                return _soundEmitterPool.Dequeue();
+            if (I._soundEmitterPool.Count > 0)
+                return I._soundEmitterPool.Dequeue();
 
             LogWarning("Cannot get sound emitter");
             return null;
