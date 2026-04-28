@@ -46,7 +46,7 @@ namespace NFramework
 
         [ShowInInspector, ReadOnly, HideInEditorMode] private readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupResourcesDict = new();
         [ShowInInspector, ReadOnly, HideInEditorMode] private readonly Dictionary<string, SoundGroupSO> _cacheSoundGroupAddressablesDict = new();
-        [ShowInInspector, ReadOnly, HideInEditorMode] private readonly Dictionary<string, SoundGroupSO.SoundEntry> I._cacheSoundEntries = new();
+        [ShowInInspector, ReadOnly, HideInEditorMode] private readonly Dictionary<string, SoundGroupSO.SoundEntry> _cacheSoundEntries = new();
 
         #region Status
         
