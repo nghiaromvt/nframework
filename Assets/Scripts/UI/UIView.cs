@@ -6,6 +6,8 @@ namespace NFramework
 {
     public class UIView : MonoBehaviour
     {
+        #region Variables
+
         [ReadOnly] public string defineKeyConstName;
         [ReadOnly] public string key;
 
@@ -17,11 +19,16 @@ namespace NFramework
         private bool _showError;
 
         private CanvasGroup _canvasGroup;
+        private bool _initialized;
+
+        #endregion
+
+        #region Properties
 
         public UILayer UILayer => _uiLayer;
         public bool PauseGameStatus { get; protected set; }
-        public string ID { get; set; }
-        public bool IsFromResources { get; set; }
+        public string ID { get; private set; }
+        public bool IsFromResources { get; private set; }
         public bool IsOpen => UIManager.IsSpecificViewShown(ID, out _);
 
         public CanvasGroup CanvasGroup
@@ -35,13 +42,68 @@ namespace NFramework
             }
         }
 
+        #endregion
+
+        #region Unity Functions
+
 #if UNITY_EDITOR
+        private string _lastKnownName;
+
         private void Reset() => RefreshKey();
         
-        private void OnValidate() => RefreshKey();
+        private void OnValidate()
+        {
+            if (_lastKnownName != gameObject.name)
+                RefreshKey();
+        }
+#endif
 
+        #endregion
+
+        #region Public Functions
+
+        public void Initialize(string id, bool isFromResources = false)
+        {
+            if (_initialized) return;
+            _initialized = true;
+            ID = id;
+            IsFromResources = isFromResources;
+        }
+
+        public virtual void OnOpen(UIInputData inputData)
+        {
+            inputData ??= new UIInputData();
+
+            PauseGameStatus = inputData.pauseStatus switch
+            {
+                UIInputData.EPauseGameStatus.UseDefault => _pauseGameStatus,
+                UIInputData.EPauseGameStatus.Pause => true,
+                UIInputData.EPauseGameStatus.NoPause => false,
+                _ => PauseGameStatus
+            };
+
+            if (PauseGameStatus)
+                PauseGameHandler.Pause(this);
+        }
+
+        public virtual UIOutputData OnClose()
+        {
+            if (PauseGameStatus)
+                PauseGameHandler.Unpause(this);
+
+            return UIOutputData.Empty;
+        }
+
+        public UIOutputData CloseSelf(bool destroy = false) => UIManager.Close(this, destroy);
+
+        #endregion
+
+        #region Private Functions
+
+#if UNITY_EDITOR
         private void RefreshKey()
         {
+            _lastKnownName = gameObject.name;
             key = gameObject.name;
             defineKeyConstName = key.ToValidConstKey();
 
@@ -94,31 +156,7 @@ namespace NFramework
         }
 #endif
 
-        public virtual void OnOpen(UIInputData inputData)
-        {
-            inputData ??= new UIInputData();
-
-            PauseGameStatus = inputData.pauseStatus switch
-            {
-                UIInputData.EPauseGameStatus.UseDefault => _pauseGameStatus,
-                UIInputData.EPauseGameStatus.Pause => true,
-                UIInputData.EPauseGameStatus.NoPause => false,
-                _ => PauseGameStatus
-            };
-
-            if (PauseGameStatus)
-                PauseGameHandler.Pause(this);
-        }
-
-        public virtual UIOutputData OnClose()
-        {
-            if (PauseGameStatus)
-                PauseGameHandler.Unpause(this);
-
-            return UIOutputData.Empty;
-        }
-
-        public UIOutputData CloseSelf(bool destroy = false) => UIManager.Close(this, destroy);
+        #endregion
     }
 
     [Serializable]
