@@ -103,6 +103,7 @@ namespace NFramework
         protected override void Awake()
         {
             base.Awake();
+            
             _pointerEventData = new PointerEventData(EventSystem.current);
 
             foreach (var uiLayerInfo in _uiLayerOrders)
@@ -127,6 +128,18 @@ namespace NFramework
             
             gameObject.SetLayerRecursively(gameObject.layer);
         }
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (_uiLayerOrders == null || _uiLayerOrders.Count == 0)
+            {
+                _uiLayerOrders = new List<UILayerInfo>();
+                foreach (UILayer layer in Enum.GetValues(typeof(UILayer)))
+                    _uiLayerOrders.Add(new UILayerInfo { layer = layer });
+            }
+        }
+#endif
 
         protected override void OnDestroy()
         {
