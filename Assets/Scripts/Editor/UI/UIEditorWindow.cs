@@ -24,6 +24,8 @@ namespace NFramework.Editor
             var config = NFrameworkConfigSO.GetConfig();
             if (config == null)
                 return tree;
+
+            tree.Add("Create New View", new UIViewCreator());
             
             if (!string.IsNullOrEmpty(config.uiViewsFolderPath))
             {
@@ -47,11 +49,11 @@ namespace NFramework.Editor
             
             SirenixEditorGUI.BeginHorizontalToolbar();
             {
-                if (SirenixEditorGUI.ToolbarButton("Generate Script Define"))
+                if (SirenixEditorGUI.ToolbarButton("Generate ScriptDefine"))
                 {
                     UIScriptDefineEditor.GenerateScriptDefine();
                 }
-                if (SirenixEditorGUI.ToolbarButton("Locate Script Define"))
+                if (SirenixEditorGUI.ToolbarButton("Locate ScriptDefine"))
                 {
                     UIScriptDefineEditor.LocateScriptDefine();
                 }

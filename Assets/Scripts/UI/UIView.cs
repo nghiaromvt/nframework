@@ -62,7 +62,7 @@ namespace NFramework
 
         #region Public Functions
 
-        public void Initialize(string id, bool isFromResources = false)
+        public virtual void Initialize(string id, bool isFromResources = false)
         {
             if (_initialized) return;
             _initialized = true;
@@ -114,14 +114,22 @@ namespace NFramework
                 return;
             }
 
+            var error = ValidateDuplicateKey(key, defineKeyConstName, this);
+            _showError = error != null;
+            _errorMessage = error ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Checks for duplicate key/defineKeyConstName among existing UIView prefabs.
+        /// Returns error message if duplicate found, null if valid.
+        /// Pass excludeView to skip self-check (used by UIView.RefreshKey).
+        /// </summary>
+        public static string ValidateDuplicateKey(string viewKey, string constName, UIView excludeView = null)
+        {
             var config = NFrameworkConfigSO.GetConfig();
 
             if (string.IsNullOrEmpty(config.uiViewsFolderPath))
-            {
-                _showError = true;
-                _errorMessage = "\u26a0 No views folder path provided!";
-                return;
-            }
+                return "\u26a0 No views folder path provided!";
 
             var prefabs = FileHelper.LoadAssetsWithType<GameObject>(
                 "t:Prefab",
@@ -133,26 +141,17 @@ namespace NFramework
                 if (!pf.TryGetComponent<UIView>(out var view))
                     continue;
 
-                if (view == this)
+                if (excludeView != null && view == excludeView)
                     continue;
 
-                if (view.key == key)
-                {
-                    _showError = true;
-                    _errorMessage = $"\u26a0 Duplicate key with other view: {view.name}!";
-                    return;
-                }
-                
-                if (view.defineKeyConstName == defineKeyConstName)
-                {
-                    _showError = true;
-                    _errorMessage = $"\u26a0 Duplicate define key const name with other view: {view.name}!";
-                    return;
-                }
+                if (view.key == viewKey)
+                    return $"\u26a0 Duplicate key with other view: {view.name}!";
+
+                if (view.defineKeyConstName == constName)
+                    return $"\u26a0 Duplicate define key const name with other view: {view.name}!";
             }
 
-            _showError = false;
-            _errorMessage = string.Empty;
+            return null;
         }
 #endif
 

@@ -61,12 +61,22 @@ namespace NFramework
         private bool _interactable = true;
         private PointerEventData _pointerEventData;
         private readonly List<RaycastResult> _raycastResults = new();
+        private Canvas _rootCanvas;
 
         #endregion
 
         #region Properties
 
-        public Canvas RootCanvas { get; private set; }
+        public Canvas RootCanvas
+        {
+            get
+            {
+                if (_rootCanvas == null)
+                    _rootCanvas = GetComponent<Canvas>();
+                
+                return _rootCanvas;
+            }
+        }
 
         public static bool Interactable
         {
@@ -93,7 +103,6 @@ namespace NFramework
         protected override void Awake()
         {
             base.Awake();
-            RootCanvas = GetComponent<Canvas>();
             _pointerEventData = new PointerEventData(EventSystem.current);
 
             foreach (var uiLayerInfo in _uiLayerOrders)
