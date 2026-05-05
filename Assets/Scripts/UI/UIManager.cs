@@ -584,7 +584,7 @@ namespace NFramework
 #if ADDRESSABLES
         private static async UniTask<T> LoadAndInstantiateViewAddressables<T>(string id) where T : UIView
         {
-            await UniTask.WaitUntil(() => !_unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
+            await UniTask.WaitUntil(() => !I._unloadingAddressableViewIds.Contains(id), cancellationToken: I.destroyCancellationToken);
             
             var loadHandle = await AddressablesManager.LoadAsset<GameObject>(GetViewPfAddressablesPath(id));
             if (loadHandle == null)

@@ -36,6 +36,8 @@ Mỗi layer là một `RectTransform` con chứa `Canvas`, `GraphicRaycaster`, v
 
 ## Tạo UIView Mới
 
+> 💡 Có thể dùng **UIViewCreator** để tự động tạo script + prefab (xem phần [Editor Tools](#editor-tools)).
+
 ```csharp
 public class SettingsView : UIView
 {
@@ -52,6 +54,14 @@ public class SettingsView : UIView
     }
 
     private float _volume;
+
+    // Khởi tạo view — gọi 1 lần khi view được load/instantiate
+    // ID và IsFromResources có private setter, chỉ gán được qua Initialize()
+    public override void Initialize(string id, bool isFromResources = false)
+    {
+        base.Initialize(id, isFromResources); // Bắt buộc gọi base (có guard chống gọi lại)
+        // Setup one-time resources ở đây
+    }
 
     public override void OnOpen(UIInputData inputData)
     {
@@ -221,3 +231,131 @@ await UIManager.UnloadAddressableUI("SettingsView", force: true);
 - Cấu hình `_pauseGameStatus` trên prefab (mặc định)
 - Override bằng `UIInputData.pauseStatus` khi gọi Open
 - Sử dụng `PauseGameHandler.Pause/Unpause` nội bộ
+
+## Editor Tools
+
+### Cấu hình NFrameworkConfigSO
+
+Mở menu `NFramework > Open Config` để mở/tạo asset cấu hình. Cần điền:
+
+| Field | Mô tả | Ví dụ |
+|---|---|---|
+| `scriptDefineNamespace` | Namespace cho code generated | `MyGame` |
+| `uiViewsFolderPath` | Folder chứa prefab UIView (relative to `Assets/`) | `Prefabs/UI` |
+| `uiScriptDefineSavePath` | Folder lưu `UIDefine.cs` generated | `Scripts/Generated` |
+
+> ⚠️ Phải cấu hình `uiViewsFolderPath` trước khi dùng các tool bên dưới.
+
+### Tạo View bằng UIViewCreator
+
+1. Mở menu `NFramework > UI > Window`
+2. Chọn tab **"Create New View"** ở sidebar trái
+3. Điền thông tin:
+
+| Field | Mô tả |
+|---|---|
+| `View Name` | Tên view / tên prefab. VD: `SettingsPopup` |
+| `Script Name` | Tên class C# (auto-sync theo View Name, có thể đổi) |
+| `Script Folder Path` | Folder lưu file `.cs` (relative to `Assets/`) |
+| `UI Layer` | Layer: `Background`, `Menu`, `Popup`, `Loading`, `AlwaysOnTop` |
+| `Generate Script Define` | Tick để auto-gen `UIDefine.cs` sau khi tạo |
+
+4. Bấm nút **Create** (nút xanh lá lớn)
+
+**Khi bấm Create, tool sẽ:**
+1. Validate — kiểm tra trùng key, file script đã tồn tại
+2. Sinh file `.cs` kế thừa `UIView` (có sẵn override `Initialize`, `OnOpen`, `OnClose`)
+3. Tạo prefab stretch-full trong `uiViewsFolderPath`
+4. Instantiate prefab instance trong scene hiện tại
+5. Lưu pending info vào `EditorPrefs`
+6. Sau khi Unity **recompile** xong → `[InitializeOnLoadMethod]` tự động:
+   - Tìm type vừa tạo trong assemblies
+   - `AddComponent` script vào prefab
+   - Set `_uiLayer`, `key`, `defineKeyConstName`
+   - Save prefab asset
+   - Nếu tick `Generate Script Define` → auto-gen `UIDefine.cs`
+
+**Script generated mẫu:**
+
+```csharp
+using UnityEngine;
+using NFramework;
+
+namespace MyGame
+{
+    public class SettingsPopup : UIView
+    {
+        public override void Initialize(string id, bool isFromResources = false)
+        {
+            base.Initialize(id, isFromResources);
+        }
+
+        public override void OnOpen(UIInputData inputData)
+        {
+            base.OnOpen(inputData);
+        }
+
+        public override UIOutputData OnClose()
+        {
+            return base.OnClose();
+        }
+    }
+}
+```
+
+**Tạo thủ công (không dùng tool):**
+1. Tạo script kế thừa `UIView`
+2. Tạo prefab, attach script, đặt vào `uiViewsFolderPath`
+3. Chạy `NFramework > UI > Generate Script Define` để update `UIDefine.cs`
+
+### UIEditorWindow — Quản lý View
+
+Mở `NFramework > UI > Window`:
+
+| Thao tác | Cách làm |
+|---|---|
+| Browse views | Sidebar trái hiển thị tất cả UIView prefabs, nhóm theo `Layer X / ViewName` |
+| Inspect view | Click vào view → inspector bên phải |
+| Locate prefab | Chọn view → toolbar **Locate** |
+| Delete view | Chọn view → toolbar **Delete** → xác nhận |
+| Generate UIDefine | Toolbar **Generate ScriptDefine** |
+| Locate UIDefine | Toolbar **Locate ScriptDefine** |
+
+### UIDefine — Script Define tự sinh
+
+Chạy `NFramework > UI > Generate Script Define` để sinh file `UIDefine.cs`:
+
+```csharp
+// This file is auto-generated.
+// Do not modify this file manually.
+
+namespace MyGame
+{
+    public static class UIDefine
+    {
+        // Popup
+        public static string SettingsPopup = "SettingsPopup";
+        public static string ShopPopup = "ShopPopup";
+        // Menu
+        public static string MainMenu = "MainMenu";
+    }
+}
+```
+
+Sử dụng:
+
+```csharp
+UIManager.OpenResources(UIDefine.SettingsPopup);
+var view = await UIManager.OpenAddressables<SettingsPopup>(UIDefine.SettingsPopup, inputData);
+```
+
+### Menu Reference
+
+```
+NFramework/
+├── Open Config                     → Mở NFrameworkConfigSO
+└── UI/
+    ├── Window                      → UIEditorWindow (browse + create views)
+    ├── Generate Script Define      → Generate UIDefine.cs
+    └── Locate Script Define        → Ping UIDefine.cs
+```
