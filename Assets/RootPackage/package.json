@@ -1,0 +1,24 @@
+{
+  "name": "com.nghia.nframework",
+  "version": "2.0.0",
+  "displayName": "NFramework",
+  "description": "A lightweight Unity framework for rapid game development. Includes UI system, object pooling, state machine, singleton, sound manager, and more.",
+  "unity": "6000.0",
+  "author": {
+    "name": "Nghia",
+    "url": "https://github.com/nghiaromvt"
+  },
+  "keywords": [
+    "framework",
+    "ui",
+    "pool",
+    "singleton",
+    "state-machine",
+    "sound"
+  ],
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "documentationUrl": "https://github.com/nghiaromvt/nframework#readme",
+  "changelogUrl": "https://github.com/nghiaromvt/nframework/blob/main/CHANGELOG.md"
+}
