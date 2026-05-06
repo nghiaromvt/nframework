@@ -13,10 +13,7 @@ namespace NFramework
 
         private bool _invoked;
         
-        private void OnValidate()
-        {
-            _particleSystem ??= GetComponent<ParticleSystem>();
-        }
+        private void OnValidate() => _particleSystem ??= GetComponent<ParticleSystem>();
 
         private void OnParticleSystemStopped()
         {
@@ -27,6 +24,6 @@ namespace NFramework
         }
         
         // For call from inspector
-        public void DestroySelf() => Destroy(gameObject);
+        public void DestroyGameObject() => Destroy(gameObject);
     }
 }
