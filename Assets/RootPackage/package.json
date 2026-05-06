@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "displayName": "NFramework",
   "description": "A lightweight Unity framework for rapid game development. Includes UI system, object pooling, state machine, singleton, sound manager, and more.",
-  "unity": "6000.0",
+  "unity": "2022.3",
   "author": {
     "name": "Nghia",
     "url": "https://github.com/nghiaromvt"
