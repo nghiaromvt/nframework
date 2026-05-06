@@ -15,37 +15,31 @@ A lightweight Unity framework for rapid game development.
 - 🔧 **Extensions & Helpers** — Rich set of utility extensions and helper classes
 - 📱 **Vibration** — Haptic feedback support
 
-## Prerequisites
+## Dependencies
 
-NFramework depends on the following packages. **Install them first** before installing NFramework:
-
-### UniTask
-```
-https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask
-```
-
-### PrimeTween
-```
-https://github.com/KyryloKuzyk/PrimeTween.git
-```
-
-> Install via **Window → Package Manager → + → Add package from git URL**
+- **UniTask & PrimeTween**: Installed via the `manifest.json` setup below.
+- **Odin Inspector**: NFramework heavily relies on [Odin Inspector](https://assetstore.unity.com/packages/tools/utilities/odin-inspector-and-serializer-89200) for its editor tools and serialization. Since it is a paid asset, you must purchase and import it manually into your project from the Unity Asset Store.
 
 ## Installation
 
-After installing the prerequisites, add NFramework via git URL:
-
-```
-https://github.com/nghiaromvt/nframework.git?path=Assets/RootPackage
-```
-
-Or add directly to your `Packages/manifest.json`:
+To install NFramework along with UniTask and PrimeTween, open your project's `Packages/manifest.json` file and add the following lines:
 
 ```json
 {
   "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
+    "com.kyrylokuzyk.primetween": "1.3.8",
     "com.nghia.nframework": "https://github.com/nghiaromvt/nframework.git?path=Assets/RootPackage"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "npm",
+      "url": "https://registry.npmjs.org/",
+      "scopes": [
+        "com.kyrylokuzyk"
+      ]
+    }
+  ]
 }
 ```
 
