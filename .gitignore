@@ -86,7 +86,7 @@ CacheData/**
 *.idea
 
 # Not ignore .unitypackage files inside in specific folders
-!.HiddenFromEditor/**/*.unitypackage
+!CommonPackages/**/*.unitypackage
 
 # Ignore unnecessary folders
 Packages/
