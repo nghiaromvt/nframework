@@ -599,7 +599,10 @@ namespace NFramework
             return view;
         }
 
-        private static string GetViewPfAddressablesPath(string id) => $"{I._refPathAddressable}/{id}.prefab";
+        private static string GetViewPfAddressablesPath(string id)
+        {
+            return string.IsNullOrEmpty(I._refPathAddressable) ? id : $"{I._refPathAddressable}/{id}";
+        }
 #endif
 
         private static T LoadAndInstantiateViewResources<T>(string id) where T : UIView
@@ -630,7 +633,10 @@ namespace NFramework
             return view;
         }
 
-        private static string GetViewPfResourcesPath(string id) => $"{I._resourcesRootFolder}{id}";
+        private static string GetViewPfResourcesPath(string id)
+        {
+            return string.IsNullOrEmpty(I._resourcesRootFolder) ? id : $"{I._resourcesRootFolder}/{id}";
+        }
 
         #endregion
 
