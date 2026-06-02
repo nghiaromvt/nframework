@@ -14,53 +14,36 @@ A custom Unity framework featuring modular systems (UI, Save, Sound, etc.) and a
 NFramework relies on a few essential external libraries to function optimally. 
 
 *   [**UniTask**](https://github.com/Cysharp/UniTask) - Provides an efficient allocation-free async/await integration for Unity.
-*   [**PrimeTween**](https://github.com/KyryloKuzyk/PrimeTween) - High-performance, zero-allocation animation library.
-*   **Newtonsoft.Json** - Required for robust JSON serialization (especially within the Save system).
+*   [**PrimeTween**](https://assetstore.unity.com/packages/tools/animation/primetween-high-performance-animations-and-sequences-252960) - High-performance, zero-allocation animation library.
+*   [**Odin Inspector and Serializer**](https://assetstore.unity.com/packages/tools/utilities/odin-inspector-and-serializer-89041) - High-performance, zero-allocation animation library.
+*   [**Newtonsoft.Json**](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) - Required for robust JSON serialization (especially within the Save system).
 
 ---
 
 ## 🛠️ Installation Guide
 
-### 1. Adding NFramework to Your Project
+### 1. Install Dependencies
+
+Make sure you have the following dependencies installed in your Unity project:
+- **Newtonsoft.Json** - [UPM](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html)
+- **UniTask** - [GitHub](https://github.com/Cysharp/UniTask)
+- **PrimeTween** - [Asset Store](https://assetstore.unity.com/packages/tools/animation/primetween-high-performance-animations-and-sequences-252960)
+- **Odin Inspector and Serializer** - [Asset Store](https://assetstore.unity.com/packages/tools/utilities/odin-inspector-and-serializer-89041)
+
+### 2. Adding NFramework to Your Project
 
 You can integrate NFramework into your Unity project using one of the following methods:
 
-**Method A: Git Submodule (Recommended)**
-If your target project uses Git, you can add this repository as a submodule. This allows you to easily pull updates from the framework:
-```bash
-git submodule add <repository-url> Assets/NFramework
-```
-
-**Method B: Manual Copy**
+**Method A: Manual Copy**
 1. Create a folder named `NFramework` inside your target Unity project's `Assets` folder.
 2. Copy the contents of the `Assets` folder from this repository into your newly created `Assets/NFramework` folder.
 
-### 2. Installing Newtonsoft.Json (via UPM)
+**Method B: Git Submodule**
 
-NFramework uses Unity's official wrapper for Newtonsoft.Json. You must install it via the Unity Package Manager (UPM):
-
-1. Open Unity Editor.
-2. Go to **Window > Package Manager**.
-3. Click the **`+`** drop-down button in the top left corner.
-4. Select **Add package by name...**.
-5. Enter the following name: `com.unity.nuget.newtonsoft-json`
-6. Click **Add**.
-
-### 3. Core Dependencies (UniTask & PrimeTween)
-
-Make sure you have both **UniTask** and **PrimeTween** imported into your project. You can install them via the Asset Store, UPM, or their respective GitHub repositories. 
-
-### 4. Hidden Packages (`.HiddenFromEditor`)
-
-This repository contains some useful third-party packages and tools stored inside the `.HiddenFromEditor` folder. These are hidden from Unity's default Asset database to reduce clutter and keep the workspace clean.
-
-To install a package from the `.HiddenFromEditor` folder:
-
-1. Open the **Package Manager** in Unity.
-2. Click the **`+`** drop-down button.
-3. Select **Add package from disk...**.
-4. Navigate to the `.HiddenFromEditor/[Package_Name]` directory inside your project root.
-5. Select the `package.json` file to install it.
+If your target project uses Git, you can add this repository as a submodule. This allows you to easily pull updates from the framework:
+```bash
+git submodule add https://github.com/nghiaromvt/nframework.git Assets/NFramework
+```
 
 ---
 
