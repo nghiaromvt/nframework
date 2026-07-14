@@ -23,13 +23,13 @@ namespace NFramework
             Debug.LogWarning(FormatMessage(message, context, color), context);
         }
 
-        [Conditional("DEBUG_ENABLE"), Conditional("UNITY_EDITOR"), Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("DEBUG_ENABLE"), Conditional("UNITY_EDITOR")]
         public static void LogError(object message, Object context = null, Color? color = null)
         {
             Debug.LogError(FormatMessage(message, context, color), context);
         }
         
-        [Conditional("DEBUG_ENABLE"), Conditional("UNITY_EDITOR"), Conditional("ENABLE_ERROR_LOG")]
+        [Conditional("DEBUG_ENABLE"), Conditional("UNITY_EDITOR")]
         public static void LogException(Exception exception, Object context = null, Color? color = null)
         {
             Debug.LogError(FormatMessage(exception, context, color), context);

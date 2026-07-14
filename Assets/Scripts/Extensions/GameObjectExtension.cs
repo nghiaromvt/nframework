@@ -45,5 +45,30 @@ namespace NFramework
                 objs[i].SetActive(value);
             }
         }
+        
+        /// <summary>
+        /// Checks whether the GameObject's layer is included in the provided layer mask.
+        /// </summary>
+        /// <param name="gameObject">The GameObject whose layer should be checked.</param>
+        /// <param name="mask">The layer mask to test against.</param>
+        /// <returns>True if the GameObject's layer is present in the mask, otherwise false.</returns>
+        /// <example>
+        /// <code>
+        /// if (target.IsInLayerMask(attackableMask)) {
+        ///     Attack(target);
+        /// }
+        /// </code>
+        /// </example>
+        public static bool IsInLayerMask(this GameObject gameObject, LayerMask mask) {
+            return (mask.value & (1 << gameObject.layer)) != 0;
+        }
+
+        /// <summary>
+        /// This method is used to hide the GameObject in the Hierarchy view.
+        /// </summary>
+        /// <param name="gameObject"></param>
+        public static void HideInHierarchy(this GameObject gameObject) {
+            gameObject.hideFlags = HideFlags.HideInHierarchy;
+        }
     }
 }
