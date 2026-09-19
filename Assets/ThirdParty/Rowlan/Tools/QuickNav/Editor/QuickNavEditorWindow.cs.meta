@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 6a4c083335428384bbee0a86b2921642
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 276267
+  packageName: QuickNav - History's Favorites - FREE
+  packageVersion: 1.7.0
+  assetPath: Assets/Rowlan/Tools/QuickNav/Editor/QuickNavEditorWindow.cs
+  uploadId: 866134

@@ -1,0 +1,17 @@
+{
+  "name": "com.rowlan.tools.quicknav",
+  "displayName": "Quick Nav",
+  "version": "1.7.0",
+  "author": {
+	"name": "Rowlan",
+	"email": "",
+	"url": ""
+  },  
+  "unity": "2020.3",
+  "description": "Quick Navigation for Unity for History and Favorites",
+  "keywords": [
+    "Editor Tools"
+  ],
+  "category": "Scripts",
+  "type": "tool"
+}

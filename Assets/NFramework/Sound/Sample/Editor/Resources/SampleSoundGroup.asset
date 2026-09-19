@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b918138e9fbd45a684b843896505de4b, type: 3}
+  m_Name: SampleSoundGroup
+  m_EditorClassIdentifier: NFramework.Sound::NFramework.Sound.SoundGroupSO
+  defineKeyConstName: SAMPLE_SOUND_GROUP
+  key: SampleSoundGroup
+  soundEntries:
+  - defineKeyConstName: BGM_INGAME
+    key: BGM_Ingame
+    clip: {fileID: 8300000, guid: d2180d555f8db4c2bb045613fd2266a1, type: 3}
+    playSettings:
+      volume: 1
+      loop: 1
+      pitch: 1
+      ignorePause: 0
+      overlapType: 0
+      fadeTime: 1
+  - defineKeyConstName: SFX_OPEN_CHEST
+    key: SFX_Open_Chest
+    clip: {fileID: 8300000, guid: d1c2e3f82dab04b8f9878ab961e61c2b, type: 3}
+    playSettings:
+      volume: 1
+      loop: 0
+      pitch: 1
+      ignorePause: 0
+      overlapType: 0
+      fadeTime: 0

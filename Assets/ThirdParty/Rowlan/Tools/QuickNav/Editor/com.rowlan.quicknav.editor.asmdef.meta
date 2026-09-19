@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4e9c87f388902bd4eb89a2e17530d23e
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 276267
+  packageName: QuickNav - History's Favorites - FREE
+  packageVersion: 1.7.0
+  assetPath: Assets/Rowlan/Tools/QuickNav/Editor/com.rowlan.quicknav.editor.asmdef
+  uploadId: 866134

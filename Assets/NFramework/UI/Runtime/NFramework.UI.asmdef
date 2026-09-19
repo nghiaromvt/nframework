@@ -1,0 +1,33 @@
+{
+    "name": "NFramework.UI",
+    "rootNamespace": "NFramework.UI",
+    "references": [
+        "GUID:95d5fecb40553fa48aca43a2fc5e8c88",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:84651a3751eca9349aac36a66bba901b",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:80ecb87cae9c44d19824e70ea7229748",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "ADDRESSABLES"
+        },
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "",
+            "define": "ENABLE_INPUT_SYSTEM"
+        }
+    ],
+    "noEngineReferences": false
+}

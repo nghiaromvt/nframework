@@ -1,0 +1,39 @@
+using UnityEngine;
+
+namespace NFramework
+{
+    public class SingletonMono<T> : MonoBehaviour where T : MonoBehaviour
+    {
+        public static T I { get; private set; }
+        public static bool HasInstance => I != null;
+
+        static SingletonMono()
+        {
+            SingletonResetRegistry.Register(ResetStatic);
+        }
+
+        private static void ResetStatic()
+        {
+            I = null;
+        }
+
+        protected virtual void Awake()
+        {
+            if (I == null)
+            {
+                I = this as T;
+            }
+            else
+            {
+                Debug.LogError($"Duplicate singleton type of {typeof(T)}");
+                Destroy(gameObject);
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (I == this)
+                I = null;
+        }
+    }
+}

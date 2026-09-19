@@ -1,0 +1,10 @@
+{
+  "name": "com.neo.nframework",
+  "version": "1.0.0",
+  "displayName": "NFramework",
+  "description": "A custom Unity framework featuring modular systems (UI, Save, Sound, etc.) and helper utilities.",
+  "unity": "6000.0",
+  "author": {
+    "name": "Neo"
+  }
+}

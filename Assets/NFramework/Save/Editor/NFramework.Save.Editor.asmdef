@@ -1,0 +1,20 @@
+{
+    "name": "NFramework.Save.Editor",
+    "rootNamespace": "NFramework.Save.Editor",
+    "references": [
+        "GUID:8348322c11d22449499014ca45295a22",
+        "GUID:95d5fecb40553fa48aca43a2fc5e8c88",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

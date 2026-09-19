@@ -1,0 +1,17 @@
+{
+    "name": "NFramework.Save.Sample",
+    "rootNamespace": "NFramework.Save.Sample",
+    "references": [
+        "GUID:8348322c11d22449499014ca45295a22",
+        "GUID:95d5fecb40553fa48aca43a2fc5e8c88"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

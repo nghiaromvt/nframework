@@ -1,0 +1,28 @@
+{
+    "name": "NFramework.Sound.Editor",
+    "rootNamespace": "NFramework.Sound.Editor",
+    "references": [
+        "NFramework.Sound",
+        "GUID:95d5fecb40553fa48aca43a2fc5e8c88",
+        "GUID:c67d27dc2d7c59746a9909b3e85899a8",
+        "GUID:9e24947de15b9834991c9d8411ea37cf",
+        "GUID:69448af7b92c7f342b298e06a37122aa"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.addressables",
+            "expression": "",
+            "define": "ADDRESSABLES"
+        }
+    ],
+    "noEngineReferences": false
+}
