@@ -2,21 +2,64 @@
 
 A custom Unity framework featuring modular systems (UI, Save, Sound, etc.) and a collection of helper classes to support rapid game development.
 
-## 🌟 Features
+---
 
-*   **Modular Architecture**: Isolated and manageable systems for UI, Save/Load, Sound, and more.
-*   **Rapid Development**: A comprehensive collection of helper classes and extension methods to speed up everyday Unity tasks.
-*   **Modern Async**: Fully integrated with `UniTask` to replace traditional Coroutines for better performance and readability.
-*   **High-Performance Animations**: Utilizes `PrimeTween` for zero-allocation, fast, and easy tweening.
+## 🚀 Installation (UPM via Git URL)
 
-## 📦 Dependencies
+NFramework is distributed as a clean **Unity Package Manager (UPM)** package containing only core framework modules and can be installed directly from GitHub into any Unity project.
 
-NFramework relies on a few essential external libraries to function optimally. 
+### 1. Prerequisites (Must be installed in host project)
 
-*   [**UniTask**](https://github.com/Cysharp/UniTask) - Provides an efficient allocation-free async/await integration for Unity.
-*   [**PrimeTween**](https://assetstore.unity.com/packages/tools/animation/primetween-high-performance-animations-and-sequences-252960) - High-performance, zero-allocation animation library.
-*   [**Odin Inspector and Serializer**](https://assetstore.unity.com/packages/tools/utilities/odin-inspector-and-serializer-89041) - High-performance, zero-allocation animation library.
-*   [**Newtonsoft.Json**](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.0/manual/index.html) - Required for robust JSON serialization (especially within the Save system).
+Before installing NFramework, ensure the following third-party assets are installed in your host project:
+
+*   [**Odin Inspector & Serializer**](https://assetstore.unity.com/packages/tools/utilities/odin-inspector-and-serializer-89041) (Unity Asset Store)
+*   [**PrimeTween**](https://assetstore.unity.com/packages/tools/animation/primetween-high-performance-animations-and-sequences-252960) (Unity Asset Store)
+
+*(Note: UniTask, Newtonsoft.Json, and UGUI are declared as package dependencies in `package.json` and will be resolved automatically by Unity).*
+
+---
+
+### 2. Install via Unity Package Manager Window
+
+1. In Unity, open **Window** > **Package Manager**.
+2. Click the **`+`** icon in the top-left corner and select **Add package from git URL...**.
+3. Enter one of the following URLs:
+
+*   **Stable Release (Recommended)**:
+    ```text
+    https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework#v1.0.0
+    ```
+*   **Latest (main branch)**:
+    ```text
+    https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework
+    ```
+
+---
+
+### 3. Install via `Packages/manifest.json`
+
+Alternatively, you can add NFramework directly to your project's `Packages/manifest.json`:
+
+```json
+{
+  "dependencies": {
+    "com.neo.nframework": "https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework#v1.0.0"
+  }
+}
+```
+
+---
+
+## 📦 Dependencies & Optional Features
+
+| Dependency | Type | Source |
+| :--- | :--- | :--- |
+| **Odin Inspector** | Prerequisite | Unity Asset Store |
+| **PrimeTween** | Prerequisite | Unity Asset Store |
+| **UniTask** | Automatic | `https://github.com/Cysharp/UniTask.git` (Git) |
+| **Newtonsoft.Json** | Automatic | `com.unity.nuget.newtonsoft-json` (Unity Registry) |
+| **UGUI / TextMeshPro** | Automatic | `com.unity.ugui` (Unity Registry) |
+| **Addressables** | **Optional** | Automatically activated if `com.unity.addressables` is present via `#if ADDRESSABLES`. |
 
 ---
 
@@ -26,7 +69,7 @@ NFramework relies on a few essential external libraries to function optimally.
 A robust view-based UI manager. Handles screen navigation, popups, overlays, and complex UI states efficiently.
 
 ### 💾 Save System
-A modular save/load architecture utilizing `Newtonsoft.Json`. Supports multiple save profiles, automatic serialization, and easy data management.
+A modular save/load architecture utilizing `Newtonsoft.Json` or `OdinSerializer`. Supports multiple save profiles, automatic serialization, and easy data management.
 
 ### 🔊 Sound System
 An easy-to-use audio manager for playing BGM, SFX, and UI sounds with support for object pooling, volume control, and fading.
@@ -36,9 +79,20 @@ A wide array of static helper classes and extension methods for standard Unity t
 
 ---
 
+## 🎮 Sandbox & Examples
+
+The framework package itself (`Assets/NFramework`) is kept completely clean of demo scenes and test assets. 
+
+For developers exploring or contributing to NFramework, practical sample scenes and code demonstrations are maintained in the [`Assets/Sandbox`](file:///Users/nghia/Projects/nframework/Assets/Sandbox) directory of this repository:
+*   **`Assets/Sandbox/UI`**: UI navigation, popups, and view examples.
+*   **`Assets/Sandbox/Save`**: Save/load profiling and serialization tests.
+*   **`Assets/Sandbox/Sound`**: Audio playback, sound groups, and mixer setup.
+
+---
+
 ## 🏷️ Versioning
 
-- **Current Version**: `1.0.0`
-- **In C#**: [`NFrameworkVersion.VERSION`](file:///Users/nghia/Projects/nframework/Assets/NFramework/Core/NFrameworkVersion.cs)
-- **In Unity Editor**: Menu `Tools` > `NFramework` > `About NFramework`
-- **Package Manifest**: [`package.json`](file:///Users/nghia/Projects/nframework/Assets/NFramework/package.json)
+*   **Current Version**: `1.0.0`
+*   **In C#**: [`NFrameworkVersion.VERSION`](file:///Users/nghia/Projects/nframework/Assets/NFramework/Core/NFrameworkVersion.cs)
+*   **In Unity Editor**: Menu `Tools` > `NFramework` > `About NFramework`
+*   **Package Manifest**: [`package.json`](file:///Users/nghia/Projects/nframework/Assets/NFramework/package.json)
