@@ -24,7 +24,10 @@ namespace NFramework.UI
                     _defaultMat = _graphic.material;
 
                 if (_greyscaleMat == null)
-                    _greyscaleMat = Resources.Load<Material>(GREYSCALE_MAT_RESOURCES_PATH);
+                {
+                    NLogger.LogError($"[{GetType().Name}] Greyscale material is not assigned.", this);
+                    return;
+                }
             }
 
             base.OnValidate();

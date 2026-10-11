@@ -7,8 +7,6 @@ namespace NFramework.UI
 {
     public class UIGreyscaleHandler : MonoBehaviour
     {
-        public const string GREYSCALE_MAT_RESOURCES_PATH = "Greyscale";
-        
         [SerializeField] protected bool _isOn;
         [SerializeField] protected List<UIGreyscaleHandler> _children = new();
         
