@@ -10,20 +10,25 @@ NFramework is distributed as a clean **Unity Package Manager (UPM)** package con
 
 ### 1. Prerequisites (Must be installed in host project)
 
-Before installing NFramework, ensure the following third-party assets are installed in your host project:
+Before installing NFramework, ensure the following packages/assets are installed in your host project:
 
+*   [**UniTask**](https://github.com/Cysharp/UniTask) (Install via Git URL or OpenUPM):
+    ```text
+    https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask
+    ```
 *   [**Odin Inspector & Serializer**](https://assetstore.unity.com/packages/tools/utilities/odin-inspector-and-serializer-89041) (Unity Asset Store)
 *   [**PrimeTween**](https://assetstore.unity.com/packages/tools/animation/primetween-high-performance-animations-and-sequences-252960) (Unity Asset Store)
 
-*(Note: UniTask, Newtonsoft.Json, and UGUI are declared as package dependencies in `package.json` and will be resolved automatically by Unity).*
+*(Note: Newtonsoft.Json and UGUI are declared as package dependencies in `package.json` and will be resolved automatically by Unity).*
 
 ---
 
 ### 2. Install via Unity Package Manager Window
 
-1. In Unity, open **Window** > **Package Manager**.
-2. Click the **`+`** icon in the top-left corner and select **Add package from git URL...**.
-3. Enter one of the following URLs:
+1. First, make sure you have added **UniTask** via Git URL in Package Manager.
+2. In Unity, open **Window** > **Package Manager**.
+3. Click the **`+`** icon in the top-left corner and select **Add package from git URL...**.
+4. Enter one of the following URLs:
 
 *   **Stable Release (Recommended)**:
     ```text
@@ -38,11 +43,12 @@ Before installing NFramework, ensure the following third-party assets are instal
 
 ### 3. Install via `Packages/manifest.json`
 
-Alternatively, you can add NFramework directly to your project's `Packages/manifest.json`:
+Alternatively, you can add UniTask and NFramework directly to your project's `Packages/manifest.json`:
 
 ```json
 {
   "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
     "com.neo.nframework": "https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework#v1.0.0"
   }
 }
@@ -54,9 +60,9 @@ Alternatively, you can add NFramework directly to your project's `Packages/manif
 
 | Dependency | Type | Source |
 | :--- | :--- | :--- |
+| **UniTask** | Prerequisite | `https://github.com/Cysharp/UniTask.git` (Git URL or OpenUPM) |
 | **Odin Inspector** | Prerequisite | Unity Asset Store |
 | **PrimeTween** | Prerequisite | Unity Asset Store |
-| **UniTask** | Automatic | `https://github.com/Cysharp/UniTask.git` (Git) |
 | **Newtonsoft.Json** | Automatic | `com.unity.nuget.newtonsoft-json` (Unity Registry) |
 | **UGUI / TextMeshPro** | Automatic | `com.unity.ugui` (Unity Registry) |
 | **Addressables** | **Optional** | Automatically activated if `com.unity.addressables` is present via `#if ADDRESSABLES`. |
