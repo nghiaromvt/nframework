@@ -689,12 +689,6 @@ namespace NFramework.UI
         {
             if (view == null) return;
 
-            // Automatically close all opened menus when opening a view in the Menu layer
-            if (view.UILayer == UILayer.Menu)
-            {
-                CloseAllInLayer(UILayer.Menu, destroy: false, ignoreList: new List<UIView> { view }).Forget();
-            }
-
             view.transform.SetAsLastSibling();
             view.OnOpen(inputData);
             I._openedView[view.UILayer].Add(view);

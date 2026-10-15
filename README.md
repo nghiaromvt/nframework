@@ -32,7 +32,7 @@ Before installing NFramework, ensure the following packages/assets are installed
 
 *   **Stable Release (Recommended)**:
     ```text
-    https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework#v1.0.0
+    https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework#v1.1.0
     ```
 *   **Latest (main branch)**:
     ```text
@@ -49,7 +49,7 @@ Alternatively, you can add UniTask and NFramework directly to your project's `Pa
 {
   "dependencies": {
     "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
-    "com.neo.nframework": "https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework#v1.0.0"
+    "com.neo.nframework": "https://github.com/nghiaromvt/nframework.git?path=Assets/NFramework#v1.1.0"
   }
 }
 ```
@@ -98,7 +98,7 @@ For developers exploring or contributing to NFramework, practical sample scenes 
 
 ## 🏷️ Versioning
 
-*   **Current Version**: `1.0.0`
+*   **Current Version**: `1.1.0`
 *   **In C#**: [`NFrameworkVersion.VERSION`](file:///Users/nghia/Projects/nframework/Assets/NFramework/Core/NFrameworkVersion.cs)
 *   **In Unity Editor**: Menu `Tools` > `NFramework` > `About NFramework`
 *   **Package Manifest**: [`package.json`](file:///Users/nghia/Projects/nframework/Assets/NFramework/package.json)

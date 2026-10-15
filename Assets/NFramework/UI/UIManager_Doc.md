@@ -43,7 +43,7 @@ Assets/NFramework/UI/
 ```
 UIManager (SingletonMono)
 ├── Background Layer    ← Canvas + GraphicRaycaster + CanvasGroup
-├── Menu Layer          ← Tự động đóng các Menu khác khi mở Menu mới
+├── Menu Layer          ← Quản lý các màn hình chính (Menu/Screen)
 ├── Popup Layer
 ├── Loading Layer
 └── AlwaysOnTop Layer
@@ -229,7 +229,7 @@ Mọi phương thức async đều hỗ trợ tham số `CancellationToken cance
 > [!NOTE]
 > Khi mở bất kỳ view nào thuộc layer **`UILayer.Menu`**:
 > - Nếu Menu đó **đang mở hoặc đang trong quá trình mở** (`Open` hoặc `Opening`), UIManager sẽ **skip** việc mở lại và trả về instance đang mở.
-> - Nếu là Menu khác, UIManager sẽ **tự động đóng tất cả các menu đang mở khác** trong layer `Menu` để đảm bảo tại một thời điểm chỉ có 1 màn hình Menu active.
+> - Việc đóng menu cũ khi chuyển đổi sang menu mới được điều phối tường minh (explicit) bởi Caller / State Machine (ví dụ: `await UIManager.Close(...)` trước hoặc sau khi mở menu mới) thay vì tự động đóng ngầm, giúp kiểm soát hoàn toàn thứ tự transition và animation.
 
 ```csharp
 // === Resources (đồng bộ) ===
