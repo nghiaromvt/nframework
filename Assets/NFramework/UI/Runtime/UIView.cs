@@ -144,22 +144,8 @@ namespace NFramework.UI
             return UIManager.Close(this, destroy, ignoreAnim, cancellationToken);
         }
 
-        public UniTask WaitForOpenComplete()
-        {
-            return UniTask.WaitUntil(() => ViewStatus == EViewStatus.Open, cancellationToken: destroyCancellationToken);
-        }
-
-        public UniTask WaitForCloseComplete()
-        {
-            return UniTask.WaitUntil(() => ViewStatus == EViewStatus.Closed, cancellationToken: destroyCancellationToken);
-        }
 
         protected virtual void OnViewOpened(UIInputData inputData)
-        {
-            OnViewOpened();
-        }
-
-        protected virtual void OnViewOpened()
         {
         }
 

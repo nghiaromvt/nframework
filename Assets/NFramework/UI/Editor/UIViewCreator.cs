@@ -119,9 +119,9 @@ namespace NFramework.UI.Editor
 
             sb.AppendLine($"{indent}public class {_scriptName} : UIView");
             sb.AppendLine($"{indent}{{");
-            sb.AppendLine($"{indent}    protected override void OnViewOpened()");
+            sb.AppendLine($"{indent}    protected override void OnViewOpened(UIInputData inputData)");
             sb.AppendLine($"{indent}    {{");
-            sb.AppendLine($"{indent}        base.OnViewOpened();");
+            sb.AppendLine($"{indent}        base.OnViewOpened(inputData);");
             sb.AppendLine($"{indent}    }}");
             sb.AppendLine($"{indent}}}");
 

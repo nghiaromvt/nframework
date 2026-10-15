@@ -14,6 +14,7 @@ Assets/NFramework/UI/
 │   ├── NFramework.UI.asmdef
 │   ├── UIManager.cs
 │   ├── UIView.cs
+│   ├── UIViewExtensions.cs
 │   ├── IViewAnimation.cs
 │   ├── FadeViewAnimation.cs
 │   ├── SafeArea.cs
@@ -57,6 +58,7 @@ Mỗi layer là một `RectTransform` con chứa `Canvas`, `GraphicRaycaster`, v
 | `UIManager` | Singleton quản lý toàn bộ vòng đời và tương tác UI |
 | `UIView` | Base class cho mỗi màn hình/popup UI (không cần input) |
 | `UIView<TInput>` | Generic base class cho màn hình/popup UI có input dữ liệu strongly typed |
+| `UIViewExtensions` | Các extension method tiện ích cho `UIView` (`WaitForOpenComplete`, `WaitForCloseComplete`) |
 | `UIViewAssetPostprocessor` | Tự động cập nhật và validate Key của UIView khi di chuyển file hoặc thay đổi Addressable |
 | `UILayer` | Enum định nghĩa thứ tự layer (Background → AlwaysOnTop) |
 | `UIInputData` | Base class dữ liệu truyền vào khi mở view (chứa `PauseStatus`, có thể kế thừa) |
@@ -126,7 +128,7 @@ Có 2 cách để thêm một UI mới vào dự án: **Tự động qua Editor 
 
 1. **Bước 1 — Viết C# Script**:
    - Nếu View cần dữ liệu đầu vào: Kế thừa `UIView<TInput>` (strongly typed, không cần ép kiểu).
-   - Nếu View tĩnh không cần dữ liệu: Kế thừa `UIView` (override `OnViewOpened()` không tham số).
+   - Nếu View tĩnh không cần dữ liệu: Kế thừa `UIView` (override `OnViewOpened(UIInputData inputData)`).
 2. **Bước 2 — Tạo Prefab**:
    - Tạo GameObject UI với `RectTransform` (stretch full parent hoặc căn giữa).
    - Gắn component script vừa tạo, chọn `UI Layer` tương ứng trong Inspector.
@@ -178,10 +180,10 @@ public class SettingsView : UIView<SettingsView.InputData>
 ```csharp
 public class MainMenuView : UIView
 {
-    protected override void OnViewOpened()
+    protected override void OnViewOpened(UIInputData inputData)
     {
-        base.OnViewOpened();
-        // Khởi tạo menu tĩnh, không cần tham số inputData
+        base.OnViewOpened(inputData);
+        // Khởi tạo menu tĩnh
     }
 }
 ```

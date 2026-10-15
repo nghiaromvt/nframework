@@ -35,9 +35,9 @@ namespace NFramework.UI.Sample
 
         #region Custom Methods
 
-        protected override void OnViewOpened()
+        protected override void OnViewOpened(UIInputData inputData)
         {
-            base.OnViewOpened();
+            base.OnViewOpened(inputData);
             _actionClickCount = 0;
             _statusText.text = "Menu ready. Click a button to test.";
         }
