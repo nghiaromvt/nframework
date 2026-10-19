@@ -9,7 +9,7 @@ namespace NFramework
     public abstract class TsvConfigSOBase : ScriptableObject
     {
         [SerializeField] private string _category = "Default";
-        [SerializeField] private string _tsvPath = "";
+        [SerializeField, FilePath(AbsolutePath = true)] private string _tsvPath = "";
         [SerializeField] private bool _enableCache = false;
         [SerializeField, ShowIf(nameof(_enableCache))] private string _cachePath = "";
         [SerializeField, ReadOnly] private string _lastSyncedTime = "";

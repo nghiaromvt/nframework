@@ -129,6 +129,30 @@ namespace NFramework.UI
             }
             
             gameObject.SetLayerRecursively(gameObject.layer);
+
+#if ADDRESSABLES
+            AddressablesLoader.BeforeApplicationQuitting += CleanupAddressableHandles;
+#endif
+        }
+
+        protected override void OnDestroy()
+        {
+#if ADDRESSABLES
+            AddressablesLoader.BeforeApplicationQuitting -= CleanupAddressableHandles;
+            CleanupAddressableHandles();
+#endif
+            base.OnDestroy();
+        }
+
+        private void CleanupAddressableHandles()
+        {
+#if ADDRESSABLES
+            foreach (var handle in _addressablePrefabHandles.Values)
+            {
+                handle.Dispose();
+            }
+            _addressablePrefabHandles.Clear();
+#endif
         }
 
 #if UNITY_EDITOR

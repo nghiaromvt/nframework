@@ -27,12 +27,15 @@ namespace NFramework
 
         public static bool IsInitialized => _isInitialized;
 
+        public static event Action BeforeApplicationQuitting;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatic()
         {
             _cache.Clear();
             _initTcs = null;
             _isInitialized = false;
+            BeforeApplicationQuitting = null;
         }
 
         static AddressablesLoader()
@@ -42,6 +45,7 @@ namespace NFramework
 
         private static void OnApplicationQuitting()
         {
+            BeforeApplicationQuitting?.Invoke();
             if (_cache.Count > 0)
             {
                 foreach (var kvp in _cache)

@@ -33,7 +33,7 @@ namespace NFramework.Save.Tests
         [Test]
         public void Decrypt_WithWrongKey_ThrowsException()
         {
-            byte[] original = Encoding.UTF8.GetBytes("Data to encrypt");
+            byte[] original = Encoding.UTF8.GetBytes("Data to encrypt with a sufficiently long payload to ensure cryptographic padding failure on wrong key.");
             byte[] encrypted = _encryptor.Encrypt(original);
 
             IEncryptor wrongEncryptor = new AesEncryptor("DifferentKey87654321");

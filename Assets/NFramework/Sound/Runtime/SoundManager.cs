@@ -15,7 +15,7 @@ namespace NFramework.Sound
         Skip = 2, // Skip if any audio is playing
     }
 
-    public class SoundManager : SingletonMono<SoundManager>
+    public class SoundManager : PersistentSingletonMono<SoundManager>
     {
         public const int INVALID_HANDLE = 0;
 

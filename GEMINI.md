@@ -7,6 +7,7 @@
 - Follow **SOLID** and **YAGNI** principles. Do not write redundant properties, fields, or boilerplate code until actively needed.
 - **Fail Fast Principle**: Do not write defensive null checks for objects or references that are strictly required to exist. Let Unity or C# fail fast (e.g., throwing `NullReferenceException`) so missing setup or dependencies are exposed immediately.
   - *No Implicit Fallbacks*: Never arbitrarily implement fallback logic, default substitute values, or silent recovery mechanisms unless explicitly requested. Always ask the user if fallback behavior is needed.
+  - *Serialized Field Intent*: If a field is intended as a `[SerializeField]`, it **MUST** be explicitly assigned from the Unity Editor/Inspector. Code must **NEVER** attempt lazy initialization or auto-recovery fallbacks (e.g., `GetComponent`, `FindObjectOfType`, `FindAnyObjectByType`, `AddComponent`) to fill a missing serialized reference. At most, validate with a null-check that logs an error and immediately aborts execution.
   - *Exception*: Only check for null to skip logic if the code explicitly supports multiple cases (e.g., an optional component). The skipping mechanism (e.g., `return`, `continue`, or bypassing a block) depends on the context.
 - **Strict Error Handling**: Do **NOT** log warnings. Everything is supposed to work as intended. If requirements are not met, log an error and immediately stop execution (e.g., return early or throw an exception) to prevent the game from running in an invalid state.
 - Always prefer explicit design and clear code over overly clever or obscure implementations.
@@ -34,7 +35,9 @@
   2. **Properties**
   3. **Unity Lifecycle Functions** (e.g., `Awake()`, `OnEnable()`, `Start()`, `Update()`, `FixedUpdate()`, `LateUpdate()`, `OnDisable()`, `OnDestroy()`)
   4. **Custom Methods** (Public APIs, followed by private helper functions)
-- **Encapsulation**: Use `[SerializeField] private` instead of `public` fields for Inspector configuration.
+- **Encapsulation & Dependency Injection**:
+  - Use `[SerializeField] private` instead of `public` fields for Inspector configuration.
+  - Never use runtime fallback discovery (`GetComponent`, `FindObjectOfType`, etc.) to compensate for unassigned `[SerializeField]` references. If an Inspector reference is missing, log an error and halt or let it fail fast.
 - **Performance**:
   - Cache references (`GetComponent`, Camera references) in `Awake()` or `Start()`. Never call `GetComponent()` in frame updates (`Update`/`FixedUpdate`).
   - Avoid memory allocations (`GC.Alloc`), string concatenations, or `LINQ` operations inside `Update()` / `FixedUpdate()`.
@@ -51,8 +54,12 @@
 
 ---
 
-## 5. Unity MCP Usage
+## 5. Unity CLI & MCP Usage
 - Leverage **Unity MCP (Model Context Protocol)** tools whenever context about the Unity project layout, scene hierarchy, project settings, console logs, or asset paths is required.
+- **Use Unity CLI & MCP Tools Directly (No Setup Scripts)**:
+  - Do **NOT** create throwaway C# editor setup scripts (e.g., `SetupM0Artifacts.cs`, `SetupM1Artifacts.cs`) in the repository to generate scenes, prefabs, or configure assets.
+  - Use Unity MCP tools (`create_gameobject`, `create_prefab`, `add_component`, `set_serialized_field`, etc.) or Unity CLI commands directly.
+  - Never run scripts or commands that switch, unload, or dirty the user's active Editor scene unless explicitly requested by the user.
 - Use MCP integrations to inspect project status, resolve compilation errors, or locate relevant code references before writing or refactoring code.
 - **Manual Asset Refresh & Compilation**: Auto-refresh and domain reload on play are disabled in this project. After creating, updating, or deleting C# scripts or assets, ALWAYS trigger a recompile/refresh (e.g., via Unity MCP `recompile` or appropriate refresh tools) and check the compilation status before running tests, entering play mode, or finalizing the task.
 

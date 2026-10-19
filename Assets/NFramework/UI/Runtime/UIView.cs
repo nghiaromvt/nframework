@@ -80,6 +80,7 @@ namespace NFramework.UI
 
         private void OnValidate()
         {
+            if (Application.isPlaying) return;
             RefreshKey();
             ValidateKey();
         }

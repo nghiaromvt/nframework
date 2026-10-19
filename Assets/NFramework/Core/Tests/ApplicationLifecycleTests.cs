@@ -59,6 +59,13 @@ namespace NFramework.Core.Tests
             }
         }
 
+        [SetUp]
+        public void SetUp()
+        {
+            var go = new GameObject("[ApplicationLifecycle]");
+            go.AddComponent<ApplicationLifecycle>();
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -160,6 +167,7 @@ namespace NFramework.Core.Tests
             ApplicationLifecycle.Register(faultyListener);
             ApplicationLifecycle.Register(normalListener);
 
+            UnityEngine.TestTools.LogAssert.Expect(LogType.Exception, new System.Text.RegularExpressions.Regex("Simulated exception in listener"));
             Assert.DoesNotThrow(() => TriggerPause(true));
             Assert.AreEqual(1, normalListener.PauseCount);
 

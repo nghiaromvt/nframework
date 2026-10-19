@@ -12,7 +12,7 @@ namespace NFramework
         {
             base.Awake();
 
-            if (I == this)
+            if (I == this && Application.isPlaying)
             {
                 DontDestroyOnLoad(gameObject);
             }

@@ -34,58 +34,70 @@ namespace NFramework
         }
 #endif
 
-        public static async UniTask Load(string sceneName, bool isAdditive = false, bool setActive = false, Action<float> onProgress = null)
+        public static async UniTask Load(
+            string sceneName,
+            bool isAdditive = false,
+            bool setActive = false,
+            IProgress<float> progress = null,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(sceneName))
             {
-                NLogger.LogError($"[SceneLoader] Invalid sceneName: {sceneName}");
-                return;
+                throw new ArgumentException("Scene name cannot be null or empty.", nameof(sceneName));
             }
 
-            NLogger.Log($"[SceneLoader] Start load scene: {sceneName}");
             var asyncOperation = SceneManager.LoadSceneAsync(sceneName, isAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single);
-
-            while (!asyncOperation.isDone)
+            if (asyncOperation == null)
             {
-                onProgress?.Invoke(asyncOperation.progress);
-                await UniTask.Yield(Application.exitCancellationToken);
+                throw new InvalidOperationException($"Failed to load scene '{sceneName}'. Scene may not exist or is not added to Build Settings.");
             }
+
+            await asyncOperation.ToUniTask(progress: progress, cancellationToken: cancellationToken);
 
 #if ADDRESSABLES
             if (!isAdditive)
             {
-                // In Single mode, Unity unloads all other scenes including Addressable scenes
                 CleanUnloadedAddressableScenes();
             }
 #endif
-            
+
             if (setActive)
+            {
                 SetActive(sceneName);
+            }
         }
 
-        public static async UniTask Unload(string sceneName, string nextActiveSceneName = null, Action<float> onProgress = null)
+        public static async UniTask Unload(
+            string sceneName,
+            string nextActiveSceneName = null,
+            IProgress<float> progress = null,
+            CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrEmpty(sceneName))
+            {
+                throw new ArgumentException("Scene name cannot be null or empty.", nameof(sceneName));
+            }
+
             var scene = SceneManager.GetSceneByName(sceneName);
-
-            if (!scene.IsValid())
+            if (!scene.IsValid() || !scene.isLoaded)
             {
-                NLogger.LogError($"[SceneLoader] Invalid scene: {sceneName}");
-                return;
+                throw new InvalidOperationException($"Cannot unload scene '{sceneName}': Scene is not valid or not loaded.");
             }
 
-            NLogger.Log($"[SceneLoader] Start unload scene {sceneName}");
             var asyncOperation = SceneManager.UnloadSceneAsync(scene);
-
-            while (!asyncOperation.isDone)
+            if (asyncOperation == null)
             {
-                onProgress?.Invoke(asyncOperation.progress);
-                await UniTask.Yield(Application.exitCancellationToken);
+                throw new InvalidOperationException($"Failed to start unloading scene '{sceneName}'.");
             }
-            
+
+            await asyncOperation.ToUniTask(progress: progress, cancellationToken: cancellationToken);
+
             if (!string.IsNullOrEmpty(nextActiveSceneName))
+            {
                 SetActive(nextActiveSceneName);
+            }
         }
-        
+
 #if ADDRESSABLES
         public static async UniTask LoadAddressables(
             string address,
@@ -96,8 +108,7 @@ namespace NFramework
         {
             if (string.IsNullOrEmpty(address))
             {
-                NLogger.LogError($"[SceneLoader] Invalid address: {address}");
-                return;
+                throw new ArgumentException("Address cannot be null or empty.", nameof(address));
             }
 
             if (!AddressablesLoader.IsInitialized)
@@ -107,11 +118,9 @@ namespace NFramework
 
             if (_addressableScenesByAddress.ContainsKey(address))
             {
-                NLogger.LogWarning($"[SceneLoader] Addressable scene '{address}' is already loaded.");
-                return;
+                throw new InvalidOperationException($"Addressable scene '{address}' is already loaded.");
             }
 
-            NLogger.Log($"[SceneLoader] Start load Addressables scene: {address}");
             var loadMode = isAdditive ? LoadSceneMode.Additive : LoadSceneMode.Single;
             var handle = Addressables.LoadSceneAsync(address, loadMode, true);
 
@@ -148,36 +157,46 @@ namespace NFramework
             }
             else
             {
-                NLogger.LogError($"[SceneLoader] Failed to load Addressables scene: {address}");
                 if (handle.IsValid())
                 {
                     Addressables.Release(handle);
                 }
+
+                throw new InvalidOperationException($"Failed to load Addressables scene: '{address}'.");
             }
         }
 
-        public static async UniTask UnloadAddressables(string address, string nextActiveSceneName = null)
+        public static async UniTask UnloadAddressables(
+            string address,
+            string nextActiveSceneName = null,
+            IProgress<float> progress = null,
+            CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(address))
             {
-                NLogger.LogError($"[SceneLoader] Invalid address: {address}");
-                return;
+                throw new ArgumentException("Address cannot be null or empty.", nameof(address));
             }
 
             if (!_addressableScenesByAddress.TryGetValue(address, out var entry))
             {
-                NLogger.LogError($"[SceneLoader] Addressable scene '{address}' is not loaded or tracked.");
-                return;
+                throw new InvalidOperationException($"Addressable scene '{address}' is not loaded or tracked.");
             }
 
-            NLogger.Log($"[SceneLoader] Start unload Addressables scene: {address}");
             _addressableScenesByAddress.Remove(address);
             _addressableScenesByScene.Remove(entry.Scene);
 
             if (entry.Handle.IsValid() && entry.Scene.IsValid() && entry.Scene.isLoaded)
             {
                 var unloadHandle = Addressables.UnloadSceneAsync(entry.Handle, false);
-                await unloadHandle.ToUniTask();
+                while (!unloadHandle.IsDone)
+                {
+                    progress?.Report(unloadHandle.PercentComplete);
+                    await UniTask.Yield(PlayerLoopTiming.Update, cancellationToken);
+                }
+
+                await unloadHandle.ToUniTask().AttachExternalCancellation(cancellationToken);
+                progress?.Report(1f);
+
                 if (unloadHandle.IsValid())
                 {
                     Addressables.Release(unloadHandle);
@@ -234,7 +253,9 @@ namespace NFramework
             foreach (var scene in GetAllLoaded())
             {
                 if (exceptSceneNames != null && exceptSceneNames.Contains(scene.name))
+                {
                     continue;
+                }
 
 #if ADDRESSABLES
                 if (_addressableScenesByScene.TryGetValue(scene, out var entry))
@@ -249,12 +270,15 @@ namespace NFramework
 
         public static void SetActive(string sceneName)
         {
-            var scene = SceneManager.GetSceneByName(sceneName);
-
-            if (!scene.IsValid())
+            if (string.IsNullOrEmpty(sceneName))
             {
-                NLogger.LogError($"Invalid scene: {sceneName}");
-                return;
+                throw new ArgumentException("Scene name cannot be null or empty.", nameof(sceneName));
+            }
+
+            var scene = SceneManager.GetSceneByName(sceneName);
+            if (!scene.IsValid() || !scene.isLoaded)
+            {
+                throw new InvalidOperationException($"Cannot set active scene '{sceneName}': Scene is not valid or not loaded.");
             }
 
             SceneManager.SetActiveScene(scene);

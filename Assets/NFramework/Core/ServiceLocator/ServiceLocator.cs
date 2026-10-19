@@ -10,11 +10,15 @@ namespace NFramework
 
         public static void Register<T>(T service) where T : class
         {
+            if (service == null)
+            {
+                throw new ArgumentNullException(nameof(service));
+            }
+
             Type type = typeof(T);
             if (_services.ContainsKey(type))
             {
-                NLogger.LogError($"Service of type {type.Name} is already registered!");
-                return;
+                throw new InvalidOperationException($"Service of type {type.Name} is already registered in {nameof(ServiceLocator)}!");
             }
 
             _services.Add(type, service);
@@ -25,7 +29,7 @@ namespace NFramework
             Type type = typeof(T);
             if (!_services.Remove(type))
             {
-                NLogger.LogError($"Cannot unregister service of type {type.Name}: not registered!");
+                throw new InvalidOperationException($"Cannot unregister service of type {type.Name}: not registered in {nameof(ServiceLocator)}!");
             }
         }
 

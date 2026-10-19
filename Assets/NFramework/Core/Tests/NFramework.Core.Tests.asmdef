@@ -3,6 +3,7 @@
     "rootNamespace": "NFramework.Core.Tests",
     "references": [
         "NFramework",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

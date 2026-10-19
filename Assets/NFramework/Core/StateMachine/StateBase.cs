@@ -1,20 +1,11 @@
 using System;
-using Sirenix.OdinInspector;
 
 namespace NFramework
 {
     [Serializable]
-    public class StateBase
+    public abstract class StateBase
     {
-        [NonSerialized] protected StateMachine _stateMachine;
-        
-        [ShowInInspector, ReadOnly] public string Id { get; private set; }
-
-        public StateBase(string id, StateMachine stateMachine)
-        {
-            Id = id;
-            _stateMachine = stateMachine;
-        }
+        public StateMachine StateMachine { get; internal set; }
 
         public virtual void OnEnter(EnterStateData data = null) { }
 
@@ -22,8 +13,14 @@ namespace NFramework
 
         public virtual void OnUpdate() { }
 
+        public virtual void OnUpdate(float deltaTime) => OnUpdate();
+
         public virtual void OnFixedUpdate() { }
 
+        public virtual void OnFixedUpdate(float fixedDeltaTime) => OnFixedUpdate();
+
         public virtual void OnLateUpdate() { }
+
+        public virtual void OnLateUpdate(float deltaTime) => OnLateUpdate();
     }
 }
