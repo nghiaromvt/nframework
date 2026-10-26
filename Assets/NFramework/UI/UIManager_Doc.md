@@ -168,9 +168,9 @@ public class SettingsView : UIView<SettingsView.InputData>
         // Gọi khi Open Animation kết thúc (ViewStatus chuyển sang EViewStatus.Open)
     }
 
-    protected override void OnCloseAnimationCompleted()
+    protected override void OnViewClosed()
     {
-        // Gọi khi Close Animation kết thúc (ViewStatus chuyển sang EViewStatus.Closed)
+        // Gọi khi View hoàn tất đóng (sau animation nếu có, trước khi deactive/destroy)
     }
 }
 ```
@@ -407,4 +407,15 @@ Bao gồm:
 - **Prefabs trong `Editor/Resources/UI/`**: Toàn bộ UI prefab mẫu được đặt tại `Assets/NFramework/UI/Sample/Editor/Resources/UI/` để vừa hỗ trợ `Resources.Load` khi test trong Editor, vừa tự động loại trừ (exclude) hoàn toàn khỏi build thực tế của dự án.
 - **`UISampleConfigSO.asset`**: Tách riêng cấu hình sample (`Assets/NFramework/UI/Sample/UISampleConfigSO.asset`) để tránh xung đột với `UIConfigSO` của dự án thật. Hệ thống Editor tự động ưu tiên file `UIConfigSO` không nằm trong thư mục `Sample`.
 - Menu Editor: **`Tools > NFramework > UI > Setup UISample Scene`** để tự động tái tạo hoặc cấu hình lại scene và prefab mẫu bất kỳ lúc nào.
+
+---
+
+## Changelog
+
+### 2026-10-23
+- **`UIView.Initialize`**: Chuyển thành non-virtual method để bảo toàn logic cốt lõi (ID, flag `_initialized`, cache animations).
+- **`UIView.OnInitialized`**: Thêm lifecycle hook `protected virtual void OnInitialized()` được gọi ở cuối hàm `Initialize`.
+- **`UIView.OnViewClosed`**: Đổi tên từ `OnCloseAnimationCompleted` thành `protected virtual void OnViewClosed()` cho đối xứng trực tiếp với `OnViewOpened`, là hook dọn dẹp chính thức khi view đóng hoàn tất.
+- **`UIView.OnDisable`**: Giữ `private` để đảm bảo logic dọn dẹp cốt lõi của framework (`CancelOpenAnimation()`, `UnblockInteract()`) không bị subclass ghi đè làm mất.
+
 

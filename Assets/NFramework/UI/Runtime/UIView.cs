@@ -90,7 +90,7 @@ namespace NFramework.UI
 
         #region Custom Methods - Public
 
-        public virtual void Initialize(string id, bool isFromResources = false)
+        public void Initialize(string id, bool isFromResources = false)
         {
             if (_initialized) return;
             _initialized = true;
@@ -98,6 +98,7 @@ namespace NFramework.UI
             IsFromResources = isFromResources;
             _openViewAnimations = GetComponents<IOpenViewAnimation>();
             _closeViewAnimations = GetComponents<ICloseViewAnimation>();
+            OnInitialized();
         }
 
         public void OnOpen(UIInputData inputData = null)
@@ -145,6 +146,9 @@ namespace NFramework.UI
             return UIManager.Close(this, destroy, ignoreAnim, cancellationToken);
         }
 
+        protected virtual void OnInitialized()
+        {
+        }
 
         protected virtual void OnViewOpened(UIInputData inputData)
         {
@@ -154,7 +158,7 @@ namespace NFramework.UI
         {
         }
 
-        protected virtual void OnCloseAnimationCompleted()
+        protected virtual void OnViewClosed()
         {
         }
 
@@ -259,7 +263,7 @@ namespace NFramework.UI
                     PauseGameHandler.Unpause(this);
 
                 ViewStatus = EViewStatus.Closed;
-                OnCloseAnimationCompleted();
+                OnViewClosed();
             }
         }
 

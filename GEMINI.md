@@ -1,78 +1,57 @@
 # Gemini AI Coding Guidelines
 
----
+## 1. Core Principles & Error Handling
+- **SOLID & YAGNI**: Do not write speculative properties, backing fields, or boilerplate code until actively needed.
+- **Fail Fast & No Fallbacks**:
+  - Do **NOT** write defensive null checks for required references; let C#/Unity throw `NullReferenceException` naturally.
+  - Only check for `null` to skip logic (`return`, `continue`) when a component/reference is explicitly optional.
+  - Never implement implicit fallback logic, default substitute values, or silent recovery unless requested. Ask the user if unsure.
+- **Strict Error Handling**: Never log warnings (`Debug.LogWarning`). If runtime requirements or states are invalid, log an error (`Debug.LogError`) and immediately abort execution (return early or throw).
 
-## 1. General Principles
-- Keep code concise, clean, modular, and maintainable.
-- Follow **SOLID** and **YAGNI** principles. Do not write redundant properties, fields, or boilerplate code until actively needed.
-- **Fail Fast Principle**: Do not write defensive null checks for objects or references that are strictly required to exist. Let Unity or C# fail fast (e.g., throwing `NullReferenceException`) so missing setup or dependencies are exposed immediately.
-  - *No Implicit Fallbacks*: Never arbitrarily implement fallback logic, default substitute values, or silent recovery mechanisms unless explicitly requested. Always ask the user if fallback behavior is needed.
-  - *Serialized Field Intent*: If a field is intended as a `[SerializeField]`, it **MUST** be explicitly assigned from the Unity Editor/Inspector. Code must **NEVER** attempt lazy initialization or auto-recovery fallbacks (e.g., `GetComponent`, `FindObjectOfType`, `FindAnyObjectByType`, `AddComponent`) to fill a missing serialized reference. At most, validate with a null-check that logs an error and immediately aborts execution.
-  - *Exception*: Only check for null to skip logic if the code explicitly supports multiple cases (e.g., an optional component). The skipping mechanism (e.g., `return`, `continue`, or bypassing a block) depends on the context.
-- **Strict Error Handling**: Do **NOT** log warnings. Everything is supposed to work as intended. If requirements are not met, log an error and immediately stop execution (e.g., return early or throw an exception) to prevent the game from running in an invalid state.
-- Always prefer explicit design and clear code over overly clever or obscure implementations.
-
----
-
-## 2. C# & .NET Code Conventions (Microsoft Standard)
-- **Naming Conventions**:
+## 2. C# Conventions (Microsoft Standard)
+- **Naming**:
   - `PascalCase`: Classes, Structs, Enums, Interfaces (prefix with `I`), Methods, Public Fields, Properties, Events.
-  - `_camelCase`: Private and protected fields (e.g., `_moveSpeed`, `_playerHealth`).
-  - `camelCase`: Method parameters and local variables.
-  - `ALL_CAPS` / `UPPER_CASE`: Constants (`const`).
-- **Code Structure & Formatting**:
-  - Use Allman brace style (opening brace `{` on a new line).
-  - Explicitly specify access modifiers (`public`, `private`, `protected`, `internal`).
-  - Avoid magic numbers; use `const`, `readonly`, or serialized configuration values.
-  - Do not create backing properties or fields speculatively unless required by current logic.
-  - Remove unused or redundant `using` directives to keep code headers clean and avoid namespace pollution.
-
----
+  - `_camelCase`: Private/protected fields (e.g., `_moveSpeed`).
+  - `camelCase`: Parameters and local variables.
+  - `UPPER_CASE`: Constants (`const`).
+- **Formatting & Structure**:
+  - Use Allman brace style (opening `{` on a new line).
+  - Explicitly declare access modifiers (`public`, `private`, `protected`, `internal`).
+  - No magic numbers; use `const`, `readonly`, or serialized config values.
+  - Remove unused `using` directives.
 
 ## 3. Unity & MonoBehaviour Rules
-- **Class Member Ordering**: Members inside `MonoBehaviour` classes **MUST** strictly follow this sequence:
-  1. **Fields** (Serialized, constant, and private fields)
-  2. **Properties**
-  3. **Unity Lifecycle Functions** (e.g., `Awake()`, `OnEnable()`, `Start()`, `Update()`, `FixedUpdate()`, `LateUpdate()`, `OnDisable()`, `OnDestroy()`)
-  4. **Custom Methods** (Public APIs, followed by private helper functions)
-- **Encapsulation & Dependency Injection**:
-  - Use `[SerializeField] private` instead of `public` fields for Inspector configuration.
-  - Never use runtime fallback discovery (`GetComponent`, `FindObjectOfType`, etc.) to compensate for unassigned `[SerializeField]` references. If an Inspector reference is missing, log an error and halt or let it fail fast.
+- **Class Member Ordering**:
+  1. Fields (Serialized, constants, private)
+  2. Properties
+  3. Unity Lifecycle (`Awake`, `OnEnable`, `Start`, `Update`, `FixedUpdate`, `LateUpdate`, `OnDisable`, `OnDestroy`)
+  4. Custom Methods (Public APIs first, then private helpers)
+- **Strict `[SerializeField]` Encapsulation**:
+  - Use `[SerializeField] private` instead of `public` fields for Inspector config.
+  - `[SerializeField]` references **MUST** be assigned in the Inspector. **NEVER** use lazy initialization or auto-recovery fallbacks (`GetComponent`, `FindObjectOfType`, `FindAnyObjectByType`, `AddComponent`) for unassigned serialized fields.
 - **Performance**:
-  - Cache references (`GetComponent`, Camera references) in `Awake()` or `Start()`. Never call `GetComponent()` in frame updates (`Update`/`FixedUpdate`).
-  - Avoid memory allocations (`GC.Alloc`), string concatenations, or `LINQ` operations inside `Update()` / `FixedUpdate()`.
-- **Avoid Preprocessor Directives (Compiler Flags)**: Minimize using preprocessor directives (e.g., `#if UNITY_EDITOR`) when runtime conditional checks (e.g., `if (Application.isEditor)`, `if (Application.isPlaying)`) can be used instead. This ensures all code branches are compiled and syntax-checked across environments.
-- **Singleton Existence Check**: Always check if a Singleton instance exists using `TSingleton.HasInstance` (e.g., `if (SaveService.HasInstance)`) instead of checking `TSingleton.Instance != null`. This avoids accidental auto-instantiation or side-effects during teardown.
-
----
+  - Cache component/Camera references in `Awake()` or `Start()`.
+  - Never use `GetComponent()`, `LINQ`, string concatenation, or cause `GC.Alloc` inside `Update()` / `FixedUpdate()`.
+- **Runtime Checks over Preprocessor Directives**: Prefer runtime checks (`Application.isEditor`, `Application.isPlaying`) over `#if UNITY_EDITOR` whenever possible so all code branches are compiled and syntax-checked.
+- **Singleton Check**: Always use `TSingleton.HasInstance` (e.g., `if (SaveService.HasInstance)`) instead of `TSingleton.Instance != null` to prevent accidental instantiation during teardown.
 
 ## 4. Comments & Documentation
-- **Language**: **All comments, XML documentation, and code explanations MUST be written in English.**
-- **No Obvious Comments**: Do **NOT** write comments or XML documentation for simple, self-explanatory, or obvious functions/properties (e.g., standard getters/setters, basic setup methods).
-- Write meaningful comments explaining *why* non-obvious logic exists rather than stating obvious *what* code does.
-- **Documentation Synchronization**: When implementing, refactoring, or modifying code, always update corresponding XML comments, method descriptions, and project documentation (`.md` files) to ensure documentation stays strictly up to date with code changes.
+- **English Only**: All comments, XML docs, and code explanations MUST be in English.
+- **Why Over What**: Do NOT document obvious/self-explanatory code (getters/setters, basic setup). Only comment to explain *why* non-obvious logic exists.
+- **Keep Synced**: Always update corresponding XML comments and `.md` documentation when modifying or refactoring code.
 
----
+## 5. Unity CLI, MCP & Codebase Memory
+- **Codebase Knowledge Graph First (`codebase-memory-mcp`)**:
+  - Prioritize `codebase-memory-mcp` over grep/glob for architecture discovery and dependency tracing. Activate the `codebase-memory` skill for query workflows, evidence tiers, and delegation rules.
+  - Fall back to grep/glob only for string literals, non-code files, or when graph results are insufficient.
+- **Direct Unity MCP/CLI Usage (No Setup Scripts)**:
+  - Use Unity MCP tools (`create_gameobject`, `create_prefab`, `add_component`, `set_serialized_field`, etc.) to inspect scenes, logs, settings, and manipulate assets.
+  - **NEVER** create throwaway C# Editor setup scripts (e.g., `SetupM0Artifacts.cs`) to generate scenes or prefabs.
+  - Never switch, unload, or dirty the active Editor scene without explicit user permission.
+  - **Multi-Editor Disambiguation**: When running `unity` CLI commands, **ALWAYS** explicitly pass `--project-path "."` or the current workspace root path to ensure commands target this specific project and never route to another concurrently running Unity Editor.
+- **Manual Recompile Required**: Auto-refresh and domain reload on play are disabled. After creating, editing, or deleting any C# script or asset, **ALWAYS** trigger a manual recompile/refresh via Unity MCP and verify compilation status before running tests, entering Play mode, or finishing the task.
 
-## 5. Unity CLI & MCP Usage
-- Leverage **Unity MCP (Model Context Protocol)** tools whenever context about the Unity project layout, scene hierarchy, project settings, console logs, or asset paths is required.
-- **Use Unity CLI & MCP Tools Directly (No Setup Scripts)**:
-  - Do **NOT** create throwaway C# editor setup scripts (e.g., `SetupM0Artifacts.cs`, `SetupM1Artifacts.cs`) in the repository to generate scenes, prefabs, or configure assets.
-  - Use Unity MCP tools (`create_gameobject`, `create_prefab`, `add_component`, `set_serialized_field`, etc.) or Unity CLI commands directly.
-  - Never run scripts or commands that switch, unload, or dirty the user's active Editor scene unless explicitly requested by the user.
-- Use MCP integrations to inspect project status, resolve compilation errors, or locate relevant code references before writing or refactoring code.
-- **Manual Asset Refresh & Compilation**: Auto-refresh and domain reload on play are disabled in this project. After creating, updating, or deleting C# scripts or assets, ALWAYS trigger a recompile/refresh (e.g., via Unity MCP `recompile` or appropriate refresh tools) and check the compilation status before running tests, entering play mode, or finalizing the task.
-
----
-
-## 6. Workflow & Task Execution
-- **Proactive Clarification**: Whenever requirements, edge cases, or intentions are unclear or ambiguous, ask the user for clarification before assuming or proceeding.
-- **Short Tasks**: Always explain the approach, proposed changes, and rationale to the user after modifying or writing code.
-- **Long / Complex Tasks**: Break down the task into a detailed, step-by-step implementation plan. Wait for explicit user review and approval before executing changes.
-
----
-
-## 7. Codebase Knowledge Graph (codebase-memory-mcp)
-- **Graph First**: ALWAYS prioritize `codebase-memory-mcp` tools over standard grep, glob, or text search for structural discovery, architecture exploration, and dependency tracing.
-- **Skill Usage**: Refer to and activate the `codebase-memory` skill for detailed query workflows, evidence tiers (Scout/Verify/Auditor), Cypher examples, and subagent delegation rules.
-- **Fallback**: Only fall back to grep/glob when querying string literals, non-code files (config, Docker, scripts), or when graph results are insufficient.
+## 6. Workflow & Execution
+- **Clarify First**: Ask the user before proceeding whenever requirements or edge cases are ambiguous.
+- **Short Tasks**: Explain the approach, changes, and rationale after implementation.
+- **Complex Tasks**: Present a step-by-step implementation plan and wait for explicit user approval before modifying code.
