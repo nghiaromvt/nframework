@@ -1,19 +1,50 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
+using UnityEngine;
 
 namespace NFramework
 {
-    public class ObservableList<T>
+    public enum ObservableListEventType
     {
-        /// <summary>
-        /// Event triggered when the list is modified.
-        /// Parameters: Current list (read-only), Modified items.
-        /// </summary>
-        public event Action<ReadOnlyCollection<T>, List<T>> OnListChanged;
+        Add,
+        Remove,
+        Replace,
+        Clear,
+        Reset
+    }
 
-        private List<T> _list = new List<T>();
+    public readonly struct ObservableListEvent<TItem>
+    {
+        public ObservableListEventType Type { get; }
+        public int Index { get; }
+        public TItem Item { get; }
+        public TItem OldItem { get; }
+
+        public ObservableListEvent(ObservableListEventType type, int index, TItem item, TItem oldItem = default)
+        {
+            Type = type;
+            Index = index;
+            Item = item;
+            OldItem = oldItem;
+        }
+    }
+
+    [Serializable]
+    public class ObservableList<T> : IList<T>, IReadOnlyList<T>
+    {
+        [SerializeField] private List<T> _list;
+
+        private ReadOnlyCollection<T> _readOnlyWrapper;
+
+        public event Action<ObservableListEvent<T>> OnChanged;
+
+        public int Count => _list.Count;
+
+        public bool IsReadOnly => false;
+
+        public ReadOnlyCollection<T> ReadOnlyList => _readOnlyWrapper ??= _list.AsReadOnly();
 
         public T this[int index]
         {
@@ -21,103 +52,150 @@ namespace NFramework
             set
             {
                 if (EqualityComparer<T>.Default.Equals(_list[index], value))
+                {
                     return;
+                }
 
+                var oldItem = _list[index];
                 _list[index] = value;
-                Notify(new List<T> { value });
+                Notify(new ObservableListEvent<T>(ObservableListEventType.Replace, index, value, oldItem));
             }
         }
 
-        public ReadOnlyCollection<T> ReadOnlyList => _list.AsReadOnly();
-        public int Count => _list.Count;
-
-        public ObservableList() { }
-
-        public ObservableList(IEnumerable<T> initList) => _list = initList.ToList();
-
-        public void ForceSetList(List<T> list)
+        public ObservableList()
         {
-            var previous = _list;
-            _list = list;
-            Notify(previous);
+            _list = new List<T>();
         }
 
-        /// <summary>
-        /// Replace the list without triggering the OnListChanged event. Use with care.
-        /// </summary>
-        public void SetListWithoutNotify(List<T> list) => _list = list;
+        public ObservableList(int capacity)
+        {
+            _list = new List<T>(capacity);
+        }
 
-        public bool Contains(T value) => _list.Contains(value);
-        public int IndexOf(T item) => _list.IndexOf(item);
-        public void ForEach(Action<T> action) => _list.ForEach(action);
+        public ObservableList(IEnumerable<T> collection)
+        {
+            _list = collection != null ? new List<T>(collection) : new List<T>();
+        }
 
         public void Add(T item)
         {
             _list.Add(item);
-            Notify(new List<T> { item });
+            Notify(new ObservableListEvent<T>(ObservableListEventType.Add, _list.Count - 1, item));
         }
 
         public void AddRange(IEnumerable<T> collection)
         {
-            var items = collection.ToList();
-            _list.AddRange(items);
-            Notify(items);
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            foreach (var item in collection)
+            {
+                Add(item);
+            }
         }
 
-        public void Remove(T item)
+        public void Insert(int index, T item)
         {
-            if (_list.Remove(item))
-                Notify(new List<T> { item });
+            _list.Insert(index, item);
+            Notify(new ObservableListEvent<T>(ObservableListEventType.Add, index, item));
+        }
+
+        public bool Remove(T item)
+        {
+            var index = _list.IndexOf(item);
+            if (index < 0)
+            {
+                return false;
+            }
+
+            _list.RemoveAt(index);
+            Notify(new ObservableListEvent<T>(ObservableListEventType.Remove, index, item));
+            return true;
         }
 
         public void RemoveAt(int index)
         {
             var item = _list[index];
             _list.RemoveAt(index);
-            Notify(new List<T> { item });
-        }
-
-        public void RemoveRange(int index, int count)
-        {
-            var modifiedItems = _list.Skip(index).Take(count).ToList();
-            _list.RemoveRange(index, count);
-            Notify(modifiedItems);
-        }
-
-        public void RemoveAll(Predicate<T> predicate)
-        {
-            var removedItems = _list.Where(item => predicate(item)).ToList();
-            _list.RemoveAll(predicate);
-            Notify(removedItems);
-        }
-
-        public void Insert(int index, T item)
-        {
-            _list.Insert(index, item);
-            Notify(new List<T> { item });
-        }
-
-        public void InsertRange(int index, IEnumerable<T> collection)
-        {
-            var items = collection.ToList();
-            _list.InsertRange(index, items);
-            Notify(items);
+            Notify(new ObservableListEvent<T>(ObservableListEventType.Remove, index, item));
         }
 
         public void Clear()
         {
-            var tempList = new List<T>(_list);
+            if (_list.Count == 0)
+            {
+                return;
+            }
+
             _list.Clear();
-            Notify(tempList);
+            Notify(new ObservableListEvent<T>(ObservableListEventType.Clear, -1, default));
         }
 
-        private void Notify(List<T> modifiedItems)
+        public void Reset(IEnumerable<T> collection)
         {
-            OnListChanged?.Invoke(ReadOnlyList, modifiedItems);
+            _list.Clear();
+            if (collection != null)
+            {
+                _list.AddRange(collection);
+            }
+
+            Notify(new ObservableListEvent<T>(ObservableListEventType.Reset, -1, default));
         }
 
-        public override string ToString() => $"[{string.Join(", ", _list)}]";
+        public void SetWithoutNotify(IEnumerable<T> collection)
+        {
+            _list.Clear();
+            if (collection != null)
+            {
+                _list.AddRange(collection);
+            }
+        }
 
-        public static implicit operator ReadOnlyCollection<T>(ObservableList<T> observable) => observable.ReadOnlyList;
+        public void ForceNotify()
+        {
+            Notify(new ObservableListEvent<T>(ObservableListEventType.Reset, -1, default));
+        }
+
+        public bool Contains(T item)
+        {
+            return _list.Contains(item);
+        }
+
+        public int IndexOf(T item)
+        {
+            return _list.IndexOf(item);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            _list.CopyTo(array, arrayIndex);
+        }
+
+        public List<T>.Enumerator GetEnumerator()
+        {
+            return _list.GetEnumerator();
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return _list.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _list.GetEnumerator();
+        }
+
+        public override string ToString()
+        {
+            return $"[{string.Join(", ", _list)}]";
+        }
+
+        private void Notify(ObservableListEvent<T> evt)
+        {
+            OnChanged?.Invoke(evt);
+        }
     }
 }
