@@ -17,7 +17,7 @@ namespace NFramework.UI
     public enum UILayer
     {
         Background = 0,
-        Menu = 1,
+        Screen = 1,
         Popup = 2,
         Loading = 3,
         AlwaysOnTop = 4,
@@ -194,10 +194,10 @@ namespace NFramework.UI
                 return null;
             }
 
-            if (TryGetOpenedMenu(id, out var openedMenu))
+            if (TryGetOpenedScreen(id, out var openedScreen))
             {
-                Log($"Menu [{id}] is already opened or opening. Skipping OpenAddressables.");
-                return openedMenu as T;
+                Log($"Screen [{id}] is already opened or opening. Skipping OpenAddressables.");
+                return openedScreen as T;
             }
 
             var ct = ResolveToken(cancellationToken);
@@ -234,10 +234,10 @@ namespace NFramework.UI
                 return null;
             }
 
-            if (TryGetOpenedMenu(id, out var openedMenu))
+            if (TryGetOpenedScreen(id, out var openedScreen))
             {
-                Log($"Menu [{id}] is already opened or opening. Skipping OpenResources.");
-                return openedMenu as T;
+                Log($"Screen [{id}] is already opened or opening. Skipping OpenResources.");
+                return openedScreen as T;
             }
 
             T view = null;
@@ -267,10 +267,10 @@ namespace NFramework.UI
                 return null;
             }
 
-            if (TryGetOpenedMenu(id, out var openedMenu))
+            if (TryGetOpenedScreen(id, out var openedScreen))
             {
-                Log($"Menu [{id}] is already opened or opening. Skipping OpenResourcesAsync.");
-                return openedMenu as T;
+                Log($"Screen [{id}] is already opened or opening. Skipping OpenResourcesAsync.");
+                return openedScreen as T;
             }
 
             var ct = ResolveToken(cancellationToken);
@@ -480,18 +480,18 @@ namespace NFramework.UI
 
         #region Custom Methods - Query View
 
-        private static bool TryGetOpenedMenu(string id, out UIView menu)
+        private static bool TryGetOpenedScreen(string id, out UIView screen)
         {
-            menu = null;
-            if (!I._openedView.TryGetValue(UILayer.Menu, out var menuViews))
+            screen = null;
+            if (!I._openedView.TryGetValue(UILayer.Screen, out var screenViews))
                 return false;
 
-            for (int i = menuViews.Count - 1; i >= 0; i--)
+            for (int i = screenViews.Count - 1; i >= 0; i--)
             {
-                var view = menuViews[i];
+                var view = screenViews[i];
                 if (view.ID == id && view.ViewStatus is EViewStatus.Open or EViewStatus.Opening)
                 {
-                    menu = view;
+                    screen = view;
                     return true;
                 }
             }

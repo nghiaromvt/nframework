@@ -5,7 +5,7 @@ namespace NFramework.UI.Sample
 {
 	public static class UIDefine
 	{
-		// Menu
+		// Screen
 		public const string SAMPLE_MENU_VIEW = "UI/SampleMenuView";
 		// Popup
 		public const string SAMPLE_POPUP_VIEW = "UI/SamplePopupView";

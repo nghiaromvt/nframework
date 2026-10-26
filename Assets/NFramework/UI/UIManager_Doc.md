@@ -43,7 +43,7 @@ Assets/NFramework/UI/
 ```
 UIManager (SingletonMono)
 ├── Background Layer    ← Canvas + GraphicRaycaster + CanvasGroup
-├── Menu Layer          ← Quản lý các màn hình chính (Menu/Screen)
+├── Screen Layer        ← Quản lý các màn hình chính (Screen/Page)
 ├── Popup Layer
 ├── Loading Layer
 └── AlwaysOnTop Layer
@@ -106,7 +106,7 @@ Có 2 cách để thêm một UI mới vào dự án: **Tự động qua Editor 
    - **Target Folder**: Chọn thư mục lưu Prefab (hỗ trợ bất kỳ thư mục nào trong dự án).
    - **Script Name**: Tự động đồng bộ theo View Name.
    - **Script Folder Path**: Chọn folder muốn lưu file `.cs` (VD: `Scripts/UI/Shop`).
-   - **UI Layer**: Chọn layer tương ứng (`Menu`, `Popup`, `Loading`, `Background`, v.v.).
+   - **UI Layer**: Chọn layer tương ứng (`Screen`, `Popup`, `Loading`, `Background`, v.v.).
    - Tick chọn **Generate Script Define** (để tự động sinh constant vào `UIDefine.cs`).
 3. **Bước 3 — Bấm Create**:
    - Tool tự động:
@@ -227,9 +227,9 @@ await view.WaitForCloseComplete();
 Mọi phương thức async đều hỗ trợ tham số `CancellationToken cancellationToken = default`. Nếu không truyền, hệ thống sẽ tự động dùng `destroyCancellationToken` của UIManager để hủy an toàn khi chuyển scene/destroy.
 
 > [!NOTE]
-> Khi mở bất kỳ view nào thuộc layer **`UILayer.Menu`**:
-> - Nếu Menu đó **đang mở hoặc đang trong quá trình mở** (`Open` hoặc `Opening`), UIManager sẽ **skip** việc mở lại và trả về instance đang mở.
-> - Việc đóng menu cũ khi chuyển đổi sang menu mới được điều phối tường minh (explicit) bởi Caller / State Machine (ví dụ: `await UIManager.Close(...)` trước hoặc sau khi mở menu mới) thay vì tự động đóng ngầm, giúp kiểm soát hoàn toàn thứ tự transition và animation.
+> Khi mở bất kỳ view nào thuộc layer **`UILayer.Screen`**:
+> - Nếu Screen đó **đang mở hoặc đang trong quá trình mở** (`Open` hoặc `Opening`), UIManager sẽ **skip** việc mở lại và trả về instance đang mở.
+> - Việc đóng screen cũ khi chuyển đổi sang screen mới được điều phối tường minh (explicit) bởi Caller / State Machine (ví dụ: `await UIManager.Close(...)` trước hoặc sau khi mở screen mới) thay vì tự động đóng ngầm, giúp kiểm soát hoàn toàn thứ tự transition và animation.
 
 ```csharp
 // === Resources (đồng bộ) ===
@@ -383,7 +383,7 @@ namespace MyGame
         public const string SettingsPopup = "SettingsPopup";
         public const string ShopPopup = "ShopPopup";
 
-        // Menu
+        // Screen
         public const string MainMenu = "MainMenu";
     }
 }
@@ -401,9 +401,9 @@ UIManager.OpenResources(UIDefine.SettingsPopup);
 Scene mẫu tại: `Assets/NFramework/UI/Sample/UISample.unity`
 
 Bao gồm:
-- **`SampleMenuView`**: Kế thừa `UIView` thuộc layer `UILayer.Menu`, hiển thị menu với nút "Open Popup", nút "Action", và dòng text status.
+- **`SampleMenuView`**: Kế thừa `UIView` thuộc layer `UILayer.Screen`, hiển thị menu với nút "Open Popup", nút "Action", và dòng text status.
 - **`SamplePopupView`**: Kế thừa `UIView` thuộc layer `UILayer.Popup`, tích hợp `FadeViewAnimation`, nền tối mờ (dimmer) chặn raycast, hiển thị dialog modal và nút "Close".
-- **`UISampleTest`**: MonoBehaviour trong scene để tự động mở Menu lúc khởi động và cung cấp các nút kiểm thử nhanh qua Inspector (`OpenMenu`, `OpenPopup`, `ClosePopup`, `CloseAll`).
+- **`UISampleTest`**: MonoBehaviour trong scene để tự động mở Screen (Menu) lúc khởi động và cung cấp các nút kiểm thử nhanh qua Inspector (`OpenMenu`, `OpenPopup`, `ClosePopup`, `CloseAll`).
 - **Prefabs trong `Editor/Resources/UI/`**: Toàn bộ UI prefab mẫu được đặt tại `Assets/NFramework/UI/Sample/Editor/Resources/UI/` để vừa hỗ trợ `Resources.Load` khi test trong Editor, vừa tự động loại trừ (exclude) hoàn toàn khỏi build thực tế của dự án.
 - **`UISampleConfigSO.asset`**: Tách riêng cấu hình sample (`Assets/NFramework/UI/Sample/UISampleConfigSO.asset`) để tránh xung đột với `UIConfigSO` của dự án thật. Hệ thống Editor tự động ưu tiên file `UIConfigSO` không nằm trong thư mục `Sample`.
 - Menu Editor: **`Tools > NFramework > UI > Setup UISample Scene`** để tự động tái tạo hoặc cấu hình lại scene và prefab mẫu bất kỳ lúc nào.
